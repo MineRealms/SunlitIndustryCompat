@@ -1,0 +1,19 @@
+java.util.concurrent.Callable<String> task=()->{
+ var path=java.nio.file.Paths.get("kubejs/assets/ftbquestlocalizer/lang/zh_cn.json");
+ var txt=new String(java.nio.file.Files.readAllBytes(path), java.nio.charset.StandardCharsets.UTF_8);
+ try{ com.google.gson.JsonParser.parseString(txt); }catch(Throwable t){ return "JSON_INVALID "+t; }
+ var keys=new String[]{"quest21FD7614E314BA14","quest7A5974D470C5AA9C","quest0ACB2E342421B74E","quest38A0B8D54F85B846","quest43C52E202277C5AA","quest32FE1F4EF913EADA","quest08241E18191275AE","quest54301E900FFA56D7"};
+ var out=new StringBuilder();
+ for(var k: keys){
+  var full="ftbquests.chapter.armor_weapons__tools."+k+".title";
+  int i=txt.indexOf(full);
+  if(i<0){ out.append(k).append("=MISSING; "); continue; }
+  int s=txt.indexOf("\"", i+full.length()+1);
+  int e=txt.indexOf("\"", s+1);
+  out.append(k).append("=").append(txt.substring(s+1,e)).append("; ");
+ }
+ return "valid | "+out;
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

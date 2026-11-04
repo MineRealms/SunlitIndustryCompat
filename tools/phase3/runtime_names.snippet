@@ -1,0 +1,22 @@
+var items=net.minecraft.core.registries.BuiltInRegistries.f_257033_;
+var fluids=net.minecraft.core.registries.BuiltInRegistries.f_257020_;
+var arr=new com.google.gson.JsonArray();
+for(var it:items){
+  var row=new com.google.gson.JsonObject();
+  row.addProperty("kind","item"); row.addProperty("id",items.m_7981_(it).toString());
+  try{ var name=it.m_7626_(new net.minecraft.world.item.ItemStack(it));
+       row.addProperty("name",net.minecraft.network.chat.Component.Serializer.m_130703_(name)); }catch(Throwable t){ row.addProperty("error",t.toString()); }
+  arr.add(row);
+}
+java.util.Set<Object> seenTypes=new java.util.HashSet<>();
+for(var f:fluids){
+  Object type; try{ type=net.minecraft.world.level.material.Fluid.class.getMethod("getFluidType").invoke(f);}catch(Throwable t){continue;} if(!seenTypes.add(type)) continue;
+  var row=new com.google.gson.JsonObject();
+  row.addProperty("kind","fluid"); row.addProperty("id",fluids.m_7981_(f).toString());
+  try{ row.addProperty("name",net.minecraft.network.chat.Component.Serializer.m_130703_((net.minecraft.network.chat.Component)Class.forName("net.minecraftforge.fluids.FluidType").getMethod("getDescription").invoke(type))); }catch(Throwable t){ row.addProperty("error",t.toString()); }
+  arr.add(row);
+}
+var root=new com.google.gson.JsonObject(); root.addProperty("source","G:/emoney-bio-test registry (20 mods)"); root.add("entries",arr);
+java.nio.file.Files.createDirectories(java.nio.file.Paths.get("phase3-reports"));
+java.nio.file.Files.writeString(java.nio.file.Paths.get("phase3-reports/runtime_names.json"),root.toString());
+return "NAMES entries="+arr.size();

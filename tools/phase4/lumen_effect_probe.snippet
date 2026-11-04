@@ -1,0 +1,55 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null)return "NO_SERVER";
+java.util.concurrent.Callable<String> task=()->{
+ var level=server.m_129783_();
+ var fake=net.minecraftforge.common.util.FakePlayerFactory.get(level,new com.mojang.authlib.GameProfile(java.util.UUID.fromString("901b46ba-a2b6-4b20-939d-72dc0b1df688"),"Phase4Lumen"));
+ var side=net.minecraftforge.fml.LogicalSide.SERVER;
+ var slot=net.minecraft.world.entity.EquipmentSlot.CHEST;
+ var previous=fake.m_6844_(slot).m_41777_();
+ var item=new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:iron_chestplate")));
+ var lumen=hellfirepvp.astralsorcery.common.lib.LumenAS.AEVITAS;
+ var cmp=hellfirepvp.astralsorcery.common.component.StoredLumenComponent.EMPTY.updateLumenStack(lumen,2000,2000).updateProperties(hellfirepvp.astralsorcery.common.component.StoredLumenComponent.Properties::allowFill);
+ hellfirepvp.astralsorcery.common.component.StoredLumenComponent.set(item,cmp);
+ hellfirepvp.astralsorcery.common.lumen.binding.LumenBindingType.applyBinding(lumen,new net.minecraft.resources.ResourceLocation("astralsorcery:aevitas"),item);
+ fake.m_8061_(slot,item);
+ var source=hellfirepvp.astralsorcery.common.perk.source.provider.lumen.LumenBindingSource.snapshot(slot,item,fake,side);
+ var map=hellfirepvp.astralsorcery.common.perk.PerkAttributeHelper.getOrCreateMap(fake,side);
+ var helper=hellfirepvp.astralsorcery.common.perk.PerkEffectHelper.class;
+ var apply=helper.getDeclaredMethod("applySource",hellfirepvp.astralsorcery.common.perk.PerkAttributeMap.class,net.minecraft.world.entity.player.Player.class,net.minecraftforge.fml.LogicalSide.class,hellfirepvp.astralsorcery.common.perk.source.ModifierSource.class);
+ var remove=helper.getDeclaredMethod("removeSource",hellfirepvp.astralsorcery.common.perk.PerkAttributeMap.class,net.minecraft.world.entity.player.Player.class,net.minecraftforge.fml.LogicalSide.class,hellfirepvp.astralsorcery.common.perk.source.ModifierSource.class);
+ apply.setAccessible(true);remove.setAccessible(true);
+ var attr=fake.m_21051_(net.minecraft.world.entity.ai.attributes.Attributes.f_22276_);
+ double before=attr.m_22135_();
+ var result=new com.google.gson.JsonObject();
+ boolean applied=false;
+ try {
+  result.addProperty("snapshotModifiers",source.getModifiers(fake,side,false).size());
+  // FakePlayer has deliberately invalid AS progress. Enter the same application core after that guard;
+  // this validates modifiers/cleanup, not real-player login or network delivery.
+  apply.invoke(null,map,fake,side,source);applied=true;
+  double after=attr.m_22135_();result.addProperty("maxHealthBefore",before);result.addProperty("maxHealthBound",after);
+  if(after<=before)throw new IllegalStateException("binding has no health effect");
+  var damage=level.m_269111_().m_269264_();
+  for(int n=0;n<512;n++)net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.entity.living.LivingDamageEvent(fake,damage,1F));
+  int remaining=hellfirepvp.astralsorcery.common.component.StoredLumenComponent.getOrEmpty(item).getStoredLumen(lumen).orElseThrow().amount();
+  result.addProperty("remainingAfter512DamageEvents",remaining);
+  if(remaining>=2000)throw new IllegalStateException("damage events did not consume lumen");
+  var emptied=hellfirepvp.astralsorcery.common.component.StoredLumenComponent.getOrEmpty(item).updateLumenStack(lumen,0,2000);
+  hellfirepvp.astralsorcery.common.component.StoredLumenComponent.set(item,emptied);
+  var empty=hellfirepvp.astralsorcery.common.perk.source.provider.lumen.LumenBindingSource.snapshot(slot,item,fake,side);
+  if(!empty.getModifiers(fake,side,false).isEmpty())throw new IllegalStateException("empty binding still contributes");
+  remove.invoke(null,map,fake,side,source);applied=false;
+  double restored=attr.m_22135_();result.addProperty("maxHealthAfterRemoval",restored);
+  if(Math.abs(restored-before)>0.00001)throw new IllegalStateException("attribute not removed");
+  result.addProperty("verdict","PASS");
+ }finally{
+  if(applied)remove.invoke(null,map,fake,side,source);
+  fake.m_8061_(slot,previous);
+ }
+ java.nio.file.Files.writeString(java.nio.file.Paths.get("phase4-reports/lumen_effect_probe.json"),result.toString());
+ return result.toString();
+};
+if(server.m_18695_())return task.call();
+var result=new java.util.concurrent.CompletableFuture<String>();
+server.execute(()->{try{result.complete(task.call());}catch(Throwable t){result.completeExceptionally(t);}});
+return result.get(120,java.util.concurrent.TimeUnit.SECONDS);

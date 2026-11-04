@@ -1,0 +1,15 @@
+var items=net.minecraft.core.registries.BuiltInRegistries.f_257033_;
+String[] ids={"pollution:infused_fire_dust","pollution:tiny_infused_fire_dust","pollution:small_infused_fire_dust","pollution:infused_fire_gem","pollution:flawless_infused_fire_gem","pollution:exquisite_infused_fire_gem","pollution:infused_life_dust","pollution:tiny_infused_life_dust","pollution:infused_life_gem","pollution:amber_gem","thaumcraft:amber","thaumcraft:amber_block","pollution:octine_dust","gtceu:iron_dust","gtceu:tiny_iron_dust","gtceu:iron_ingot","minecraft:iron_ingot","gtceu:iron_plate"};
+var sb=new StringBuilder();
+for(String s:ids){
+  var it=items.m_7745_(new net.minecraft.resources.ResourceLocation(s));
+  var stack=new net.minecraft.world.item.ItemStack(it);
+  var a=dev.tc4port.thaumcraft.api.aspect.AspectQueryApi.item(stack).amounts();
+  boolean reg=dev.tc4port.thaumcraft.common.ObjectAspectCatalog.hasRegistration(stack);
+  sb.append(s).append(" registered=").append(reg).append(" ").append(a).append("\n");
+}
+// Which item tags does the tiny dust carry? TC4R tag rules can assign aspects by tag.
+var tiny=items.m_7745_(new net.minecraft.resources.ResourceLocation("pollution:tiny_infused_fire_dust"));
+sb.append("tiny tags: ");
+tiny.m_204114_().m_203616_().forEach(t->sb.append(t.f_203868_()).append(' '));
+return sb.toString();

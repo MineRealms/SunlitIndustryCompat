@@ -1,0 +1,6 @@
+/build/
+/.gradle/
+/.local/
+/.pytest_cache/
+/logs/
+*.log

@@ -1,0 +1,16 @@
+java.util.concurrent.Callable<String> task=()->{
+ var path=java.nio.file.Paths.get("config/ftbquests/quests/chapters/armor_weapons__tools.snbt");
+ var lines=java.nio.file.Files.readAllLines(path, java.nio.charset.StandardCharsets.UTF_8);
+ var cls=Class.forName("dev.ftb.mods.ftblibrary.snbt.SNBTParser");
+ var m=cls.getDeclaredMethod("read", java.util.List.class);
+ m.setAccessible(true);
+ var tag=m.invoke(null, lines);
+ if(tag==null) return "PARSE_RETURNED_NULL";
+ var s=tag.toString();
+ int checks=0, itemTasks=0;
+ for(var l: lines){ if(l.contains("checkmark")) checks++; if(l.trim().startsWith("type: \"item\"")) itemTasks++; }
+ return "PARSE_OK toStringLen="+s.length()+" checkmarks="+checks+" itemTasks="+itemTasks;
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

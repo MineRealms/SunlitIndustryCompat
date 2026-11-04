@@ -1,0 +1,44 @@
+var items=net.minecraft.core.registries.BuiltInRegistries.f_257033_;
+java.util.Set<String> NS=java.util.Set.of("gtceu","gtnn","gcyr","gtmfo","pollution");
+var arr=new com.google.gson.JsonArray();
+var prefixCensus=new com.google.gson.JsonObject();
+int assoc=0, noassoc=0, err=0;
+for(var it:items){
+  var key=items.m_7981_(it);
+  if(!NS.contains(key.m_135827_())) continue;
+  var row=new com.google.gson.JsonObject();
+  row.addProperty("id", key.toString());
+  try{
+    com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry e =
+        com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper.getMaterialEntry(it);
+    if(e==null||e.isEmpty()){ noassoc++; row.addProperty("assoc","none"); }
+    else{
+      assoc++;
+      com.gregtechceu.gtceu.api.data.tag.TagPrefix p = e.tagPrefix();
+      com.gregtechceu.gtceu.api.data.chemical.material.Material m = e.material();
+      row.addProperty("prefix", p.name());
+      row.addProperty("material", m.getName());
+      if(prefixCensus.getAsJsonPrimitive(p.name())==null) prefixCensus.addProperty(p.name(), 1);
+      else prefixCensus.addProperty(p.name(), prefixCensus.get(p.name()).getAsInt()+1);
+      var comps=new com.google.gson.JsonArray();
+      try{
+        for(com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialStack s : m.getMaterialComponents()){
+          var c=new com.google.gson.JsonObject();
+          c.addProperty("m", s.material().getName());
+          c.addProperty("n", s.amount());
+          comps.add(c);
+        }
+      }catch(Throwable t){}
+      if(comps.size()>0) row.add("comps", comps);
+    }
+  }catch(Throwable t){ err++; row.addProperty("error", t.toString()); }
+  arr.add(row);
+}
+var root=new com.google.gson.JsonObject();
+root.addProperty("source","G:/emoney-bio-test registry");
+root.add("prefixCensus", prefixCensus);
+root.addProperty("assoc", assoc); root.addProperty("noassoc", noassoc); root.addProperty("err", err);
+root.add("items", arr);
+java.nio.file.Files.createDirectories(java.nio.file.Paths.get("phase3-reports"));
+java.nio.file.Files.writeString(java.nio.file.Paths.get("phase3-reports/gt-item-materials.json"), root.toString());
+return "GTDUMP_OK assoc="+assoc+" noassoc="+noassoc+" err="+err+" total="+arr.size();

@@ -1,0 +1,23 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null)return "NO_SERVER";
+java.util.concurrent.Callable<String> task=()->{
+ var rm=server.m_129894_();
+ var hits=new com.google.gson.JsonArray();
+ int total=0;
+ for(var r: rm.m_44051_()){
+  total++;
+  String id;
+  try{ id=r.getId().toString(); }catch(Throwable t){ continue; }
+  var low=id.toLowerCase();
+  if(low.contains("primordial")||low.contains("paradox")||low.contains("alumentum")){
+   String type="?";
+   try{ type=r.getType().toString(); }catch(Throwable t){}
+   if(hits.size()<10) hits.add(type+" :: "+id);
+  }
+ }
+ return "allRecipes="+total+" | matches="+hits.size()+" | "+hits;
+};
+if(server.m_18695_())return task.call();
+var f=new java.util.concurrent.CompletableFuture<String>();
+server.execute(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(180,java.util.concurrent.TimeUnit.SECONDS);

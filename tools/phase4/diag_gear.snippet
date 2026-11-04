@@ -1,0 +1,24 @@
+java.util.concurrent.Callable<String> task=()->{
+ var p=java.nio.file.Paths.get("config/ftbquests/quests/chapters/armor_weapons__tools.snbt");
+ var sb=new StringBuilder();
+ sb.append("exists=").append(java.nio.file.Files.exists(p));
+ if(java.nio.file.Files.exists(p)) sb.append(" size=").append(java.nio.file.Files.size(p));
+ sb.append(" | bak=").append(java.nio.file.Files.exists(java.nio.file.Paths.get("config/ftbquests/quests/chapters/armor_weapons__tools.snbt.bak-before-tinkers")));
+ var log=java.nio.file.Paths.get("logs/latest.log");
+ if(java.nio.file.Files.exists(log)){
+  var lines=java.nio.file.Files.readAllLines(log);
+  int from=Math.max(0,lines.size()-4000);
+  var errs=new com.google.gson.JsonArray();
+  for(int i=from;i<lines.size();i++){
+   var l=lines.get(i);
+   if(l.contains("armor_weapons")||l.contains("armor/weapons")||(l.contains("ftbquests")&&(l.contains("ERROR")||l.contains("Failed")))){
+    if(errs.size()<8) errs.add(l.length()>200?l.substring(0,200):l);
+   }
+  }
+  sb.append(" | logHits=").append(errs);
+ }
+ return sb.toString();
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

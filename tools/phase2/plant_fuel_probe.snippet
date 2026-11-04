@@ -1,0 +1,46 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();var level=server.m_129783_();
+var pos=new net.minecraft.core.BlockPos(96,250,96);var old=level.m_8055_(pos);
+java.util.List<String> checks=new java.util.ArrayList<>();
+try {
+ if(!old.m_60795_())return "REFUSED occupied";
+ var all=server.m_129894_().m_44051_();
+ java.util.function.Function<String,com.gregtechceu.gtceu.api.recipe.GTRecipe> byId=id->all.stream().filter(v->v instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe&&v.m_6423_().toString().equals(id)).map(v->(com.gregtechceu.gtceu.api.recipe.GTRecipe)v).findFirst().orElseThrow(()->new IllegalStateException("missing "+id));
+ var defs=com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES;
+ // 1. chemical plant: casing condition and internal voltage gate
+ level.m_46597_(pos,defs.get(new net.minecraft.resources.ResourceLocation("gtnn:exxonmobil_chemical_plant")).getBlock().m_49966_());
+ var plant=(dev.arbor.gtnn.common.machine.multiblock.ChemicalPlantMachine)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,pos);
+ var rp1=byId.apply("gtceu:chemical_plant/rp_1_mixed_fuel");
+ plant.setCasingTier(3);
+ if(com.gregtechceu.gtceu.api.recipe.RecipeHelper.checkConditions(rp1,plant.getRecipeLogic()).isSuccess())throw new IllegalStateException("aluminium casing accepted stainless recipe");
+ plant.setCasingTier(4);
+ if(!com.gregtechceu.gtceu.api.recipe.RecipeHelper.checkConditions(rp1,plant.getRecipeLogic()).isSuccess())throw new IllegalStateException("stainless casing refused");
+ var vt=plant.getClass().getDeclaredField("voltageTier");vt.setAccessible(true);vt.setInt(plant,2);
+ var real=plant.getClass().getDeclaredMethod("getRealRecipe",com.gregtechceu.gtceu.api.recipe.GTRecipe.class);real.setAccessible(true);
+ if(real.invoke(plant,rp1)!=null)throw new IllegalStateException("MV machine casing accepted HV recipe");
+ checks.add("chemical plant: casing3 refused, casing4 accepted, MV machine-casing gate refused HV recipe");
+ level.m_46597_(pos,old);
+ // 2. MV dehydrator must refuse the HV-tier recovery
+ level.m_46597_(pos,defs.get(new net.minecraft.resources.ResourceLocation("gtnn:mv_dehydrator")).getBlock().m_49966_());
+ var mv=(com.gregtechceu.gtceu.api.machine.WorkableTieredMachine)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,pos);mv.onLoad();
+ if(mv.fullModifyRecipe(byId.apply("society:dehydrator/bio/food_gelatin_recovery"))!=null)throw new IllegalStateException("MV dehydrator accepted HV recovery");
+ checks.add("MV dehydrator refuses HV gelatin recovery");
+ level.m_46597_(pos,old);
+ // 3. Rocket fuels: one authoritative recipe per fluid, encoded tier
+ var type=argent_matter.gcyr.common.data.GCYRRecipeTypes.ROCKET_FUEL_RECIPES;
+ java.util.Map<String,java.util.List<String>> perFluid=new java.util.TreeMap<>();
+ var fuels=new com.google.gson.JsonArray();
+ for(var r:server.m_129894_().m_44013_(type)) {
+  var in=r.inputs.get(com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP);
+  String fluid=com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP.of(in.get(0).content).getStacks()[0].getFluid().toString();
+  var key=net.minecraft.core.registries.BuiltInRegistries.f_257020_.m_7981_(com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP.of(in.get(0).content).getStacks()[0].getFluid()).toString();
+  perFluid.computeIfAbsent(key,k->new java.util.ArrayList<>()).add(r.id.toString());
+  var row=new com.google.gson.JsonObject();row.addProperty("id",r.id.toString());row.addProperty("fluid",key);
+  row.addProperty("tier",com.gregtechceu.gtceu.api.recipe.RecipeHelper.getRecipeEUtTier(r));row.addProperty("duration",r.duration);fuels.add(row);
+ }
+ for(var e:perFluid.entrySet())if(e.getValue().size()!=1)throw new IllegalStateException("duplicate fuel definitions "+e);
+ checks.add("rocket fuel recipes="+fuels.size()+" unique per fluid");
+ var report=new com.google.gson.JsonObject();report.addProperty("pass",true);report.addProperty("checks",checks.toString());report.add("rocketFuels",fuels);
+ java.nio.file.Files.createDirectories(java.nio.file.Paths.get("phase2-reports"));
+ java.nio.file.Files.writeString(java.nio.file.Paths.get("phase2-reports/plant-fuel-probe.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
+ return "PASS "+checks+" fuels="+fuels;
+} finally {level.m_46597_(pos,old);}

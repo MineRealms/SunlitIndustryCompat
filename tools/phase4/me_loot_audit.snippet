@@ -1,0 +1,70 @@
+// Middle-earth block drop audit: for every me:* block, break its default state with a netherite
+// pickaxe, the same pickaxe with Silk Touch, and shears, and record what actually drops. Also records
+// the block's loot table id, whether the server has that table, its item and its block-state properties.
+// Output: phase4-reports/me_loot_audit.json (relative to the server dir).
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null) return "NO_SERVER";
+java.util.concurrent.Callable<String> phase4Task = () -> {
+var level = server.m_129783_();
+var loot = server.m_278653_();
+var pos = new net.minecraft.core.BlockPos(0, 320, 0);
+var items = net.minecraftforge.registries.ForgeRegistries.ITEMS;
+var pick = new net.minecraft.world.item.ItemStack(items.getValue(new net.minecraft.resources.ResourceLocation("minecraft:netherite_pickaxe")));
+var silk = pick.m_41777_();
+silk.m_41663_(net.minecraftforge.registries.ForgeRegistries.ENCHANTMENTS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:silk_touch")), 1);
+var shears = new net.minecraft.world.item.ItemStack(items.getValue(new net.minecraft.resources.ResourceLocation("minecraft:shears")));
+var arr = new com.google.gson.JsonArray();
+int total = 0, noDrop = 0;
+for (var block : net.minecraftforge.registries.ForgeRegistries.BLOCKS) {
+  var id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(block);
+  if (!"me".equals(id.m_135827_())) continue;
+  total++;
+  var row = new com.google.gson.JsonObject();
+  row.addProperty("id", id.toString());
+  var table = block.m_60589_();
+  row.addProperty("table", table.toString());
+  row.addProperty("tableLoaded", loot.m_278676_(table) != net.minecraft.world.level.storage.loot.LootTable.f_79105_);
+  var item = block.m_5456_();
+  row.addProperty("item", items.getKey(item).toString());
+  var props = new com.google.gson.JsonObject();
+  for (var p : block.m_49965_().m_61092_()) {
+    var vals = new com.google.gson.JsonArray();
+    for (Object v : p.m_6908_()) vals.add(((net.minecraft.world.level.block.state.properties.Property) p).m_6940_((Comparable) v));
+    props.add(p.m_61708_(), vals);
+  }
+  row.add("props", props);
+  var state = block.m_49966_();
+  boolean any = false;
+  for (var tool : new net.minecraft.world.item.ItemStack[]{pick, silk, shears}) {
+    var drops = new com.google.gson.JsonArray();
+    try {
+      for (var s : net.minecraft.world.level.block.Block.m_49874_(state, level, pos, null, null, tool)) {
+        drops.add(items.getKey(s.m_41720_()) + "x" + s.m_41613_());
+        any = true;
+      }
+    } catch (Throwable t) { drops.add("ERR " + t); }
+    row.add(tool == pick ? "pick" : tool == silk ? "silk" : "shears", drops);
+  }
+  row.addProperty("dropsAnything", any);
+  if (!any) noDrop++;
+  arr.add(row);
+}
+var root = new com.google.gson.JsonObject();
+root.addProperty("total", total);
+root.addProperty("noDrop", noDrop);
+root.add("blocks", arr);
+var itemIds = new com.google.gson.JsonArray();
+for (var item : items) itemIds.add(items.getKey(item).toString());
+root.add("registeredItems", itemIds);
+java.nio.file.Files.createDirectories(java.nio.file.Paths.get("phase4-reports"));
+java.nio.file.Files.writeString(java.nio.file.Paths.get("phase4-reports/me_loot_audit.json"), root.toString());
+return "ME_LOOT total=" + total + " noDrop=" + noDrop;
+
+};
+if (server.m_18695_()) return phase4Task.call();
+var phase4Result = new java.util.concurrent.CompletableFuture<String>();
+server.execute(() -> {
+  try { phase4Result.complete(phase4Task.call()); }
+  catch (Throwable t) { phase4Result.completeExceptionally(t); }
+});
+return phase4Result.get(180, java.util.concurrent.TimeUnit.SECONDS);

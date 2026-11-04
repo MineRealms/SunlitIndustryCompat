@@ -1,0 +1,12 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+Class<?> rc=argent_matter.gcyr.common.entity.RocketEntity.class;
+var consume=rc.getDeclaredMethod("consumeFuel");consume.setAccessible(true);
+var sel=rc.getDeclaredField("selectedFuelRecipe");sel.setAccessible(true);
+var r=System.getProperties().get("sunlit.probe.rocket");var stale=System.getProperties().get("sunlit.probe.recipe");
+if(r==null)return "FAIL no stashed rocket";
+var live=server.m_129894_().m_44043_(((com.gregtechceu.gtceu.api.recipe.GTRecipe)stale).id).orElse(null);
+if(live==stale)throw new IllegalStateException("reload did not replace recipe objects; test not meaningful");
+if(!(Boolean)consume.invoke(r))throw new IllegalStateException("post-reload burn failed");
+if(sel.get(r)!=live)throw new IllegalStateException("rocket kept stale recipe object");
+System.getProperties().remove("sunlit.probe.rocket");System.getProperties().remove("sunlit.probe.recipe");
+return "PASS reload: stale recipe object replaced by live "+((com.gregtechceu.gtceu.api.recipe.GTRecipe)live).id;

@@ -1,0 +1,32 @@
+java.util.concurrent.Callable<String> task=()->{
+ var sb=new StringBuilder();
+ try{
+  var cls=Class.forName("dev.ftb.mods.ftbquests.quest.ServerQuestFile");
+  var inst=cls.getField("INSTANCE").get(null);
+  if(inst==null) return "NO_INSTANCE";
+  var m=cls.getMethod("getAllChapters");
+  var chapters=(java.util.Collection)m.invoke(inst);
+  sb.append("chapters=").append(chapters.size());
+  boolean found=false;
+  for(var c: chapters){
+   var id=c.getClass().getMethod("getId").invoke(c).toString();
+   if(id.equals("1E4C2F7A8B9D0C31")) found=true;
+  }
+  sb.append(" | hasArmorChapter=").append(found);
+ }catch(Throwable t){ sb.append("ERR ").append(t); }
+ var log=java.nio.file.Paths.get("logs/latest.log");
+ if(java.nio.file.Files.exists(log)){
+  var lines=java.nio.file.Files.readAllLines(log);
+  for(int i=lines.size()-1;i>=0&&i>lines.size()-3000;i--){
+   var l=lines.get(i);
+   if(l.contains("chapter")&&(l.contains("Loaded")||l.contains("loaded")||l.contains("Failed")||l.contains("failed"))){
+    sb.append(" || ").append(l.length()>180?l.substring(0,180):l);
+    break;
+   }
+  }
+ }
+ return sb.toString();
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

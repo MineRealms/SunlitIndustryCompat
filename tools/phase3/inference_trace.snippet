@@ -1,0 +1,23 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();var access=server.m_206579_();
+var items=net.minecraft.core.registries.BuiltInRegistries.f_257033_;
+String[] targets={"gtceu:iron_plate","pollution:tiny_infused_fire_dust","pollution:flawless_infused_fire_gem","pollution:amber_gem"};
+var sb=new StringBuilder();
+for(String t:targets){
+  var item=items.m_7745_(new net.minecraft.resources.ResourceLocation(t));
+  sb.append("== ").append(t).append('\n');
+  int n=0;
+  for(var r:server.m_129894_().m_44051_()){
+    if(r instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe) continue;
+    net.minecraft.world.item.ItemStack out;
+    try{ out=r.m_8043_(access);}catch(Throwable e){continue;}
+    if(out==null||out.m_41720_()!=item) continue;
+    sb.append("  ").append(r.m_6423_()).append(" x").append(out.m_41613_()).append(" <= ");
+    for(var ing:r.m_7527_()){
+      var st=ing.m_43908_(); if(st.length==0) continue;
+      var a=dev.tc4port.thaumcraft.api.aspect.AspectQueryApi.item(st[0]).amounts();
+      sb.append(items.m_7981_(st[0].m_41720_())).append(a.isEmpty()?"":a.toString()).append(", ");
+    }
+    sb.append('\n'); if(++n>=4) break;
+  }
+}
+return sb.toString();

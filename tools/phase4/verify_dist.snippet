@@ -1,0 +1,27 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null)return "NO_SERVER";
+java.util.concurrent.Callable<String> task=()->{
+ var rm=server.m_129894_();
+ var all=new java.util.ArrayList<com.gregtechceu.gtceu.api.recipe.GTRecipe>();
+ for(var r: rm.m_44051_()) if(r instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe g) all.add(g);
+ var kjs=new java.util.ArrayList<String>();
+ for(var g: all) if(g.id.toString().contains(":kjs/")) kjs.add(g.id.toString());
+
+ int infused=0, mixer=0, hatch=0, other=0;
+ var infusedSample=new com.google.gson.JsonArray();
+ for(var id: kjs){
+  if(id.contains("configurable")) {hatch++;}
+  else if(id.contains("infused_")||id.contains("aer")||id.contains("ordo")||id.contains("perditio")) {infused++; if(infusedSample.size()<6) infusedSample.add(id);}
+  else {other++;}
+ }
+ int oldCompound=0;
+ for(var g: all) if(g.id.toString().startsWith("pollution:mixer/compound_aspect/")) oldCompound++;
+
+ return "kjs="+kjs.size()+" | infusedLike="+infused+" hatch="+hatch+" other="+other
+   +" | oldCompoundIdLeft="+oldCompound
+   +" | sample="+infusedSample;
+};
+if(server.m_18695_())return task.call();
+var f=new java.util.concurrent.CompletableFuture<String>();
+server.execute(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(180,java.util.concurrent.TimeUnit.SECONDS);

@@ -1,0 +1,38 @@
+buildscript {
+    repositories { maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }; mavenCentral() }
+    dependencies { classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT' }
+}
+plugins { id 'java'; id 'net.minecraftforge.gradle' version '6.0.54' }
+apply plugin: 'org.spongepowered.mixin'
+version = '0.2.0'
+group = 'com.society.sunlitindustry'
+base { archivesName = 'sunlit-industry-compat-1.20.1' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+minecraft { mappings channel: 'official', version: '1.20.1' }
+mixin { add sourceSets.main, 'sunlitindustry.refmap.json'; config 'sunlitindustry.mixins.json' }
+repositories {
+    maven { url = 'https://maven.minecraftforge.net' }
+    maven { url = 'https://maven.gtceu.com' }
+    maven { url = 'https://maven.firstdark.dev/snapshots' }
+    maven { url = uri('../Pollution-Unofficial-1.20.1/local-repo') }
+    mavenCentral()
+}
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.23'
+    compileOnly(fg.deobf('com.gregtechceu.gtceu:gtceu-1.20.1:7.5.3')) { transitive = false }
+    compileOnly(fg.deobf('local.gcyr:gcyr:0.2.9')) { transitive = false }
+    compileOnly(fg.deobf('com.lowdragmc.ldlib:ldlib-forge-1.20.1:1.0.40.b', {
+        exclude group: 'appeng'
+        exclude group: 'dev.latvian.mods'
+        exclude group: 'mezz.jei'
+    })) { transitive = false }
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+tasks.named('test', Test).configure { useJUnitPlatform() }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('jar', Jar).configure {
+    manifest { attributes('MixinConfigs': 'sunlitindustry.mixins.json') }
+    finalizedBy 'reobfJar'
+}

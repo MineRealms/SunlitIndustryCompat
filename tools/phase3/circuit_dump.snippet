@@ -1,0 +1,45 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+var items=net.minecraft.core.registries.BuiltInRegistries.f_257033_;
+var fluids=net.minecraft.core.registries.BuiltInRegistries.f_257020_;
+String[] tiers={"ulv","lv","mv","hv","ev","iv","luv","zpm","uv","uhv"};
+var tierOf=new java.util.HashMap<net.minecraft.world.item.Item,String>();
+var tagMembers=new com.google.gson.JsonObject();
+for(String t:tiers){
+  var key=net.minecraft.tags.TagKey.m_203882_(net.minecraft.core.registries.Registries.f_256913_,new net.minecraft.resources.ResourceLocation("gtceu","circuits/"+t));
+  var arr=new com.google.gson.JsonArray();
+  for(var h:items.m_206058_(key)){ tierOf.put(h.m_203334_(),t); arr.add(items.m_7981_(h.m_203334_()).toString()); }
+  tagMembers.add(t,arr);
+}
+var IC=com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP;
+var FC=com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP;
+var out=new com.google.gson.JsonArray();
+for(var raw:server.m_129894_().m_44051_()){
+  if(!(raw instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe r)) continue;
+  var outs=r.outputs.get(IC); if(outs==null) continue;
+  String producedTier=null; String producedId=null; int count=0;
+  for(var c:outs){ var st=IC.of(c.content).m_43908_(); if(st.length==0) continue; String t=tierOf.get(st[0].m_41720_()); if(t!=null){producedTier=t;producedId=items.m_7981_(st[0].m_41720_()).toString();count=st[0].m_41613_();} }
+  if(producedTier==null) continue;
+  var row=new com.google.gson.JsonObject();
+  row.addProperty("id",r.id.toString()); row.addProperty("type",r.recipeType.toString());
+  row.addProperty("tier",producedTier); row.addProperty("output",producedId); row.addProperty("count",count);
+  row.addProperty("duration",r.duration);
+  row.addProperty("eut",com.gregtechceu.gtceu.api.recipe.RecipeHelper.getRealEUt(r).voltage());
+  var ins=new com.google.gson.JsonArray();
+  var il=r.inputs.get(IC); if(il!=null) for(var c:il){
+    var ing=IC.of(c.content); var st=ing.m_43908_();
+    var o=new com.google.gson.JsonObject();
+    if(ing instanceof com.gregtechceu.gtceu.api.recipe.ingredient.IntCircuitIngredient ci){o.addProperty("circuit",ci.toString());}
+    else if(st.length>0){o.addProperty("item",items.m_7981_(st[0].m_41720_()).toString()); o.addProperty("count",st[0].m_41613_()); if(st.length>1)o.addProperty("alternatives",st.length);
+      String t=tierOf.get(st[0].m_41720_()); if(t!=null)o.addProperty("circuitTier",t);}
+    if(c.chance==0)o.addProperty("notConsumed",true);
+    ins.add(o);}
+  var fl=r.inputs.get(FC); if(fl!=null) for(var c:fl){ var st=FC.of(c.content).getStacks(); if(st.length==0)continue;
+    var o=new com.google.gson.JsonObject(); o.addProperty("fluid",fluids.m_7981_(st[0].getFluid()).toString()); o.addProperty("amount",st[0].getAmount()); ins.add(o);}
+  row.add("inputs",ins);
+  var conds=new com.google.gson.JsonArray(); for(var cnd:r.conditions)conds.add(cnd.serialize()); row.add("conditions",conds);
+  out.add(row);
+}
+var root=new com.google.gson.JsonObject(); root.add("tagMembers",tagMembers); root.add("recipes",out);
+java.nio.file.Files.createDirectories(java.nio.file.Paths.get("phase3-reports"));
+java.nio.file.Files.writeString(java.nio.file.Paths.get("phase3-reports/circuit-recipes.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(root));
+return "CIRCUITS recipes="+out.size();

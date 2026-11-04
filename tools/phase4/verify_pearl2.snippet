@@ -1,0 +1,22 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null)return "NO_SERVER";
+java.util.concurrent.Callable<String> task=()->{
+ var reg=net.minecraftforge.registries.ForgeRegistries.ITEMS;
+ var names=new com.google.gson.JsonArray();
+ for(var k: reg.getKeys()){
+  var s=k.toString().toLowerCase();
+  if(s.contains("pearl")&&(s.contains("primordial")||s.contains("thaum")||s.contains("pollution")||s.contains("paradox"))) names.add(k.toString());
+ }
+ var rm=server.m_129894_();
+ var producers=new com.google.gson.JsonArray();
+ for(var r: rm.m_44051_()){
+  if(!(r instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe g)) continue;
+  var id=g.id.toString().toLowerCase();
+  if(id.contains("paradox")||id.contains("primordial")) producers.add(g.id.toString());
+ }
+ return "pearlItems="+names+" | producerRecipes="+producers;
+};
+if(server.m_18695_())return task.call();
+var f=new java.util.concurrent.CompletableFuture<String>();
+server.execute(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(180,java.util.concurrent.TimeUnit.SECONDS);

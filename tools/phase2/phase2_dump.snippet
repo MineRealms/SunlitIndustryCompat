@@ -1,0 +1,78 @@
+net.minecraft.server.MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null) return "NO_SERVER";
+java.util.concurrent.CompletableFuture<String> result = new java.util.concurrent.CompletableFuture<>();
+Runnable probe = () -> {
+    try {
+        com.google.gson.JsonObject root = new com.google.gson.JsonObject();
+        com.google.gson.JsonObject versions = new com.google.gson.JsonObject();
+        for (String id : new String[]{"gtceu", "gtnn", "gcyr", "gtmfo", "pollution", "isorropia", "thaumcraft"}) {
+            versions.addProperty(id, "see BIO_MANIFEST.json");
+        }
+        root.add("mods", versions);
+        com.google.gson.JsonArray rows = new com.google.gson.JsonArray();
+        java.util.Map<String, Integer> counts = new java.util.TreeMap<>();
+        for (var vanilla : server.m_129894_().m_44051_()) {
+            counts.merge(vanilla.m_6423_().m_135827_(), 1, Integer::sum);
+            if (!(vanilla instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe recipe)) continue;
+            String id = recipe.id.toString();
+            if (!(id.contains("/bio/") || id.contains("rocket") || id.contains("kerosene") || id.contains("hydrazine")
+                    || id.contains("chemical_plant") || id.contains("dehydrat") || id.contains("black_matter")
+                    || id.contains("bromine") || id.contains("debrominated") || id.contains("gelatin")
+                    || id.contains("scrap_meat") || id.contains("sludge_to_biomass") || id.contains("growth_medium"))) continue;
+            com.google.gson.JsonObject row = new com.google.gson.JsonObject();
+            row.addProperty("id", id);
+            row.addProperty("type", recipe.recipeType.toString());
+            row.addProperty("duration", recipe.duration);
+            row.addProperty("eutTier", com.gregtechceu.gtceu.api.recipe.RecipeHelper.getRecipeEUtTier(recipe));
+            String[] sections = {"inputs", "outputs", "tickInputs", "tickOutputs"};
+            java.util.Map[] sectionsData = {recipe.inputs, recipe.outputs, recipe.tickInputs, recipe.tickOutputs};
+            for (int i = 0; i < sections.length; i++) {
+                com.google.gson.JsonObject caps = new com.google.gson.JsonObject();
+                for (Object object : sectionsData[i].entrySet()) {
+                    java.util.Map.Entry entry = (java.util.Map.Entry) object;
+                    com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability cap = (com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability) entry.getKey();
+                    com.google.gson.JsonArray contents = new com.google.gson.JsonArray();
+                    for (Object content : (java.util.List) entry.getValue()) {
+                        contents.add(cap.serializer.toJsonContent((com.gregtechceu.gtceu.api.recipe.content.Content) content));
+                    }
+                    caps.add(cap.name, contents);
+                }
+                row.add(sections[i], caps);
+            }
+            com.google.gson.JsonArray conditions = new com.google.gson.JsonArray();
+            for (var condition : recipe.conditions) conditions.add(condition.serialize());
+            row.add("conditions", conditions);
+            rows.add(row);
+        }
+        root.add("recipes", rows);
+        com.google.gson.JsonObject total = new com.google.gson.JsonObject();
+        counts.forEach(total::addProperty);
+        root.add("namespaceCounts", total);
+        com.google.gson.JsonArray pig = new com.google.gson.JsonArray();
+        for (var entry : fr.wind_blade.isorropia.common.entities.OrePigDrops.entries()) {
+            com.google.gson.JsonObject row = new com.google.gson.JsonObject();
+            row.addProperty("material", entry.material());
+            row.addProperty("item", net.minecraft.core.registries.BuiltInRegistries.f_257033_.m_7981_(entry.drop()).toString());
+            pig.add(row);
+        }
+        root.add("orePigDrops", pig);
+        com.google.gson.JsonObject aspects = new com.google.gson.JsonObject();
+        for (String element : new String[]{"air", "fire", "water", "earth", "order", "entropy"}) {
+            for (String suffix : new String[]{"_dust", "_gem"}) {
+                var id = new net.minecraft.resources.ResourceLocation("pollution", "infused_" + element + suffix);
+                var item = net.minecraft.core.registries.BuiltInRegistries.f_257033_.m_7745_(id);
+                var amounts = dev.tc4port.thaumcraft.api.aspect.AspectQueryApi.item(new net.minecraft.world.item.ItemStack(item));
+                com.google.gson.JsonObject object = new com.google.gson.JsonObject();
+                amounts.amounts().forEach((key, amount) -> object.addProperty(key.toString(), amount));
+                aspects.add(id.toString(), object);
+            }
+        }
+        root.add("elementAspects", aspects);
+        java.nio.file.Path dir = java.nio.file.Paths.get("phase2-reports");
+        java.nio.file.Files.createDirectories(dir);
+        java.nio.file.Files.writeString(dir.resolve("runtime-recipes.json"), new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(root));
+        result.complete("DUMP_OK rows=" + rows.size() + " pigs=" + pig + " mods=" + versions + " file=phase2-reports/runtime-recipes.json");
+    } catch (Throwable ex) { result.complete("DUMP_FAIL " + ex); }
+};
+if (server.m_18695_()) probe.run(); else server.execute(probe);
+return result.get(30, java.util.concurrent.TimeUnit.SECONDS);

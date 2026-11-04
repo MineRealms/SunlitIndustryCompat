@@ -1,0 +1,38 @@
+modLoader="javafml"
+loaderVersion="[47,48)"
+license="All Rights Reserved"
+[[mods]]
+modId="sunlitindustry"
+version="0.2.0"
+displayName="Sunlit Industry Compat"
+description='''Targeted compat fixes for Sunlit Valley: GCYR fuel safety, VintageDelight brewing registration. No new items or progression tiers.'''
+[[dependencies.sunlitindustry]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.10,48)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.sunlitindustry]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1]"
+ordering="NONE"
+side="BOTH"
+[[dependencies.sunlitindustry]]
+modId="gtceu"
+mandatory=false
+versionRange="[7.5.3,7.6)"
+ordering="AFTER"
+side="BOTH"
+[[dependencies.sunlitindustry]]
+modId="gcyr"
+mandatory=false
+versionRange="[0.2.9]"
+ordering="AFTER"
+side="BOTH"
+[[dependencies.sunlitindustry]]
+modId="vintagedelight"
+mandatory=false
+versionRange="*"
+ordering="AFTER"
+side="BOTH"

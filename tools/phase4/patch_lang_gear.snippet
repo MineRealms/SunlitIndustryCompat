@@ -1,0 +1,19 @@
+java.util.concurrent.Callable<String> task=()->{
+ var path=java.nio.file.Paths.get("kubejs/assets/ftbquestlocalizer/lang/zh_cn.json");
+ var txt=new String(java.nio.file.Files.readAllBytes(path), java.nio.charset.StandardCharsets.UTF_8);
+ java.nio.file.Files.copy(path, java.nio.file.Paths.get("kubejs/assets/ftbquestlocalizer/lang/zh_cn.json.bak-before-tinkers"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+ int n=0;
+ txt=txt.replace("ftbquests.chapter.armor_weapons__tools.quest21FD7614E314BA14.title: \"锁链盔甲\"", "ftbquests.chapter.armor_weapons__tools.quest21FD7614E314BA14.title: \"匠魂护甲入门\"");
+ txt=txt.replace("ftbquests.chapter.armor_weapons__tools.quest7A5974D470C5AA9C.title: \"锁链盔甲\"", "ftbquests.chapter.armor_weapons__tools.quest7A5974D470C5AA9C.title: \"金与玛玉灵：合金路线\"");
+ txt=txt.replace("ftbquests.chapter.armor_weapons__tools.quest0ACB2E342421B74E.title: \"锁链盔甲\"", "ftbquests.chapter.armor_weapons__tools.quest0ACB2E342421B74E.title: \"铁制护甲板\"");
+ txt=txt.replace("ftbquests.chapter.armor_weapons__tools.quest38A0B8D54F85B846.title: \"锁链盔甲\"", "ftbquests.chapter.armor_weapons__tools.quest38A0B8D54F85B846.title: \"护甲强化\"");
+ txt=txt.replace("ftbquests.chapter.armor_weapons__tools.quest43C52E202277C5AA.title: \"锁链盔甲\"", "ftbquests.chapter.armor_weapons__tools.quest43C52E202277C5AA.title: \"匠魂石镐\"");
+ txt=txt.replace("ftbquests.chapter.armor_weapons__tools.quest32FE1F4EF913EADA.title: \"锁链盔甲\"", "ftbquests.chapter.armor_weapons__tools.quest32FE1F4EF913EADA.title: \"金铸模：一次成型\"");
+ txt=txt.replace("ftbquests.chapter.armor_weapons__tools.quest08241E18191275AE.title: \"锁链盔甲\"", "ftbquests.chapter.armor_weapons__tools.quest08241E18191275AE.title: \"匠魂铁镐\"");
+ txt=txt.replace("ftbquests.chapter.armor_weapons__tools.quest54301E900FFA56D7.title: \"锁链盔甲\"", "ftbquests.chapter.armor_weapons__tools.quest54301E900FFA56D7.title: \"钻石强化\"");
+ java.nio.file.Files.write(path, txt.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+ return "done size="+txt.length();
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

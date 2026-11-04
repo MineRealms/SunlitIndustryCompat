@@ -1,0 +1,20 @@
+java.util.concurrent.Callable<String> task=()->{
+ var sb=new StringBuilder();
+ for(var name: new String[]{
+   "dev.ftb.mods.ftblibrary.snbt.SNBTParser",
+   "dev.ftb.mods.ftblibrary.snbt.SNBT",
+   "dev.ftb.mods.ftbquests.quest.ServerQuestFile",
+   "dev.ftb.mods.ftbquests.quest.QuestFile"}){
+  try{
+   var c=Class.forName(name);
+   sb.append(name).append(" OK static:");
+   for(var m: c.getDeclaredMethods())
+    if(java.lang.reflect.Modifier.isStatic(m.getModifiers())) sb.append(" ").append(m.getName());
+   sb.append(";\n");
+  }catch(Throwable t){ sb.append(name).append(" MISSING;\n"); }
+ }
+ return sb.toString();
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

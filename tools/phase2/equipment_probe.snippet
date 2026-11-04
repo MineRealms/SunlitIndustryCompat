@@ -1,0 +1,56 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();var level=server.m_129783_();
+var pos=new net.minecraft.core.BlockPos(80,250,80);var old=level.m_8055_(pos);
+java.util.List<String> checks=new java.util.ArrayList<>();
+try {
+ if(!old.m_60795_())return "REFUSED occupied";
+ var defs=com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES;
+ var recipes=server.m_129894_().m_44051_();
+ String[] recipeIds={"society:dehydrator/bio/food_gelatin_recovery","gtceu:dehydrator/wet_bromine","gtceu:dehydrator/debrominated_water","gtmfo:macerator/scrap_meat_maceration","gtceu:rocket_engine/rp_1_mixed_fuel"};
+ String[] machines={"gtnn:hv_dehydrator","gtnn:hv_dehydrator","gtnn:hv_dehydrator","gtceu:hv_macerator","gtnn:ev_rocket_engine"};
+ for(int test=0;test<recipeIds.length;test++) {
+  final String wanted=recipeIds[test];
+  var r=recipes.stream().filter(v->v instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe && v.m_6423_().toString().equals(wanted)).map(v->(com.gregtechceu.gtceu.api.recipe.GTRecipe)v).findFirst().orElseThrow();
+  level.m_46597_(pos,defs.get(new net.minecraft.resources.ResourceLocation(machines[test])).getBlock().m_49966_());
+  var m=(com.gregtechceu.gtceu.api.machine.WorkableTieredMachine)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,pos);m.onLoad();
+  var itemInputs=r.inputs.get(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP);
+  if(itemInputs!=null)for(int i=0;i<itemInputs.size();i++) {
+   var ingredient=com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(itemInputs.get(i).content);
+   m.importItems.setStackInSlot(i,ingredient.m_43908_()[0].m_41777_());
+  }
+  var fluidInputs=r.inputs.get(com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP);
+  if(fluidInputs!=null)for(var input:fluidInputs) {
+   var stack=com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP.of(input.content).getStacks()[0];
+   if(m.importFluids.fill(stack.copy(),net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE)!=stack.getAmount())throw new IllegalStateException("Fluid input failed "+wanted);
+  }
+  boolean generator=test==4;
+  if(!generator)m.energyContainer.changeEnergy(m.energyContainer.getEnergyCapacity());
+  var modified=m.fullModifyRecipe(r);
+  if(modified==null)throw new IllegalStateException("No modified recipe "+wanted);
+  m.recipeLogic.findAndHandleRecipe();
+  if(!m.recipeLogic.isWorking())throw new IllegalStateException("Lookup failed "+wanted);
+  for(int i=0;i<modified.duration+10;i++) {
+   if(!generator)m.energyContainer.changeEnergy(m.energyContainer.getEnergyCapacity());
+   m.recipeLogic.serverTick();
+  }
+  var expectedItems=r.outputs.get(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP);
+  if(expectedItems!=null)for(var output:expectedItems) {
+   if(output.chance==0||output.chance<output.maxChance)continue;
+   var expected=com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(output.content).m_43908_()[0];
+   int count=0;for(int i=0;i<m.exportItems.getSlots();i++){var s=m.exportItems.getStackInSlot(i);if(s.m_41720_()==expected.m_41720_())count+=s.m_41613_();}
+   if(count<expected.m_41613_())throw new IllegalStateException("Missing output "+wanted+" "+expected+" actual="+count);
+  }
+  var expectedFluids=r.outputs.get(com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP);
+  if(expectedFluids!=null)for(var output:expectedFluids) {
+   var expected=com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP.of(output.content).getStacks()[0];
+   int amount=0;for(int i=0;i<m.exportFluids.getTanks();i++){var s=m.exportFluids.getFluidInTank(i);if(s.isFluidEqual(expected))amount+=s.getAmount();}
+   if(amount!=expected.getAmount())throw new IllegalStateException("Wrong fluid output "+wanted+" "+amount);
+  }
+  if(generator&&m.energyContainer.getEnergyStored()!=2048L*modified.duration)throw new IllegalStateException("Generator energy mismatch duration="+modified.duration+" actual="+m.energyContainer.getEnergyStored());
+  checks.add(wanted+" runs on "+machines[test]+" modifiedDuration="+modified.duration+(generator?" outputEU="+m.energyContainer.getEnergyStored():""));
+  level.m_46597_(pos,old);
+ }
+ var report=new com.google.gson.JsonObject();report.addProperty("pass",true);report.addProperty("checks",checks.toString());
+ java.nio.file.Files.createDirectories(java.nio.file.Paths.get("phase2-reports"));
+ java.nio.file.Files.writeString(java.nio.file.Paths.get("phase2-reports/equipment-probe.json"),report.toString());
+ return "PASS "+checks;
+} finally {level.m_46597_(pos,old);}

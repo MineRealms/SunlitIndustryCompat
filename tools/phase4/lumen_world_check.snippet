@@ -1,0 +1,40 @@
+// AS lumen bind/fill world test, step 2 (check + cleanup). Reports what is left in each basin, the
+// stored-lumen NBT of every chestplate, whether the liquid starlight source was consumed, then removes
+// the basins and item entities.
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null) return "NO_SERVER";
+java.util.concurrent.Callable<String> phase4Task = () -> {
+var level = server.m_129783_();
+var spawn = level.m_220360_();
+var base = new net.minecraft.core.BlockPos(spawn.m_123341_(), 300, spawn.m_123343_());
+var blocks = net.minecraftforge.registries.ForgeRegistries.BLOCKS;
+var items = net.minecraftforge.registries.ForgeRegistries.ITEMS;
+var air = blocks.getValue(new net.minecraft.resources.ResourceLocation("minecraft:air")).m_49966_();
+var out = new StringBuilder();
+for (int b = 0; b < 2; b++) {
+  var center = base.m_7918_(b * 4, 1, 0);
+  out.append(b == 0 ? "[bind] " : "[fill] ");
+  out.append("fluid=").append(blocks.getKey(level.m_8055_(center).m_60734_())).append(' ');
+  var box = new net.minecraft.world.phys.AABB(center).m_82400_(1.5);
+  for (var e : level.m_45976_(net.minecraft.world.entity.item.ItemEntity.class, box)) {
+    var s = e.m_32055_();
+    out.append(items.getKey(s.m_41720_())).append('x').append(s.m_41613_());
+    var tag = s.m_41783_();
+    if (tag != null && s.m_41720_() != items.getValue(new net.minecraft.resources.ResourceLocation("astralsorcery:lumen_crystal"))) out.append(tag);
+    out.append(" | ");
+    e.m_146870_();
+  }
+  for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) for (int dy = -1; dy <= 0; dy++)
+    level.m_7731_(center.m_7918_(dx, dy, dz), air, 3);
+  out.append('\n');
+}
+return "LUMEN_CHECK\n" + out;
+
+};
+if (server.m_18695_()) return phase4Task.call();
+var phase4Result = new java.util.concurrent.CompletableFuture<String>();
+server.execute(() -> {
+  try { phase4Result.complete(phase4Task.call()); }
+  catch (Throwable t) { phase4Result.completeExceptionally(t); }
+});
+return phase4Result.get(180, java.util.concurrent.TimeUnit.SECONDS);

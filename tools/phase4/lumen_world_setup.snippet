@@ -1,0 +1,58 @@
+// AS lumen bind/fill world test, step 1 (setup). Builds two glass basins 18 blocks above the world
+// spawn (spawn chunks stay loaded and ticking), fills each with a liquid starlight source and drops:
+//   basin A (bind): aevitas lumen crystal + stardust + iron chestplate
+//   basin B (fill): aevitas lumen crystal + iron chestplate already bound to aevitas with 500/2000 lumen
+// Run lumen_world_check.snippet ~10 s later. Isolated test world only.
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null) return "NO_SERVER";
+java.util.concurrent.Callable<String> phase4Task = () -> {
+var level = server.m_129783_();
+var spawn = level.m_220360_();
+var base = new net.minecraft.core.BlockPos(spawn.m_123341_(), 300, spawn.m_123343_());
+var blocks = net.minecraftforge.registries.ForgeRegistries.BLOCKS;
+var items = net.minecraftforge.registries.ForgeRegistries.ITEMS;
+var glass = blocks.getValue(new net.minecraft.resources.ResourceLocation("minecraft:glass")).m_49966_();
+var starlight = blocks.getValue(new net.minecraft.resources.ResourceLocation("astralsorcery:liquid_starlight")).m_49966_();
+var aevitas = net.minecraft.core.Holder.m_205709_(hellfirepvp.astralsorcery.common.lib.LumenAS.AEVITAS);
+// ModernFix may disable spawn chunks: explicitly force only the test chunks for this probe.
+level.m_8602_(base.m_123341_() >> 4, base.m_123343_() >> 4, true);
+level.m_8602_((base.m_123341_() + 4) >> 4, base.m_123343_() >> 4, true);
+var out = new StringBuilder();
+for (int b = 0; b < 2; b++) {
+  var center = base.m_7918_(b * 4, 1, 0);
+  for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) {
+    level.m_7731_(center.m_7918_(dx, -1, dz), glass, 3);
+    if (dx != 0 || dz != 0) level.m_7731_(center.m_7918_(dx, 0, dz), glass, 3);
+  }
+  level.m_7731_(center, starlight, 3);
+  var drops = new java.util.ArrayList<net.minecraft.world.item.ItemStack>();
+  drops.add(hellfirepvp.astralsorcery.common.item.LumenCrystalItem.getCrystal(aevitas));
+  var chest = new net.minecraft.world.item.ItemStack(items.getValue(new net.minecraft.resources.ResourceLocation("minecraft:iron_chestplate")));
+  if (b == 0) {
+    drops.add(new net.minecraft.world.item.ItemStack(items.getValue(new net.minecraft.resources.ResourceLocation("astralsorcery:stardust"))));
+  } else {
+    var cmp = hellfirepvp.astralsorcery.common.component.StoredLumenComponent.getOrEmpty(chest)
+        .updateLumenStack(aevitas.m_203334_(), 500, 2000)
+        .updateProperties(hellfirepvp.astralsorcery.common.component.StoredLumenComponent.Properties::allowFill);
+    hellfirepvp.astralsorcery.common.component.StoredLumenComponent.set(chest, cmp);
+    hellfirepvp.astralsorcery.common.lumen.binding.LumenBindingType.applyBinding(aevitas.m_203334_(), new net.minecraft.resources.ResourceLocation("astralsorcery:aevitas"), chest);
+  }
+  drops.add(chest);
+  for (var stack : drops) {
+    var e = new net.minecraft.world.entity.item.ItemEntity(level, center.m_123341_() + 0.5, center.m_123342_() + 0.2, center.m_123343_() + 0.5, stack);
+    e.m_20256_(net.minecraft.world.phys.Vec3.f_82478_);
+    e.m_32010_(32767);
+    level.m_7967_(e);
+  }
+  out.append("basin").append(b).append('@').append(center).append(' ');
+}
+return "LUMEN_SETUP " + out;
+
+};
+if (server.m_18695_()) return phase4Task.call();
+var phase4Result = new java.util.concurrent.CompletableFuture<String>();
+server.execute(() -> {
+  try { phase4Result.complete(phase4Task.call()); }
+  catch (Throwable t) { phase4Result.completeExceptionally(t); }
+});
+return phase4Result.get(180, java.util.concurrent.TimeUnit.SECONDS);

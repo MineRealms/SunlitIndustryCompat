@@ -1,0 +1,70 @@
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null) return "NO_SERVER";
+java.util.concurrent.Callable<String> work = () -> {
+ var level = server.m_129783_();
+ var pos = new net.minecraft.core.BlockPos(24, 300, 24);
+ var old = level.m_8055_(pos);
+ if (!old.m_60795_()) return "FAIL test position occupied";
+ var checks = new java.util.ArrayList<String>();
+ try {
+  for (int tier = 0; tier < 6; tier++) {
+   String suffix = "" + tier;
+   var recipe = server.m_129894_().m_44051_().stream()
+       .filter(r -> r instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe && r.m_6423_().toString().equals("pollution:circuit_assembler/thaumic_circuit/" + suffix))
+       .map(r -> (com.gregtechceu.gtceu.api.recipe.GTRecipe)r).findFirst().orElseThrow();
+   String machineTier = new String[]{"mv", "ev", "iv", "luv", "zpm", "zpm"}[tier];
+   var def = com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation("gtceu:"+machineTier+"_circuit_assembler"));
+   level.m_46597_(pos, def.getBlock().m_49966_());
+   var machine = (com.gregtechceu.gtceu.api.machine.WorkableTieredMachine)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,pos);
+   machine.onLoad();
+   var ic = com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP;
+   var fc = com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP;
+   int slot = 0;
+   for (var content : recipe.inputs.getOrDefault(ic, java.util.List.of())) {
+     var ingredient = ic.of(content.content);
+     var stacks = ingredient.m_43908_();
+     if (stacks.length == 0) throw new IllegalStateException("empty recipe input");
+     var stack = stacks[0].m_41777_();
+     int count = ingredient instanceof com.gregtechceu.gtceu.api.recipe.ingredient.SizedIngredient sized ? sized.getAmount() : 1;
+     stack.m_41764_(count);
+     machine.importItems.setStackInSlot(slot++,stack);
+   }
+   for (var content : recipe.inputs.getOrDefault(fc,java.util.List.of())) {
+     var fluid = fc.of(content.content).getStacks()[0];
+     machine.importFluids.fill(fluid.copy(),net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+   }
+   if (tier > 0 && com.gregtechceu.gtceu.api.recipe.RecipeHelper.checkConditions(recipe,machine.recipeLogic).isSuccess())
+     throw new IllegalStateException("tier "+tier+" accepts missing cleanroom");
+   if (tier > 0) machine.setCleanroom(new com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider() {
+    public java.util.Set<com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType> getTypes() {return java.util.Set.of(com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType.CLEANROOM);}
+    public boolean isClean() {return true;}
+    public com.gregtechceu.gtceu.api.machine.MetaMachine self() {return machine;}
+   });
+   machine.energyContainer.changeEnergy(machine.energyContainer.getEnergyCapacity());
+   if (!com.gregtechceu.gtceu.api.recipe.RecipeHelper.matchContents(machine,recipe).isSuccess()) throw new IllegalStateException("inputs not matching tier "+tier);
+   var first = machine.importItems.getStackInSlot(0).m_41777_();
+   machine.importItems.setStackInSlot(0, net.minecraft.world.item.ItemStack.f_41583_);
+   if (com.gregtechceu.gtceu.api.recipe.RecipeHelper.matchContents(machine,recipe).isSuccess()) throw new IllegalStateException("missing board accepted");
+   machine.importItems.setStackInSlot(0, first);
+   machine.energyContainer.changeEnergy(machine.energyContainer.getEnergyCapacity());
+   machine.recipeLogic.findAndHandleRecipe();
+   for(int tick=0;tick<recipe.duration+100;tick++) {
+    machine.energyContainer.changeEnergy(machine.energyContainer.getEnergyCapacity());
+    machine.recipeLogic.serverTick();
+   }
+   int count = 0;
+   for(int i=0;i<machine.exportItems.getSlots();i++) {
+    var stack=machine.exportItems.getStackInSlot(i);
+    if(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.m_41720_()).toString().equals("pollution:blood_circuit."+tier))count+=stack.m_41613_();
+   }
+   if(count!=2)throw new IllegalStateException("tier "+tier+" output="+count+" status="+machine.recipeLogic.getStatus());
+   checks.add("tier"+tier+":output2, missing-input refused, cleanroom="+(tier>0));
+   level.m_46597_(pos,old);
+  }
+  return "PASS "+checks;
+ } finally {level.m_46597_(pos,old);}
+};
+if(server.m_18695_()) return work.call();
+var future=new java.util.concurrent.CompletableFuture<String>();
+server.execute(()->{try{future.complete(work.call());}catch(Throwable t){future.completeExceptionally(t);}});
+return future.get(180,java.util.concurrent.TimeUnit.SECONDS);

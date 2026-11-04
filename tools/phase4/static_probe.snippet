@@ -1,0 +1,145 @@
+// Phase 4 static runtime probe (no world edits): VintageDelight brewing, AS lumen binding data,
+// Pollution mystic circuit + industrial infusion recipes, circuit tags.
+// Output: phase4-reports/static_probe.json
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null) return "NO_SERVER";
+java.util.concurrent.Callable<String> phase4Task = () -> {
+var root = new com.google.gson.JsonObject();
+var items = net.minecraftforge.registries.ForgeRegistries.ITEMS;
+java.util.function.Function<String, net.minecraft.resources.ResourceLocation> rl = s -> new net.minecraft.resources.ResourceLocation(s);
+
+// ---- 1. VintageDelight brewing (3 mixes) ----
+var brew = new com.google.gson.JsonArray();
+var potionItem = items.getValue(rl.apply("minecraft:potion"));
+var potions = net.minecraftforge.registries.ForgeRegistries.POTIONS;
+String[][] mixes = {
+  {"minecraft:awkward", "vintagedelight:salt_dust", "vintagedelight:dehydrated"},
+  {"vintagedelight:dehydrated", "minecraft:redstone", "vintagedelight:long_dehydrated"},
+  {"vintagedelight:dehydrated", "minecraft:glowstone_dust", "vintagedelight:strong_dehydrated"}};
+for (var m : mixes) {
+  var o = new com.google.gson.JsonObject();
+  o.addProperty("mix", m[0] + " + " + m[1]);
+  var base = potions.getValue(rl.apply(m[0]));
+  var ing = items.getValue(rl.apply(m[1]));
+  if (base == null || ing == null) { o.addProperty("result", "MISSING " + base + "/" + ing); brew.add(o); continue; }
+  var in = net.minecraft.world.item.alchemy.PotionUtils.m_43549_(new net.minecraft.world.item.ItemStack(potionItem), base);
+  var res = net.minecraftforge.common.brewing.BrewingRecipeRegistry.getOutput(in, new net.minecraft.world.item.ItemStack(ing));
+  var got = res.m_41619_() ? "EMPTY" : potions.getKey(net.minecraft.world.item.alchemy.PotionUtils.m_43579_(res)).toString();
+  o.addProperty("result", got);
+  o.addProperty("ok", got.equals(m[2]));
+  brew.add(o);
+}
+root.add("brewing", brew);
+
+// ---- 2. AS lumen bindings ----
+var lumen = new com.google.gson.JsonObject();
+try {
+  var loader = hellfirepvp.astralsorcery.common.lumen.binding.data.LumenBindingTypeLoader.getInstance();
+  var bindings = loader.getBindings(net.minecraftforge.fml.LogicalSide.SERVER);
+  lumen.addProperty("bindingTypes", bindings.size());
+  lumen.addProperty("mappings", loader.getLumenApplicationMapping(net.minecraftforge.fml.LogicalSide.SERVER).size());
+  int modifiers = 0, emptySlots = 0;
+  var perType = new com.google.gson.JsonObject();
+  for (var e : bindings.entrySet()) {
+    int n = 0;
+    for (var slot : hellfirepvp.astralsorcery.common.lumen.binding.LumenBindingType.SlotType.values()) {
+      var b = e.getValue().getBinding(slot);
+      if (b.isEmpty()) continue;
+      var pending = new java.util.ArrayDeque<hellfirepvp.astralsorcery.common.lumen.binding.effect.LumenBindingEffect>();
+      pending.add(b.get().getEffect());
+      while (!pending.isEmpty()) {
+        var eff = pending.remove();
+        if (eff instanceof hellfirepvp.astralsorcery.common.lumen.binding.effect.CombinedLumenBindingEffect combined) pending.addAll(combined.getEffects());
+        if (eff instanceof hellfirepvp.astralsorcery.common.lumen.binding.effect.LumenBindingDynamicModifierEffect dm) {
+          n += dm.getModifiers().size();
+          if (dm.getModifiers().isEmpty()) emptySlots++;
+        }
+      }
+    }
+    perType.addProperty(e.getKey().toString(), n);
+    modifiers += n;
+  }
+  lumen.addProperty("dynamicModifiers", modifiers);
+  lumen.addProperty("emptyDynamicSlots", emptySlots);
+  lumen.add("perType", perType);
+  var recipes = new com.google.gson.JsonArray();
+  for (var r : hellfirepvp.astralsorcery.common.crafting.nojson.LiquidStarlightCraftingRegistry.INSTANCE.getRecipes()) recipes.add(r.getKey().toString());
+  lumen.add("liquidStarlightRecipes", recipes);
+} catch (Throwable t) { lumen.addProperty("error", t.toString()); }
+root.add("lumen", lumen);
+
+// ---- 3. Pollution recipes ----
+var poll = new com.google.gson.JsonArray();
+for (var r : server.m_129894_().m_44051_()) {
+  if (!(r instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe g)) continue;
+  var id = g.id.toString();
+  if (!id.startsWith("pollution:") || !(id.contains("thaumic_circuit/") || id.contains("industrial_infusion/thaumic/"))) continue;
+  var o = new com.google.gson.JsonObject();
+  o.addProperty("id", id);
+  o.addProperty("type", g.recipeType.registryName.toString());
+  o.addProperty("duration", g.duration);
+  var ins = new com.google.gson.JsonArray();
+  for (var e : g.inputs.entrySet()) {
+    var cap = (com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability) e.getKey();
+    for (var c : e.getValue()) { try { ins.add(cap.name + "=" + cap.serializer.toJsonContent(c)); } catch (Throwable t) { ins.add("?"); } }
+  }
+  o.add("inputs", ins);
+  var outs = new com.google.gson.JsonArray();
+  for (var e : g.outputs.entrySet()) {
+    var cap = (com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability) e.getKey();
+    for (var c : e.getValue()) { try { outs.add(cap.name + "=" + cap.serializer.toJsonContent(c)); } catch (Throwable t) { outs.add("?"); } }
+  }
+  o.add("outputs", outs);
+  var tick = new com.google.gson.JsonArray();
+  for (var e : g.tickInputs.entrySet()) {
+    var cap = (com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability) e.getKey();
+    for (var c : e.getValue()) { try { tick.add(cap.name + "=" + cap.serializer.toJsonContent(c)); } catch (Throwable t) { tick.add("?"); } }
+  }
+  o.add("tickInputs", tick);
+  o.addProperty("conditions", g.conditions.toString());
+  o.addProperty("data", g.data.toString());
+  poll.add(o);
+}
+root.add("pollution", poll);
+
+// Native serializers are authoritative after KubeJS's "falling back" messages.
+var nativeRecipes = new com.google.gson.JsonObject();
+for (String id : new String[]{"thaumadds:arcane/jar_brass", "thaumadds:arcane/crystal_lamp", "nodalmechanics:catalyze"}) {
+  var found = server.m_129894_().m_44051_().stream().filter(r -> r.m_6423_().toString().equals(id)).findFirst();
+  nativeRecipes.addProperty(id, found.isPresent() ? found.get().getClass().getName() : "MISSING");
+}
+root.add("nativeFallbackRecipes", nativeRecipes);
+var oreConfig = new com.google.gson.JsonObject();
+try {
+ var cls = Class.forName("fr.wind_blade.isorropia.common.config.ConfigIS");
+ for (String field : new String[]{"ORE_PIG_MATERIALS", "ORE_PIG_DUST_FALLBACK"}) {
+   var value = cls.getField(field).get(null);
+   oreConfig.addProperty(field, String.valueOf(value.getClass().getMethod("get").invoke(value)));
+ }
+} catch (Throwable t) { oreConfig.addProperty("error", t.toString()); }
+root.add("orePigConfig", oreConfig);
+
+// ---- 4. circuit tags ----
+var tags = new com.google.gson.JsonObject();
+for (String t : new String[]{"mv","hv","ev","iv","luv","zpm","uv","uhv"}) {
+  var key = net.minecraft.tags.TagKey.m_203882_(net.minecraft.core.registries.Registries.f_256913_, rl.apply("gtceu:circuits/" + t));
+  var arr = new com.google.gson.JsonArray();
+  for (var it : items) {
+    if (items.getKey(it).m_135827_().equals("pollution") && new net.minecraft.world.item.ItemStack(it).m_204117_(key)) arr.add(items.getKey(it).toString());
+  }
+  tags.add(t, arr);
+}
+root.add("circuitTags", tags);
+
+java.nio.file.Files.createDirectories(java.nio.file.Paths.get("phase4-reports"));
+java.nio.file.Files.writeString(java.nio.file.Paths.get("phase4-reports/static_probe.json"), root.toString());
+return "STATIC brewing=" + brew.size() + " lumenTypes=" + lumen.get("bindingTypes") + " modifiers=" + lumen.get("dynamicModifiers") + " pollutionRecipes=" + poll.size();
+
+};
+if (server.m_18695_()) return phase4Task.call();
+var phase4Result = new java.util.concurrent.CompletableFuture<String>();
+server.execute(() -> {
+  try { phase4Result.complete(phase4Task.call()); }
+  catch (Throwable t) { phase4Result.completeExceptionally(t); }
+});
+return phase4Result.get(180, java.util.concurrent.TimeUnit.SECONDS);

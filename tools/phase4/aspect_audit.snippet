@@ -1,0 +1,95 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null)return "NO_SERVER";
+java.util.concurrent.Callable<String> work=()->{
+var items=net.minecraft.core.registries.BuiltInRegistries.f_257033_;
+var fluids=net.minecraft.core.registries.BuiltInRegistries.f_257020_;
+// Primal-equivalent value of one essentia unit: primal = 1, compound = sum of its two components.
+java.util.Map<dev.tc4port.thaumcraft.api.aspect.AspectId,Double> unit=new java.util.HashMap<>();
+java.util.function.Function<dev.tc4port.thaumcraft.api.aspect.AspectId,Double>[] cost=new java.util.function.Function[1];
+cost[0]=id->{
+  Double known=unit.get(id); if(known!=null) return known;
+  var def=dev.tc4port.thaumcraft.api.aspect.AspectApi.get(id);
+  double v=def.components().isEmpty()?1D:def.components().stream().mapToDouble(c->cost[0].apply(c)).sum();
+  unit.put(id,v); return v;
+};
+// Fluid value per mB (144 mB = one essentia unit, the exchange/smelter rate).
+java.util.Map<String,Double> fluidValue=new java.util.HashMap<>();
+java.util.Map<String,String> fluidAspect=new java.util.HashMap<>();
+for(var e:meowmel.pollution.api.magic.PollutionAspectMapping.all().entrySet()){
+  var m=e.getKey(); if(!m.hasFluid()) continue;
+  var f=m.getFluid(1); if(f.isEmpty()) continue;
+  String key=fluids.m_7981_(f.getFluid()).toString();
+  fluidValue.put(key,cost[0].apply(e.getValue())/144D); fluidAspect.put(key,e.getValue().toString());
+}
+// Item value: only the essentia currency we audit (Pollution and Thaumcraft items).
+java.util.Map<net.minecraft.world.item.Item,Double> itemValue=new java.util.HashMap<>();
+java.util.function.Function<net.minecraft.world.item.ItemStack,Double> itemV=s->{
+  if(s.m_41619_()) return 0D;
+  var id=items.m_7981_(s.m_41720_());
+
+  return itemValue.computeIfAbsent(s.m_41720_(),it->{
+    double v=0; for(var a:dev.tc4port.thaumcraft.api.aspect.AspectQueryApi.item(new net.minecraft.world.item.ItemStack(it)).amounts().entrySet()) v+=a.getValue()*cost[0].apply(a.getKey());
+    return v;});
+};
+var IC=com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP;
+var FC=com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP;
+var flagged=new com.google.gson.JsonArray(); int scanned=0;
+for(var raw:server.m_129894_().m_44051_()){
+  if(!(raw instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe r)) continue;
+  double in=0,out=0; boolean touches=false; var parts=new StringBuilder();
+  for(int side=0;side<2;side++){
+    var map=side==0?r.inputs:r.outputs;
+    var il=map.get(IC);
+    if(il!=null) for(var c:il){
+      if(c.chance==0) continue;  // not consumed / not produced
+      var stacks=IC.of(c.content).m_43908_(); if(stacks.length==0) continue;
+      var s=stacks[0]; double v=itemV.apply(s)*s.m_41613_()*(c.chance/(double)c.maxChance);
+      if(v>0){touches=true; parts.append(side==0?" -":" +").append(s.m_41613_()).append('x').append(items.m_7981_(s.m_41720_())).append('=').append(String.format("%.2f",v));}
+      if(side==0) in+=v; else out+=v;
+    }
+    var fl=map.get(FC);
+    if(fl!=null) for(var c:fl){
+      if(c.chance==0) continue;
+      var stacks=FC.of(c.content).getStacks(); if(stacks.length==0) continue;
+      var f=stacks[0]; String key=fluids.m_7981_(f.getFluid()).toString();
+      Double per=fluidValue.get(key); if(per==null) continue;
+      double v=per*f.getAmount()*(c.chance/(double)c.maxChance); touches=true;
+      parts.append(side==0?" -":" +").append(f.getAmount()).append("mB ").append(key).append('=').append(String.format("%.2f",v));
+      if(side==0) in+=v; else out+=v;
+    }
+  }
+  if(!touches) continue; scanned++;
+  if(out>in+1e-6){
+    var row=new com.google.gson.JsonObject();
+    row.addProperty("id",r.id.toString()); row.addProperty("type",r.recipeType.toString());
+    row.addProperty("in",in); row.addProperty("out",out); row.addProperty("ratio",in==0?-1:out/in);
+    row.addProperty("detail",parts.toString().trim()); flagged.add(row);
+  }
+}
+// Machine-level conversions that are not GT recipes.
+var machines=new com.google.gson.JsonArray();
+for(var e:fluidValue.entrySet()){
+  var row=new com.google.gson.JsonObject(); row.addProperty("fluid",e.getKey()); row.addProperty("aspect",fluidAspect.get(e.getKey()));
+  row.addProperty("primalPerUnit",e.getValue()*144); machines.add(row);
+}
+var solids=new com.google.gson.JsonArray();
+for(var it:items){
+  var id=items.m_7981_(it); if(!id.m_135827_().equals("pollution")) continue;
+  String p=id.m_135815_(); if(!p.startsWith("infused_")) continue;
+  var amounts=dev.tc4port.thaumcraft.api.aspect.AspectQueryApi.item(new net.minecraft.world.item.ItemStack(it)).amounts();
+  if(amounts.isEmpty()) continue;
+  var row=new com.google.gson.JsonObject(); row.addProperty("item",id.toString());
+  var a=new com.google.gson.JsonObject(); amounts.forEach((k,v)->a.addProperty(k.toString(),v)); row.add("aspects",a);
+  row.addProperty("value",itemV.apply(new net.minecraft.world.item.ItemStack(it))); solids.add(row);
+}
+var report=new com.google.gson.JsonObject();
+report.addProperty("scannedRecipes",scanned); report.add("amplifying",flagged); report.add("fluidUnits",machines); report.add("solidValues",solids);
+java.nio.file.Files.createDirectories(java.nio.file.Paths.get("phase3-reports"));
+java.nio.file.Files.writeString(java.nio.file.Paths.get("phase4-reports/aspect-audit.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
+return "AUDIT scanned="+scanned+" amplifying="+flagged.size()+" fluids="+machines.size()+" solids="+solids.size();
+
+};
+if(server.m_18695_())return work.call();
+var result=new java.util.concurrent.CompletableFuture<String>();
+server.execute(()->{try{result.complete(work.call());}catch(Throwable t){result.completeExceptionally(t);}});
+return result.get(180,java.util.concurrent.TimeUnit.SECONDS);

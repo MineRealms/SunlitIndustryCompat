@@ -1,0 +1,9 @@
+java.util.concurrent.Callable<String> task=()->{
+ var c=Class.forName("dev.ftb.mods.ftblibrary.snbt.SNBTParser");
+ var sb=new StringBuilder();
+ for(var m: c.getDeclaredMethods()) if(m.getName().equals("read")) sb.append(m.toString()).append("\n");
+ return sb.toString();
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

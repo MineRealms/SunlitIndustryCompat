@@ -1,0 +1,19 @@
+var payload=new String(java.util.Base64.getDecoder().decode("ZnRicXVlc3RzLmNoYXB0ZXIuYXJtb3Jfd2VhcG9uc19fdG9vbHMucXVlc3RBQ0IyRTM0MjQyMUI3NEUudGl0bGUKICAiZnRicXVlc3RzLmNoYXB0ZXIuYXJtb3Jfd2VhcG9uc19fdG9vbHMucXVlc3QwQUNCMkUzNDI0MjFCNzRFLnRpdGxlIjogIumTgeWItuaKpOeUsuadvyIsCmZ0YnF1ZXN0cy5jaGFwdGVyLmFybW9yX3dlYXBvbnNfX3Rvb2xzLnF1ZXN0ODI0MUUxODE5MTI3NUFFLnRpdGxlCiAgImZ0YnF1ZXN0cy5jaGFwdGVyLmFybW9yX3dlYXBvbnNfX3Rvb2xzLnF1ZXN0MDgyNDFFMTgxOTEyNzVBRS50aXRsZSI6ICLljKDprYLpk4HplZAiLA=="), java.nio.charset.StandardCharsets.UTF_8);
+java.util.concurrent.Callable<String> task=()->{
+ var path=java.nio.file.Paths.get("kubejs/assets/ftbquestlocalizer/lang/zh_cn.json");
+ var txt=new String(java.nio.file.Files.readAllBytes(path), java.nio.charset.StandardCharsets.UTF_8);
+ var items=payload.split("\n");
+ var lines=txt.split("\n", -1);
+ int n=0;
+ for(int i=0;i<lines.length;i++){
+  for(int k=0;k<items.length;k+=2){
+   if(lines[i].contains(items[k])){ lines[i]=items[k+1]; n++; }
+  }
+ }
+ var out=String.join("\n", lines);
+ java.nio.file.Files.write(path, out.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+ return "renamed="+n;
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

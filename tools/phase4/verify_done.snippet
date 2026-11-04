@@ -1,0 +1,19 @@
+java.util.concurrent.Callable<String> task=()->{
+ try{
+  var lines=java.nio.file.Files.readAllLines(java.nio.file.Paths.get("logs/latest.log"));
+  String done=null, first=null;
+  for(var l: lines){
+   if(first==null && l.startsWith("[")) first=l.length()>90?l.substring(0,90):l;
+   if(l.contains("Done (")) done=l.length()>120?l.substring(0,120):l;
+  }
+  var srv=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+  long ticks=-1; int players=-1;
+  if(srv!=null){ ticks=srv.m_129921_(); players=srv.m_6846_().m_11309_(); }
+  return "lines="+lines.size()+" | ticks="+ticks+" | players="+players
+    +" | DONE="+(done==null?"NOT FOUND":done)
+    +" | first="+first;
+ }catch(Throwable t){ return "ERR "+t; }
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

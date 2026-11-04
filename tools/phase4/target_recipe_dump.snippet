@@ -1,0 +1,26 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null)return "NO_SERVER";
+java.util.concurrent.Callable<String> work=()->{
+ var out=new com.google.gson.JsonObject();
+ var recipes=new com.google.gson.JsonObject();
+ for(var r:server.m_129894_().m_44051_()){
+  if(!(r instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe g))continue;
+  String id=g.id.toString();
+  if(id.startsWith("gtmadvancedhatch:")||id.contains("compound_aspect/")||id.contains("extraction")||id.contains("extract_")||id.contains("pyrosulfate")||id.contains("mar_m_200")||id.contains("sludge_")||id.contains("coal_tar")||id.contains("palladium_separation")||id.contains("pyrometillic")||id.contains("potassium_hydroxide")||id.contains("paradox_matter")){
+    try{recipes.add(id,com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE,g).result().orElseThrow());}catch(Throwable t){recipes.addProperty(id,t.toString());}
+  }
+ }
+ out.add("recipes",recipes);
+ var aspects=new com.google.gson.JsonObject();
+ for(var e:meowmel.pollution.api.magic.PollutionAspectMapping.all().entrySet()){
+  var a=new com.google.gson.JsonObject();a.addProperty("material",e.getKey().getName());
+  a.addProperty("fluid",net.minecraftforge.registries.ForgeRegistries.FLUIDS.getKey(e.getKey().getFluid()).toString());
+  var parts=new com.google.gson.JsonArray();for(var c:dev.tc4port.thaumcraft.api.aspect.AspectApi.get(e.getValue()).components())parts.add(c.toString());
+  a.add("components",parts);aspects.add(e.getValue().toString(),a);
+ }
+ out.add("aspects",aspects);
+ java.nio.file.Files.writeString(java.nio.file.Paths.get("phase4-reports/target-recipes.json"),out.toString());
+ return "DUMP recipes="+recipes.size()+" aspects="+aspects.size();
+};
+if(server.m_18695_())return work.call();
+var result=new java.util.concurrent.CompletableFuture<String>();server.execute(()->{try{result.complete(work.call());}catch(Throwable t){result.completeExceptionally(t);}});return result.get(120,java.util.concurrent.TimeUnit.SECONDS);

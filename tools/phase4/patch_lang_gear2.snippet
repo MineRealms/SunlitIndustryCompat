@@ -1,0 +1,50 @@
+java.util.concurrent.Callable<String> task=()->{
+ var path=java.nio.file.Paths.get("kubejs/assets/ftbquestlocalizer/lang/zh_cn.json");
+ var txt=new String(java.nio.file.Files.readAllBytes(path), java.nio.charset.StandardCharsets.UTF_8);
+ int total=0;
+ {
+  var p=java.util.regex.Pattern.compile("(\\"" + java.util.regex.Pattern.quote("ftbquests.chapter.armor_weapons__tools.quest21FD7614E314BA14.title") + "\\"\\s*:\\s*)\\"[^\\"]*\\"");
+  var m=p.matcher(txt);
+  if(m.find()){ txt=m.replaceFirst("$1\\"匠魂护甲入门\\""); total++; }
+ }
+ {
+  var p=java.util.regex.Pattern.compile("(\\"" + java.util.regex.Pattern.quote("ftbquests.chapter.armor_weapons__tools.quest7A5974D470C5AA9C.title") + "\\"\\s*:\\s*)\\"[^\\"]*\\"");
+  var m=p.matcher(txt);
+  if(m.find()){ txt=m.replaceFirst("$1\\"金与玛玉灵：合金路线\\""); total++; }
+ }
+ {
+  var p=java.util.regex.Pattern.compile("(\\"" + java.util.regex.Pattern.quote("ftbquests.chapter.armor_weapons__tools.quest0ACB2E342421B74E.title") + "\\"\\s*:\\s*)\\"[^\\"]*\\"");
+  var m=p.matcher(txt);
+  if(m.find()){ txt=m.replaceFirst("$1\\"铁制护甲板\\""); total++; }
+ }
+ {
+  var p=java.util.regex.Pattern.compile("(\\"" + java.util.regex.Pattern.quote("ftbquests.chapter.armor_weapons__tools.quest38A0B8D54F85B846.title") + "\\"\\s*:\\s*)\\"[^\\"]*\\"");
+  var m=p.matcher(txt);
+  if(m.find()){ txt=m.replaceFirst("$1\\"护甲强化\\""); total++; }
+ }
+ {
+  var p=java.util.regex.Pattern.compile("(\\"" + java.util.regex.Pattern.quote("ftbquests.chapter.armor_weapons__tools.quest43C52E202277C5AA.title") + "\\"\\s*:\\s*)\\"[^\\"]*\\"");
+  var m=p.matcher(txt);
+  if(m.find()){ txt=m.replaceFirst("$1\\"匠魂石镐\\""); total++; }
+ }
+ {
+  var p=java.util.regex.Pattern.compile("(\\"" + java.util.regex.Pattern.quote("ftbquests.chapter.armor_weapons__tools.quest32FE1F4EF913EADA.title") + "\\"\\s*:\\s*)\\"[^\\"]*\\"");
+  var m=p.matcher(txt);
+  if(m.find()){ txt=m.replaceFirst("$1\\"金铸模：一次成型\\""); total++; }
+ }
+ {
+  var p=java.util.regex.Pattern.compile("(\\"" + java.util.regex.Pattern.quote("ftbquests.chapter.armor_weapons__tools.quest08241E18191275AE.title") + "\\"\\s*:\\s*)\\"[^\\"]*\\"");
+  var m=p.matcher(txt);
+  if(m.find()){ txt=m.replaceFirst("$1\\"匠魂铁镐\\""); total++; }
+ }
+ {
+  var p=java.util.regex.Pattern.compile("(\\"" + java.util.regex.Pattern.quote("ftbquests.chapter.armor_weapons__tools.quest54301E900FFA56D7.title") + "\\"\\s*:\\s*)\\"[^\\"]*\\"");
+  var m=p.matcher(txt);
+  if(m.find()){ txt=m.replaceFirst("$1\\"钻石强化\\""); total++; }
+ }
+ java.nio.file.Files.write(path, txt.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+ return "patched="+total+" size="+txt.length();
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

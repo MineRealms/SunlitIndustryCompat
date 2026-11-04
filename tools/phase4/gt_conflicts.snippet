@@ -1,0 +1,56 @@
+// GT lookup conflicts: GT logs "failed to add recipe from staging into lookup DB: <id>" when a recipe's
+// inputs collide with an already-indexed recipe of the same type, which then shadows it in machines.
+// Group every GTRecipe by (type, canonical input JSON) and report groups of size > 1.
+// Output: phase4-reports/gt_conflicts.json
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null) return "NO_SERVER";
+java.util.concurrent.Callable<String> phase4Task = () -> {
+var groups = new java.util.HashMap<String, java.util.List<com.gregtechceu.gtceu.api.recipe.GTRecipe>>();
+for (var r : server.m_129894_().m_44051_()) {
+  if (!(r instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe g)) continue;
+  var parts = new java.util.ArrayList<String>();
+  for (var e : g.inputs.entrySet()) {
+    var cap = (com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability) e.getKey();
+    for (var c : e.getValue()) {
+      try { parts.add(cap.name + "=" + cap.serializer.toJsonContent(c)); }
+      catch (Throwable t) { parts.add(cap.name + "=?" + c.content); }
+    }
+  }
+  java.util.Collections.sort(parts);
+  var key = g.recipeType.registryName + "|" + String.join(";", parts);
+  groups.computeIfAbsent(key, k -> new java.util.ArrayList<>()).add(g);
+}
+var out = new com.google.gson.JsonArray();
+for (var e : groups.entrySet()) {
+  if (e.getValue().size() < 2) continue;
+  var row = new com.google.gson.JsonObject();
+  row.addProperty("key", e.getKey().length() > 600 ? e.getKey().substring(0, 600) : e.getKey());
+  var ids = new com.google.gson.JsonArray();
+  for (var g : e.getValue()) {
+    var o = new com.google.gson.JsonObject();
+    o.addProperty("id", g.id.toString());
+    var outs = new com.google.gson.JsonArray();
+    for (var oe : g.outputs.entrySet()) {
+      var cap = (com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability) oe.getKey();
+      for (var c : oe.getValue()) {
+        try { outs.add(cap.name + "=" + cap.serializer.toJsonContent(c)); } catch (Throwable t) { outs.add("?"); }
+      }
+    }
+    o.add("outputs", outs);
+    ids.add(o);
+  }
+  row.add("recipes", ids);
+  out.add(row);
+}
+java.nio.file.Files.createDirectories(java.nio.file.Paths.get("phase4-reports"));
+java.nio.file.Files.writeString(java.nio.file.Paths.get("phase4-reports/gt_conflicts.json"), out.toString());
+return "GT_CONFLICT_GROUPS " + out.size();
+
+};
+if (server.m_18695_()) return phase4Task.call();
+var phase4Result = new java.util.concurrent.CompletableFuture<String>();
+server.execute(() -> {
+  try { phase4Result.complete(phase4Task.call()); }
+  catch (Throwable t) { phase4Result.completeExceptionally(t); }
+});
+return phase4Result.get(180, java.util.concurrent.TimeUnit.SECONDS);

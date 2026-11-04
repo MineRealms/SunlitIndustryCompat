@@ -1,0 +1,22 @@
+java.util.concurrent.Callable<String> task=()->{
+ var sb=new StringBuilder();
+ try{
+  var lines=java.nio.file.Files.readAllLines(java.nio.file.Paths.get("logs/latest.log"));
+  int from=Math.max(0,lines.size()-60000);
+  int bad=0, meLoot=0;
+  var sample=new com.google.gson.JsonArray();
+  for(int i=from;i<lines.size();i++){
+   var l=lines.get(i);
+   if(l.contains("loot table")||l.contains("LootTable")){
+    if(l.contains("Couldn't")||l.contains("Failed")||l.contains("Error")||l.contains("error")){
+     bad++; if(sample.size()<5) sample.add(l.length()>180?l.substring(0,180):l);
+    }
+   }
+   if(l.contains("me:blocks/")) meLoot++;
+  }
+  return "logLines="+lines.size()+" | lootErrors="+bad+" | meLootMentions="+meLoot+" | "+sample;
+ }catch(Throwable t){ return "ERR "+t; }
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

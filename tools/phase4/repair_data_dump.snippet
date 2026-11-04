@@ -1,0 +1,11 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+java.util.concurrent.Callable<String> task=()->{
+ var root=new com.google.gson.JsonObject();var rec=new com.google.gson.JsonObject();
+ var previous=com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(java.nio.file.Paths.get("phase4-reports/gt_conflicts.json"))).getAsJsonArray();
+ var ids=new java.util.HashSet<String>();for(var group:previous)for(var r:group.getAsJsonObject().getAsJsonArray("recipes"))ids.add(r.getAsJsonObject().get("id").getAsString());
+ for(var r:server.m_129894_().m_44051_())if(r instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe g && (ids.contains(g.id.toString())||g.id.toString().contains("compound_aspect/")||g.id.toString().contains("paradox_matter")||g.id.toString().startsWith("gtmadvancedhatch:assembler/"))){rec.add(g.id.toString(),com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE,g).result().orElseThrow());}
+ root.add("recipes",rec);
+ var fames=new com.google.gson.JsonArray();for(var a:dev.tc4port.thaumcraft.api.aspect.AspectApi.get(dev.tc4port.thaumcraft.api.aspect.AspectId.parse("fames")).components())fames.add(a.toString());root.add("fames",fames);
+ java.nio.file.Files.writeString(java.nio.file.Paths.get("phase4-reports/repair-data.json"),root.toString());return "DUMP "+rec.size()+" fames="+fames;
+};
+if(server.m_18695_())return task.call();var f=new java.util.concurrent.CompletableFuture<String>();server.execute(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

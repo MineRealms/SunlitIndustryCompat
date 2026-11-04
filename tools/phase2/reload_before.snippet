@@ -1,0 +1,15 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();var level=server.m_129783_();
+var type=net.minecraft.core.registries.BuiltInRegistries.f_256780_.m_7745_(new net.minecraft.resources.ResourceLocation("gcyr:rocket"));
+Class<?> rc=argent_matter.gcyr.common.entity.RocketEntity.class;
+var tier=rc.getDeclaredField("motorTier");tier.setAccessible(true);
+var tankField=rc.getDeclaredField("fuelTank");tankField.setAccessible(true);
+var consume=rc.getDeclaredMethod("consumeFuel");consume.setAccessible(true);
+var sel=rc.getDeclaredField("selectedFuelRecipe");sel.setAccessible(true);
+var r=new argent_matter.gcyr.common.entity.RocketEntity(type,level);
+tier.setInt(r,1);r.setFuelCapacity(2000);r.reinitializeFluidStorage();r.setThrusterCount(1);
+var tank=(com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank)tankField.get(r);
+tank.fill(new net.minecraftforge.fluids.FluidStack(net.minecraft.core.registries.BuiltInRegistries.f_257020_.m_7745_(new net.minecraft.resources.ResourceLocation("gtceu:gasoline")),1000),net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+if(!(Boolean)consume.invoke(r))throw new IllegalStateException("pre-reload burn failed");
+System.getProperties().put("sunlit.probe.rocket",r);
+System.getProperties().put("sunlit.probe.recipe",sel.get(r));
+return "PRE selected="+((com.gregtechceu.gtceu.api.recipe.GTRecipe)sel.get(r)).id;

@@ -1,0 +1,59 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+var level=server.m_129783_();
+var entities=net.minecraft.core.registries.BuiltInRegistries.f_256780_;
+var fluids=net.minecraft.core.registries.BuiltInRegistries.f_257020_;
+var type=entities.m_7745_(new net.minecraft.resources.ResourceLocation("gcyr:rocket"));
+Class<?> rc=argent_matter.gcyr.common.entity.RocketEntity.class;
+var tier=rc.getDeclaredField("motorTier");tier.setAccessible(true);
+var tankField=rc.getDeclaredField("fuelTank");tankField.setAccessible(true);
+var consume=rc.getDeclaredMethod("consumeFuel");consume.setAccessible(true);
+var save=rc.getDeclaredMethod("m_7380_",net.minecraft.nbt.CompoundTag.class);save.setAccessible(true);
+var load=rc.getDeclaredMethod("m_7378_",net.minecraft.nbt.CompoundTag.class);load.setAccessible(true);
+var credit=rc.getDeclaredField("sunlit$fuelCredit");credit.setAccessible(true);
+java.util.List<String> checks=new java.util.ArrayList<>();
+String[] names={"gtceu:gasoline","gtceu:diesel","gtceu:rocket_fuel","gtceu:hydrogen","gtceu:rp_1_rocket_fuel","gtceu:dense_hydrazine_mixed_fuel","gtceu:udmh_rocket_fuel","gtceu:methylhydrazine_nitrate_rocket_fuel","gtceu:hydrogen_plasma","pollution:infernal_blaze_propellant","pollution:dragon_pulse_fuel"};
+int[] tiers={1,1,1,1,1,2,2,3,3,2,3};
+int[] durations={25,18,75,10,50,60,90,100,18,80,160};
+for(int pass=0;pass<2;pass++) {
+    for(int offset=0;offset<3;offset++) {
+        int engine=pass==0?offset+1:3-offset;
+        for(int i=0;i<names.length;i++) {
+            var rocket=new argent_matter.gcyr.common.entity.RocketEntity(type,level);
+            tier.setInt(rocket,engine);rocket.setFuelCapacity(2000);rocket.reinitializeFluidStorage();rocket.setThrusterCount(1);
+            var tank=(com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank)tankField.get(rocket);
+            var fluid=fluids.m_7745_(new net.minecraft.resources.ResourceLocation(names[i]));
+            int filled=tank.fill(new net.minecraftforge.fluids.FluidStack(fluid,1000),net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+            if((filled==1000)!=(engine>=tiers[i]))throw new IllegalStateException("Tier mismatch pass="+pass+" engine="+engine+" fuel="+names[i]+" fill="+filled);
+            if(filled>0 && rocket.getRecipeDuration()!=durations[i])throw new IllegalStateException("Duration mismatch "+names[i]+" "+rocket.getRecipeDuration());
+        }
+    }
+}
+checks.add((names.length*6)+" tank cases: "+names.length+" fuels x 3 engine tiers x both orders");
+var high=new argent_matter.gcyr.common.entity.RocketEntity(type,level);
+tier.setInt(high,3);high.setFuelCapacity(2000);high.reinitializeFluidStorage();high.setThrusterCount(1);
+var tank=(com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank)tankField.get(high);
+var mhn=fluids.m_7745_(new net.minecraft.resources.ResourceLocation("gtceu:methylhydrazine_nitrate_rocket_fuel"));
+tank.fill(new net.minecraftforge.fluids.FluidStack(mhn,1000),net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+for(int i=0;i<300;i++)if(!(Boolean)consume.invoke(high))throw new IllegalStateException("Fractional burn stopped at "+i);
+int spent=1000-tank.getFluidAmount();
+double left=credit.getDouble(high);
+if(Math.abs(spent-left-200)>1e-8)throw new IllegalStateException("Bad cumulative fuel payment "+spent+" credit="+left);
+checks.add("300 MHN ticks paid "+spent+"mB minus credit "+left+" =200mB");
+var nbt=new net.minecraft.nbt.CompoundTag();save.invoke(high,nbt);
+var restored=new argent_matter.gcyr.common.entity.RocketEntity(type,level);
+load.invoke(restored,nbt);tier.setInt(restored,3);
+if(Math.abs(credit.getDouble(restored)-left)>1e-12)throw new IllegalStateException("Lost saved fuel credit");
+if(!(Boolean)consume.invoke(restored))throw new IllegalStateException("Restored fuel does not burn");
+checks.add("NBT restores credit/capacity and resolves live recipe");
+var rt=(com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank)tankField.get(restored);
+tier.setInt(restored,1);int before=rt.getFluidAmount();
+if((Boolean)consume.invoke(restored)||rt.getFluidAmount()!=before)throw new IllegalStateException("Downgraded engine burned restricted fuel");
+checks.add("engine downgrade refuses existing high-tier fuel without deleting it");
+var empty=new argent_matter.gcyr.common.entity.RocketEntity(type,level);
+tier.setInt(empty,3);empty.setFuelCapacity(10);empty.reinitializeFluidStorage();empty.setThrusterCount(1);
+if((Boolean)consume.invoke(empty))throw new IllegalStateException("Empty rocket flew");
+checks.add("empty tank refused");
+com.google.gson.JsonObject report=new com.google.gson.JsonObject();report.addProperty("pass",true);report.addProperty("checks",checks.toString());
+java.nio.file.Files.createDirectories(java.nio.file.Paths.get("phase2-reports"));
+java.nio.file.Files.writeString(java.nio.file.Paths.get("phase2-reports/rocket-probe.json"),report.toString());
+return "PASS "+checks;

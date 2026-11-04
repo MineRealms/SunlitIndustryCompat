@@ -1,0 +1,20 @@
+java.util.concurrent.Callable<String> task=()->{
+ var cls=Class.forName("dev.ftb.mods.ftbquests.quest.ServerQuestFile");
+ var inst=cls.getField("INSTANCE").get(null);
+ if(inst==null) return "NO_INSTANCE";
+ var chapters=(java.util.Collection)cls.getMethod("getAllChapters").invoke(inst);
+ var sb=new StringBuilder();
+ int totalQ=0;
+ for(var c: chapters){
+  var fn=c.getClass().getMethod("getFilename").invoke(c).toString();
+  var qs=(java.util.Collection)c.getClass().getMethod("getQuests").invoke(c);
+  totalQ+=qs.size();
+  if(fn.contains("armor")||fn.contains("tinkers")||fn.contains("tools")){
+   sb.append(fn).append(":quests=").append(qs.size()).append("; ");
+  }
+ }
+ return "chapters="+chapters.size()+" totalQuests="+totalQ+" | "+sb;
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

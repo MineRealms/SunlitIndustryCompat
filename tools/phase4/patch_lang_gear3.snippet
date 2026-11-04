@@ -1,0 +1,19 @@
+var payload=new String(java.util.Base64.getDecoder().decode("ZnRicXVlc3RzLmNoYXB0ZXIuYXJtb3Jfd2VhcG9uc19fdG9vbHMucXVlc3QyMUZENzYxNEUzMTRCQTE0LnRpdGxlCiAgImZ0YnF1ZXN0cy5jaGFwdGVyLmFybW9yX3dlYXBvbnNfX3Rvb2xzLnF1ZXN0MjFGRDc2MTRFMzE0QkExNC50aXRsZSI6ICLljKDprYLmiqTnlLLlhaXpl6giLApmdGJxdWVzdHMuY2hhcHRlci5hcm1vcl93ZWFwb25zX190b29scy5xdWVzdDdBNTk3NEQ0NzBDNUFBOUMudGl0bGUKICAiZnRicXVlc3RzLmNoYXB0ZXIuYXJtb3Jfd2VhcG9uc19fdG9vbHMucXVlc3Q3QTU5NzRENDcwQzVBQTlDLnRpdGxlIjogIumHkeS4jueOm+eOieeBte+8muWQiOmHkei3r+e6vyIsCmZ0YnF1ZXN0cy5jaGFwdGVyLmFybW9yX3dlYXBvbnNfX3Rvb2xzLnF1ZXN0MEFDQjJFMzQyNDIxQjc0RS50aXRsZQogICJmdGJxdWVzdHMuY2hhcHRlci5hcm1vcl93ZWFwb25zX190b29scy5xdWVzdDBBQ0IyRTM0MjQyMUI3NEUudGl0bGUiOiAi6ZOB5Yi25oqk55Sy5p2/IiwKZnRicXVlc3RzLmNoYXB0ZXIuYXJtb3Jfd2VhcG9uc19fdG9vbHMucXVlc3QzOEEwQjhENTRGODVCODQ2LnRpdGxlCiAgImZ0YnF1ZXN0cy5jaGFwdGVyLmFybW9yX3dlYXBvbnNfX3Rvb2xzLnF1ZXN0MzhBMEI4RDU0Rjg1Qjg0Ni50aXRsZSI6ICLmiqTnlLLlvLrljJYiLApmdGJxdWVzdHMuY2hhcHRlci5hcm1vcl93ZWFwb25zX190b29scy5xdWVzdDQzQzUyRTIwMjI3N0M1QUEudGl0bGUKICAiZnRicXVlc3RzLmNoYXB0ZXIuYXJtb3Jfd2VhcG9uc19fdG9vbHMucXVlc3Q0M0M1MkUyMDIyNzdDNUFBLnRpdGxlIjogIuWMoOmtguefs+mVkCIsCmZ0YnF1ZXN0cy5jaGFwdGVyLmFybW9yX3dlYXBvbnNfX3Rvb2xzLnF1ZXN0MzJGRTFGNEVGOTEzRUFEQS50aXRsZQogICJmdGJxdWVzdHMuY2hhcHRlci5hcm1vcl93ZWFwb25zX190b29scy5xdWVzdDMyRkUxRjRFRjkxM0VBREEudGl0bGUiOiAi6YeR6ZO45qih77ya5LiA5qyh5oiQ5Z6LIiwKZnRicXVlc3RzLmNoYXB0ZXIuYXJtb3Jfd2VhcG9uc19fdG9vbHMucXVlc3QwODI0MUUxODE5MTI3NUFFLnRpdGxlCiAgImZ0YnF1ZXN0cy5jaGFwdGVyLmFybW9yX3dlYXBvbnNfX3Rvb2xzLnF1ZXN0MDgyNDFFMTgxOTEyNzVBRS50aXRsZSI6ICLljKDprYLpk4HplZAiLApmdGJxdWVzdHMuY2hhcHRlci5hcm1vcl93ZWFwb25zX190b29scy5xdWVzdDU0MzAxRTkwMEZGQTU2RDcudGl0bGUKICAiZnRicXVlc3RzLmNoYXB0ZXIuYXJtb3Jfd2VhcG9uc19fdG9vbHMucXVlc3Q1NDMwMUU5MDBGRkE1NkQ3LnRpdGxlIjogIumSu+efs+W8uuWMliIs"), java.nio.charset.StandardCharsets.UTF_8);
+java.util.concurrent.Callable<String> task=()->{
+ var path=java.nio.file.Paths.get("kubejs/assets/ftbquestlocalizer/lang/zh_cn.json");
+ var txt=new String(java.nio.file.Files.readAllBytes(path), java.nio.charset.StandardCharsets.UTF_8);
+ var items=payload.split("\n");
+ var lines=txt.split("\n", -1);
+ int n=0;
+ for(int i=0;i<lines.length;i++){
+  for(int k=0;k<items.length;k+=2){
+   if(lines[i].contains(items[k])){ lines[i]=items[k+1]; n++; }
+  }
+ }
+ var out=String.join("\n", lines);
+ java.nio.file.Files.write(path, out.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+ return "replaced="+n+" size="+out.length();
+};
+var f=new java.util.concurrent.CompletableFuture<String>();
+java.util.concurrent.CompletableFuture.runAsync(()->{try{f.complete(task.call());}catch(Throwable t){f.completeExceptionally(t);}});
+return f.get(120,java.util.concurrent.TimeUnit.SECONDS);

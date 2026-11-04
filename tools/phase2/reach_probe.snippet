@@ -1,0 +1,37 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();var access=server.m_206579_();
+var items=net.minecraft.core.registries.BuiltInRegistries.f_257033_;
+var all=new java.util.ArrayList<net.minecraft.world.item.crafting.Recipe<?>>(server.m_129894_().m_44051_());
+java.util.List<Object[]> outputs=new java.util.ArrayList<>();
+for(var r:all){
+ if(r instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe g){
+  var outs=g.outputs.get(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP);
+  if(outs!=null)for(var c:outs){var ing=com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(c.content);for(var s:ing.m_43908_())outputs.add(new Object[]{s,g.id.toString()});}
+ } else { try{var s=r.m_8043_(access);if(s!=null&&!s.m_41619_())outputs.add(new Object[]{s,r.m_6423_().toString()});}catch(Throwable ignored){} }
+}
+String[] targets={"gtnn:exxonmobil_chemical_plant","gtnn:hv_dehydrator","gtnn:ev_rocket_engine"};
+var report=new com.google.gson.JsonObject();java.util.List<String> missing=new java.util.ArrayList<>();
+for(String t:targets){
+ var item=items.m_7745_(new net.minecraft.resources.ResourceLocation(t));
+ net.minecraft.world.item.crafting.Recipe<?> producer=null;
+ for(var o:outputs)if(((net.minecraft.world.item.ItemStack)o[0]).m_41720_()==item){final String id=(String)o[1];producer=all.stream().filter(r->r.m_6423_().toString().equals(id)).findFirst().orElse(null);break;}
+ var entry=new com.google.gson.JsonObject();
+ if(producer==null){missing.add(t+": no controller recipe");report.add(t,entry);continue;}
+ entry.addProperty("controllerRecipe",producer.m_6423_().toString());
+ java.util.List<net.minecraft.world.item.crafting.Ingredient> ings=new java.util.ArrayList<>();
+ if(producer instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe g){var ins=g.inputs.get(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP);if(ins!=null)for(var c:ins)ings.add(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(c.content));}
+ else ings.addAll(producer.m_7527_());
+ var arr=new com.google.gson.JsonArray();
+ for(var ing:ings){
+  if(ing.m_43908_().length==0)continue;
+  if(ing instanceof com.gregtechceu.gtceu.api.recipe.ingredient.IntCircuitIngredient)continue;
+  String name=items.m_7981_(ing.m_43908_()[0].m_41720_()).toString();
+  String via=null;
+  for(var o:outputs){var s=(net.minecraft.world.item.ItemStack)o[0];if(ing.test(s)&&s.m_41720_()!=item){via=(String)o[1];break;}}
+  var row=new com.google.gson.JsonObject();row.addProperty("input",name);row.addProperty("producedBy",via==null?"NONE":via);arr.add(row);
+  if(via==null)missing.add(t+" needs "+name);
+ }
+ entry.add("inputs",arr);report.add(t,entry);
+}
+report.addProperty("missing",missing.toString());
+java.nio.file.Files.writeString(java.nio.file.Paths.get("phase2-reports/controller-reachability.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
+return (missing.isEmpty()?"PASS ":"GAPS ")+missing+" (one recipe level; see phase2-reports/controller-reachability.json)";
