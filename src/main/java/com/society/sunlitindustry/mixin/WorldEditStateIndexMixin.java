@@ -3,6 +3,7 @@ package com.society.sunlitindustry.mixin;
 import com.society.sunlitindustry.OrderedStateIndex;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -17,8 +18,8 @@ import java.util.Map;
 /** Share the state index instead of materialising a neighbour table for every WorldEdit block state. */
 @Pseudo
 @Mixin(targets = "com.sk89q.worldedit.world.block.BlockState", remap = false)
-public abstract class WorldEditStateIndexMixin {
-    @Shadow @Final private Map<Object, Object> values;
+public abstract class WorldEditStateIndexMixin implements OrderedStateIndex.ValuesOwner {
+    @Shadow @Final @Mutable private Map<Object, Object> values;
     @Unique private OrderedStateIndex<Object> sunlitindustry$stateIndex;
     @Unique private static final ThreadLocal<OrderedStateIndex<Object>> sunlitindustry$index = new ThreadLocal<>();
     @Unique private static final ThreadLocal<Map<?, ?>> sunlitindustry$source = new ThreadLocal<>();
@@ -32,6 +33,9 @@ public abstract class WorldEditStateIndexMixin {
             index = new OrderedStateIndex<>(states);
             sunlitindustry$source.set(states);
             sunlitindustry$index.set(index);
+            for (var entry : index.entrySet()) {
+                ((OrderedStateIndex.ValuesOwner) entry.getValue()).sunlitindustry$shareValues(entry.getKey(), index);
+            }
         }
         sunlitindustry$stateIndex = index;
         ci.cancel();
@@ -45,9 +49,20 @@ public abstract class WorldEditStateIndexMixin {
         cir.setReturnValue(state == null ? this : state);
     }
 
-    @Inject(method = "generateStateMap", at = @At("RETURN"), remap = false)
+    @Inject(method = "generateStateMap", at = @At("RETURN"), cancellable = true, remap = false)
     private static void sunlitindustry$releaseIndex(CallbackInfoReturnable<Map<?, ?>> cir) {
+        OrderedStateIndex<Object> index = sunlitindustry$index.get();
+        if (index != null && sunlitindustry$source.get() == cir.getReturnValue()) cir.setReturnValue(index);
         sunlitindustry$source.remove();
         sunlitindustry$index.remove();
+    }
+
+    @Override
+    @Unique
+    @SuppressWarnings("unchecked")
+    public void sunlitindustry$shareValues(Map<?, ?> shared, OrderedStateIndex<?> index) {
+        // Keep unusual platform ordering intact; Forge 1.20.1 supplies both maps in property-name order.
+        values = OrderedStateIndex.shareValues(values, shared);
+        sunlitindustry$stateIndex = (OrderedStateIndex<Object>) index;
     }
 }

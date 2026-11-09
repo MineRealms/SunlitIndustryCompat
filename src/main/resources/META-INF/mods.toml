@@ -3,9 +3,9 @@ loaderVersion="[47,48)"
 license="All Rights Reserved"
 [[mods]]
 modId="sunlitindustry"
-version="0.2.0"
+version="0.2.1"
 displayName="Sunlit Industry Compat"
-description='''Targeted compat fixes for Sunlit Valley: GCYR fuel safety, VintageDelight brewing registration. No new items or progression tiers.'''
+description='''Targeted Sunlit Valley compatibility and balance fixes for Mekanism, GregTech, TianGong, GCYR, VintageDelight, and WorldEdit.'''
 [[dependencies.sunlitindustry]]
 modId="forge"
 mandatory=true
@@ -34,5 +34,11 @@ side="BOTH"
 modId="vintagedelight"
 mandatory=false
 versionRange="*"
+ordering="AFTER"
+side="BOTH"
+[[dependencies.sunlitindustry]]
+modId="mekanismgenerators"
+mandatory=false
+versionRange="[10.4.16,10.5)"
 ordering="AFTER"
 side="BOTH"

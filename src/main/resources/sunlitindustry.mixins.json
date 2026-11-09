@@ -5,6 +5,19 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "sunlitindustry.refmap.json",
   "plugin": "com.society.sunlitindustry.mixin.IndustryMixinPlugin",
-  "mixins": ["RocketFuelMixin", "PotionBrewingInvoker", "VintageDelightBrewingMixin", "WorldEditStateIndexMixin"],
+  "mixins": [
+    "RocketFuelMixin",
+    "PotionBrewingInvoker",
+    "VintageDelightBrewingMixin",
+    "WorldEditStateIndexMixin",
+    "FTBBackupsPreviewMixin",
+    "KubeJSRecipeCacheMixin",
+    "GTResearchDataCopyMixin",
+    "WanxiangFormationMixin",
+    "ForgeTagConcurrencyMixin",
+    "AliClientTooltipCacheMixin",
+    "MekanismFusionBalanceMixin",
+    "MekanismFissionBalanceMixin"
+  ],
   "injectors": {"defaultRequire": 1}
 }

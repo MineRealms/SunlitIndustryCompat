@@ -4,5 +4,7 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod("sunlitindustry")
 public final class SunlitIndustryCompat {
-    public SunlitIndustryCompat() {}
+    public SunlitIndustryCompat() {
+        NuclearBalanceConfig.register();
+    }
 }
