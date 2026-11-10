@@ -1,15 +1,24 @@
 package com.society.sunlitindustry.performance.gt;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.lang.ref.WeakReference;
+import java.util.ArrayDeque;
 
 public final class GtShapeCaches {
-    private static final Set<GtShapeCacheOwner> OWNERS = Collections.newSetFromMap(new WeakHashMap<>());
+    private static final ArrayDeque<WeakReference<GtShapeCacheOwner>> OWNERS = new ArrayDeque<>();
 
-    public static synchronized void track(GtShapeCacheOwner owner) { OWNERS.add(owner); }
+    public static synchronized void track(GtShapeCacheOwner owner) {
+        OWNERS.removeIf(reference -> reference.get() == null || reference.get() == owner);
+        OWNERS.addLast(new WeakReference<>(owner));
+        while (OWNERS.size() > 16) {
+            var evicted = OWNERS.removeFirst().get();
+            if (evicted != null) evicted.sunlitindustry$clearShapes();
+        }
+    }
     public static synchronized void invalidate() {
-        OWNERS.forEach(GtShapeCacheOwner::sunlitindustry$clearShapes);
+        for (var reference : OWNERS) {
+            var owner = reference.get();
+            if (owner != null) owner.sunlitindustry$clearShapes();
+        }
         OWNERS.clear();
     }
 

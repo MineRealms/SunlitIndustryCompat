@@ -58,7 +58,7 @@ Each machine definition can retain a bounded snapshot of its native preview page
 receive fresh arrays, BlockInfo objects, NBT and ItemStacks. Runtime `lastEntity` fields, callbacks,
 custom BlockInfo subclasses and worlds are never cached. Suppliers replaced through native setters,
 resource reload and server shutdown invalidate snapshots. Callback-bearing shapes use the native
-path. The current bounds are 32 pages and 65,536 cells per definition. This experiment defaults off;
+path. The current bounds are 16 retained definitions, 32 pages and 65,536 cells per definition. This experiment defaults off;
 dynamic suppliers require additional pack-specific validation.
 
 ## Central Wiring
