@@ -1,0 +1,7 @@
+# Dedicated-server GTCEu 7.5.3 optimizations; recipe/tag generation and reload remain native.
+enabled = true
+emptyRecipeIO = true
+fastSimulation = true
+cacheHandlerGroups = true
+fastAndConditions = true
+maxCachedHandlers = 64

@@ -8,6 +8,7 @@ public final class SunlitIndustryCompat {
     public SunlitIndustryCompat() {
         NuclearBalanceConfig.register();
         MekItemEnergyConfig.register();
+        ServerPerformanceConfig.register();
         if (ModList.get().isLoaded("gtceu") && ModList.get().isLoaded("mekanism")) {
             MekEuItemCapabilities.register();
         }
