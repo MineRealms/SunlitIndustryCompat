@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class AE2CompactCellNbtMixin {
     @Shadow @Final private ItemStack i;
 
-    @Inject(method = "<init>", at = @At("HEAD"))
+    @Inject(method = "<init>", at = @At("RETURN"))
     private void sunlitindustry$readCompactKeys(IBasicCellItem cellType, ItemStack stack,
             ISaveProvider container, CallbackInfo ci) {
         // Always accept previously written cells, including when compact writing has been disabled.
