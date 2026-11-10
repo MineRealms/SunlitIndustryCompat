@@ -1,0 +1,26 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+String keys=java.util.stream.IntStream.range(0,63).mapToObj(i->"{'#type':'custom:chemical',id:'example:variant_"+i+"',tag:{data:'"+"preserve custom addon data ".repeat(12)+"'}}").collect(java.util.stream.Collectors.joining(","));
+String amounts=java.util.stream.IntStream.range(0,63).mapToObj(i->(2147483648L+i)+"L").collect(java.util.stream.Collectors.joining(","));
+String text="{keys:["+keys+"],amts:[L;"+amounts+"],ic:123456789L,display:'retained upgrades and custom data'}";
+var original=net.minecraft.nbt.TagParser.m_129359_(text);var cell=net.minecraft.nbt.TagParser.m_129359_(text);
+var writeMethod=java.util.Arrays.stream(net.minecraft.nbt.NbtIo.class.getDeclaredMethods()).filter(m->java.lang.reflect.Modifier.isStatic(m.getModifiers())&&m.getReturnType()==void.class&&java.util.Arrays.equals(m.getParameterTypes(),new Class<?>[]{net.minecraft.nbt.CompoundTag.class,java.io.DataOutput.class})).findFirst().orElseThrow();
+java.util.function.ToIntFunction<net.minecraft.nbt.CompoundTag> nbtSize=tag->{try{var bytes=new java.io.ByteArrayOutputStream();writeMethod.invoke(null,tag,new java.io.DataOutputStream(bytes));return bytes.size();}catch(Exception e){throw new RuntimeException(e);}};
+if(!com.society.sunlitindustry.performance.ae2.network.CompactCellNbt.compact(cell))throw new IllegalStateException("fixture did not compact");
+int rawSize=nbtSize.applyAsInt(original),compactSize=nbtSize.applyAsInt(cell);
+if(!com.society.sunlitindustry.performance.ae2.network.CompactCellNbt.expand(cell)||!original.equals(cell))throw new IllegalStateException("arbitrary key payload did not round trip");
+var item=appeng.core.definitions.AEItems.ITEM_CELL_256K.stack();
+var inventory=appeng.me.cells.BasicCellInventory.createInventory(item,null);
+var source=appeng.api.networking.security.IActionSource.empty();var diamond=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond"));
+for(int i=0;i<24;i++){
+ var stack=new net.minecraft.world.item.ItemStack(diamond);stack.m_41751_(net.minecraft.nbt.TagParser.m_129359_("{variant:"+i+",data:'"+"long repeatable item payload ".repeat(8)+"'}"));
+ if(inventory.insert(appeng.api.stacks.AEItemKey.of(stack),1000,appeng.api.config.Actionable.MODULATE,source)!=1000)throw new IllegalStateException("cell input failed");
+}
+inventory.persist();var expected=inventory.getAvailableStacks();
+var reopened=appeng.me.cells.BasicCellInventory.createInventory(item,null);var actual=reopened.getAvailableStacks();
+if(actual.size()!=expected.size())throw new IllegalStateException("cell reopening changed type count");
+for(var entry:expected)if(actual.get(entry.getKey())!=entry.getLongValue())throw new IllegalStateException("cell reopening changed amount");
+for(var entry:expected)if(reopened.extract(entry.getKey(),1000,appeng.api.config.Actionable.MODULATE,source)!=1000)throw new IllegalStateException("cell reopening changed extraction");
+if(!reopened.getAvailableStacks().isEmpty())throw new IllegalStateException("cell did not empty");
+var result=new com.google.gson.JsonObject();result.addProperty("syntheticNbtBytesBefore",rawSize);result.addProperty("syntheticNbtBytesAfter",compactSize);result.addProperty("compactWritingEnabled",com.society.sunlitindustry.ServerPerformanceConfig.ae2CompactCellNbt());result.addProperty("liveCellVariants",24);result.addProperty("liveCellRoundTrip",true);
+return "PASS "+result;

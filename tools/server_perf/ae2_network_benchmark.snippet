@@ -1,0 +1,41 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var key=appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond")));
+var source=appeng.api.networking.security.IActionSource.empty();
+class FullProbeStorage implements appeng.api.storage.MEStorage {
+ long calls;boolean preferred;
+ FullProbeStorage(boolean preferred){this.preferred=preferred;}
+ public boolean isPreferredStorageFor(appeng.api.stacks.AEKey k,appeng.api.networking.security.IActionSource s){return preferred;}
+ public long insert(appeng.api.stacks.AEKey k,long amount,appeng.api.config.Actionable mode,appeng.api.networking.security.IActionSource s){calls++;return 0;}
+ public long extract(appeng.api.stacks.AEKey k,long amount,appeng.api.config.Actionable mode,appeng.api.networking.security.IActionSource s){calls++;return 0;}
+ public net.minecraft.network.chat.Component getDescription(){return net.minecraft.network.chat.Component.m_237113_("probe");}
+}
+var network=new appeng.me.storage.NetworkStorage();var stores=new java.util.ArrayList<FullProbeStorage>();
+for(int priority=0;priority<32;priority++)for(int slot=0;slot<8;slot++){var store=new FullProbeStorage(slot%3==0);stores.add(store);network.mount(priority,store);}
+var fuzzy=new appeng.api.stacks.KeyCounter();var pickaxe=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:iron_pickaxe"));
+for(int damage=0;damage<=250;damage++){var stack=new net.minecraft.world.item.ItemStack(pickaxe);stack.m_41751_(net.minecraft.nbt.TagParser.m_129359_("{Damage:"+damage+"}"));fuzzy.add(appeng.api.stacks.AEItemKey.of(stack),1);}
+var queryStack=new net.minecraft.world.item.ItemStack(pickaxe);queryStack.m_41751_(net.minecraft.nbt.TagParser.m_129359_("{Damage:80}"));var query=appeng.api.stacks.AEItemKey.of(queryStack);
+var cellItem=appeng.core.definitions.AEItems.ITEM_CELL_256K.stack();
+var cell=appeng.me.cells.BasicCellInventory.createInventory(cellItem,()->{});
+appeng.api.stacks.AEItemKey cellKey=null;
+for(int variant=0;variant<63;variant++){
+ var stack=new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond")));
+ stack.m_41751_(net.minecraft.nbt.TagParser.m_129359_("{variant:"+variant+"}"));var variantKey=appeng.api.stacks.AEItemKey.of(stack);
+ if(cell.insert(variantKey,1000,appeng.api.config.Actionable.MODULATE,source)!=1000)throw new IllegalStateException("cell fixture failed");if(variant==0)cellKey=variantKey;
+}
+final var accountingKey=cellKey;
+var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
+var result=new com.google.gson.JsonObject();result.addProperty("cacheEnabled",!Boolean.getBoolean("sunlitindustry.disableServerOptimizations"));result.addProperty("storageCount",stores.size());
+for(var spec:new Object[][]{
+ {"routingInsert",(java.util.function.LongSupplier)()->network.insert(key,1,appeng.api.config.Actionable.SIMULATE,source)},
+ {"routingExtract",(java.util.function.LongSupplier)()->network.extract(key,1,appeng.api.config.Actionable.SIMULATE,source)},
+ {"fuzzyQuery",(java.util.function.LongSupplier)()->fuzzy.findFuzzy(query,appeng.api.config.FuzzyMode.PERCENT_50).size()},
+ {"cellAccounting",(java.util.function.LongSupplier)()->cell.insert(accountingKey,1,appeng.api.config.Actionable.MODULATE,source)+cell.extract(accountingKey,1,appeng.api.config.Actionable.MODULATE,source)}}){
+ var fn=(java.util.function.LongSupplier)spec[1];var samples=new com.google.gson.JsonArray();
+ for(int round=-5;round<4;round++){
+  long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;int iterations=50000;
+  for(int i=0;i<iterations;i++)checksum+=fn.getAsLong();long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-before;
+  var sample=new com.google.gson.JsonObject();sample.addProperty("round",round);sample.addProperty("iterations",iterations);sample.addProperty("nanosPerOp",(double)elapsed/iterations);sample.addProperty("bytesPerOp",(double)allocated/iterations);sample.addProperty("checksum",checksum);samples.add(sample);
+ }result.add((String)spec[0],samples);
+}
+return "PASS "+result;

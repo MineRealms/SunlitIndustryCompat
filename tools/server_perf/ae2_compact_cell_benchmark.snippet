@@ -1,0 +1,18 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+String keys=java.util.stream.IntStream.range(0,63).mapToObj(i->"{'#type':'custom:chemical',id:'example:variant_"+i+"',tag:{data:'"+"preserve custom addon data ".repeat(12)+"'}}").collect(java.util.stream.Collectors.joining(","));
+String amounts=java.util.stream.IntStream.range(0,63).mapToObj(i->(2147483648L+i)+"L").collect(java.util.stream.Collectors.joining(","));
+var cell=net.minecraft.nbt.TagParser.m_129359_("{keys:["+keys+"],amts:[L;"+amounts+"],ic:123456789L}");
+var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
+var result=new com.google.gson.JsonObject();var samples=new com.google.gson.JsonArray();
+for(int round=-5;round<4;round++){
+ long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;int iterations=500;
+ for(int i=0;i<iterations;i++){
+  if(!com.society.sunlitindustry.performance.ae2.network.CompactCellNbt.compact(cell))throw new IllegalStateException("compact failed");
+  if(!com.society.sunlitindustry.performance.ae2.network.CompactCellNbt.expand(cell))throw new IllegalStateException("expand failed");checksum++;
+ }
+ long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-before;
+ var sample=new com.google.gson.JsonObject();sample.addProperty("round",round);sample.addProperty("iterations",iterations);sample.addProperty("nanosPerCompactExpand",(double)elapsed/iterations);sample.addProperty("bytesPerCompactExpand",(double)allocated/iterations);sample.addProperty("checksum",checksum);samples.add(sample);
+}
+result.add("compactExpand",samples);result.addProperty("note","Compression tradeoff benchmark; not a speedup against native cell I/O");
+return "PASS "+result;

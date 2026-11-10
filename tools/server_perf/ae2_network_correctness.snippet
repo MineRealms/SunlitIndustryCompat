@@ -1,0 +1,60 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var key=appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond")));
+var source=appeng.api.networking.security.IActionSource.empty();
+var checks=new java.util.ArrayList<String>();
+class ProbeStorage implements appeng.api.storage.MEStorage {
+ long stock,capacity,calls;boolean preferred;Runnable afterInsert;
+ ProbeStorage(long capacity,boolean preferred){this.capacity=capacity;this.preferred=preferred;}
+ public boolean isPreferredStorageFor(appeng.api.stacks.AEKey k,appeng.api.networking.security.IActionSource s){if(s!=source)throw new IllegalStateException("source lost");return preferred;}
+ public long insert(appeng.api.stacks.AEKey k,long amount,appeng.api.config.Actionable mode,appeng.api.networking.security.IActionSource s){
+  if(s!=source||k!=key)throw new IllegalStateException("insert context lost");calls++;long inserted=Math.min(amount,capacity-stock);
+  if(mode==appeng.api.config.Actionable.MODULATE)stock+=inserted;
+  if(afterInsert!=null){var action=afterInsert;afterInsert=null;action.run();}return inserted;
+ }
+ public long extract(appeng.api.stacks.AEKey k,long amount,appeng.api.config.Actionable mode,appeng.api.networking.security.IActionSource s){
+  if(s!=source||k!=key)throw new IllegalStateException("extract context lost");calls++;long extracted=Math.min(amount,stock);
+  if(mode==appeng.api.config.Actionable.MODULATE)stock-=extracted;return extracted;
+ }
+ public net.minecraft.network.chat.Component getDescription(){return net.minecraft.network.chat.Component.m_237113_("probe");}
+}
+var network=new appeng.me.storage.NetworkStorage();
+var first=new ProbeStorage(64,false);var preferred=new ProbeStorage(64,true);var low=new ProbeStorage(64,false);
+network.mount(10,first);network.mount(10,preferred);network.mount(0,low);
+if(network.insert(key,100,appeng.api.config.Actionable.MODULATE,source)!=100||preferred.stock!=64||first.stock!=36||low.stock!=0)throw new IllegalStateException("preferred routing changed");
+if(network.extract(key,40,appeng.api.config.Actionable.MODULATE,source)!=40||first.stock!=0||preferred.stock!=60)throw new IllegalStateException("same priority extraction order changed");
+if(network.insert(key,50,appeng.api.config.Actionable.SIMULATE,source)!=50||first.stock!=0||preferred.stock!=60)throw new IllegalStateException("simulation changed storage");
+checks.add("priority, same-priority order, preferred two-pass routing, source and simulation");
+var queued=new appeng.me.storage.NetworkStorage();var actor=new ProbeStorage(8,true);var removed=new ProbeStorage(100,false);var remaining=new ProbeStorage(100,false);
+queued.mount(10,actor);queued.mount(10,removed);queued.mount(0,remaining);
+actor.afterInsert=()->{if(queued.extract(key,1,appeng.api.config.Actionable.MODULATE,source)!=0)throw new IllegalStateException("reentrancy guard lost");queued.unmount(removed);};
+if(queued.insert(key,20,appeng.api.config.Actionable.MODULATE,source)!=20||actor.stock!=8||removed.stock!=0||remaining.stock!=12)throw new IllegalStateException("queued unmount changed routing");
+checks.add("nested extraction guard and immediate visibility of queued unmount");
+var mounting=new appeng.me.storage.NetworkStorage();var existing=new ProbeStorage(8,true);var added=new ProbeStorage(100,false);mounting.mount(10,existing);
+existing.afterInsert=()->mounting.mount(0,added);
+if(mounting.insert(key,20,appeng.api.config.Actionable.MODULATE,source)!=8||added.stock!=0)throw new IllegalStateException("queued mount visible too early");
+if(mounting.insert(key,12,appeng.api.config.Actionable.MODULATE,source)!=12||added.stock!=12)throw new IllegalStateException("queued mount not flushed");
+checks.add("queued mount deferred until next operation");
+var pickaxe=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:iron_pickaxe"));
+var fuzzy=new appeng.api.stacks.KeyCounter();
+for(int damage=0;damage<=250;damage++){
+ var stack=new net.minecraft.world.item.ItemStack(pickaxe);stack.m_41751_(net.minecraft.nbt.TagParser.m_129359_("{Damage:"+damage+"}"));fuzzy.add(appeng.api.stacks.AEItemKey.of(stack),1);
+}
+int fuzzyComparisons=0;
+for(var mode:appeng.api.config.FuzzyMode.values())for(int damage=0;damage<=250;damage+=5){
+ var stack=new net.minecraft.world.item.ItemStack(pickaxe);stack.m_41751_(net.minecraft.nbt.TagParser.m_129359_("{Damage:"+damage+"}"));var query=appeng.api.stacks.AEItemKey.of(stack);
+ int breakpoint=mode.calculateBreakPoint(query.getFuzzySearchMaxValue());int expected=0;
+ for(int candidate=0;candidate<=250;candidate++)if(mode==appeng.api.config.FuzzyMode.IGNORE_ALL||(damage<=breakpoint)==(candidate<=breakpoint))expected++;
+ for(int repeat=0;repeat<3;repeat++){if(fuzzy.findFuzzy(query,mode).size()!=expected)throw new IllegalStateException("fuzzy breakpoint changed: "+mode+"@"+damage);fuzzyComparisons++;}
+}
+checks.add("fuzzy damage buckets match native inclusive/exclusive semantics: "+fuzzyComparisons);
+var mutationStack=new net.minecraft.world.item.ItemStack(pickaxe);mutationStack.m_41751_(net.minecraft.nbt.TagParser.m_129359_("{Damage:80}"));var mutationKey=appeng.api.stacks.AEItemKey.of(mutationStack);
+var liveView=fuzzy.findFuzzy(mutationKey,appeng.api.config.FuzzyMode.PERCENT_50);int beforeSize=liveView.size();
+var iterator=liveView.iterator();iterator.next();iterator.remove();
+if(fuzzy.findFuzzy(mutationKey,appeng.api.config.FuzzyMode.PERCENT_50).size()!=beforeSize-1)throw new IllegalStateException("fuzzy entry iterator removal stale");
+fuzzy.clear();if(!fuzzy.findFuzzy(mutationKey,appeng.api.config.FuzzyMode.PERCENT_50).isEmpty())throw new IllegalStateException("fuzzy clear stale");
+fuzzy.add(mutationKey,2);if(fuzzy.findFuzzy(mutationKey,appeng.api.config.FuzzyMode.PERCENT_50).size()!=1)throw new IllegalStateException("fuzzy reinsertion stale");
+fuzzy.remove(mutationKey);if(!fuzzy.findFuzzy(mutationKey,appeng.api.config.FuzzyMode.PERCENT_50).isEmpty())throw new IllegalStateException("fuzzy primary removal stale");
+checks.add("live fuzzy views preserve iterator removal, clear, reinsertion and primary deletion");
+var result=new com.google.gson.JsonObject();result.add("checks",new com.google.gson.Gson().toJsonTree(checks));
+return "PASS "+result;
