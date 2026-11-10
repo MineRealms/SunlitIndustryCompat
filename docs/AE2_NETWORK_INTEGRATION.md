@@ -18,12 +18,12 @@ cache avoids cross-thread mutation between crafting workers and the server.
 Custom keys still enter their native AE2 indexes, and all five fuzzy modes keep
 their original inclusive/exclusive breakpoints.
 
-## Cell Accounting
+## Measured And Rejected: Cell Accounting
 
-`saveChanges` uses a primitive long iterator instead of boxing each stored amount
-as `Long`. Count arithmetic, dirty state, save-provider callbacks and persistence
-remain native. Amounts are recomputed on every change; direct map mutation cannot
-invalidate a retained total.
+A primitive `saveChanges` counter was measured with 63 distinct item keys. It did
+not reduce allocation and was slightly slower than AE2 native accounting, so its
+Mixin and helper were removed. The native mutation benchmark remains available
+for later AE2-version comparisons.
 
 ## Optional Compact Cell Format
 
@@ -60,10 +60,10 @@ native AE2 priority, simulation, reentrancy and queue semantics.
 ## Configuration And Mixins
 
 - `ae2FuzzyBounds` is enabled by default.
-- `ae2CellAccounting` is enabled by default.
 - `ae2CompactCellNbt` is disabled by default; its reader accepts prior compact
   payloads regardless of the write flag.
 - `AE2NetworkRoutingMixin` is not shipped: its 256-store benchmark regressed.
+- `AE2CellAccountingMixin` is not shipped: it added no measured allocation win.
 
 Live probes cover native priority-routing semantics, fuzzy damage buckets and
 mutable live views, cell accounting, arbitrary-key codec round trips, real AE2

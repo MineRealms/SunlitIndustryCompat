@@ -38,7 +38,6 @@
     "performance.gt.GtMatchingShapesMixin",
     "performance.ae2.network.AE2FuzzyBoundsMixin",
     "performance.ae2.network.AE2FuzzyRangeViewMixin",
-    "performance.ae2.network.AE2CellAccountingMixin",
     "performance.ae2.network.AE2CompactCellNbtMixin",
     "performance.ae2.AE2PatternCacheLevelMixin",
     "performance.ae2.AE2CraftingPatternDecodeMixin",

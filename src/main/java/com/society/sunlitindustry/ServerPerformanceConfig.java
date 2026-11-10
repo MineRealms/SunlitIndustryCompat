@@ -18,7 +18,6 @@ public final class ServerPerformanceConfig {
     private static final ForgeConfigSpec.BooleanValue AE2_DEFAULT_FLUID_KEY_CACHE = BUILDER
             .define("ae2DefaultFluidKeyCache", true);
     private static final ForgeConfigSpec.BooleanValue AE2_FUZZY = BUILDER.define("ae2FuzzyBounds", true);
-    private static final ForgeConfigSpec.BooleanValue AE2_CELL_ACCOUNTING = BUILDER.define("ae2CellAccounting", true);
     private static final ForgeConfigSpec.BooleanValue AE2_COMPACT_CELL = BUILDER
             .comment("Opt-in compressed in-item cell keys. Requires this mod on both client and server.")
             .define("ae2CompactCellNbt", false);
@@ -41,7 +40,6 @@ public final class ServerPerformanceConfig {
     public static boolean ae2DefaultKeyCache() { return enabled() && read(AE2_DEFAULT_KEY_CACHE); }
     public static boolean ae2DefaultFluidKeyCache() { return enabled() && read(AE2_DEFAULT_FLUID_KEY_CACHE); }
     public static boolean ae2FuzzyBounds() { return enabled() && read(AE2_FUZZY); }
-    public static boolean ae2CellAccounting() { return enabled() && read(AE2_CELL_ACCOUNTING); }
     public static boolean ae2CompactCellNbt() { return enabled() && read(AE2_COMPACT_CELL); }
     public static int maxHandlers() { return SPEC.isLoaded() ? MAX_HANDLERS.get() : 64; }
 

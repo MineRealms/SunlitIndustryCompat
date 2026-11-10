@@ -30,7 +30,7 @@ for(var spec:new Object[][]{
  {"routingInsert",(java.util.function.LongSupplier)()->network.insert(key,1,appeng.api.config.Actionable.SIMULATE,source)},
  {"routingExtract",(java.util.function.LongSupplier)()->network.extract(key,1,appeng.api.config.Actionable.SIMULATE,source)},
  {"fuzzyQuery",(java.util.function.LongSupplier)()->fuzzy.findFuzzy(query,appeng.api.config.FuzzyMode.PERCENT_50).size()},
- {"cellAccounting",(java.util.function.LongSupplier)()->cell.insert(accountingKey,1,appeng.api.config.Actionable.MODULATE,source)+cell.extract(accountingKey,1,appeng.api.config.Actionable.MODULATE,source)}}){
+ {"nativeCellMutation",(java.util.function.LongSupplier)()->cell.insert(accountingKey,1,appeng.api.config.Actionable.MODULATE,source)+cell.extract(accountingKey,1,appeng.api.config.Actionable.MODULATE,source)}}){
  var fn=(java.util.function.LongSupplier)spec[1];var samples=new com.google.gson.JsonArray();
  for(int round=-5;round<4;round++){
   long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;int iterations=50000;
