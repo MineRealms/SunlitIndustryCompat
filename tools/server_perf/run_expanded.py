@@ -26,7 +26,7 @@ def execute(code):
 
 
 names = args.only or ['recipe_status', 'ae2_network_correctness', 'ae2_network_benchmark',
-                     'ae2_crafting_benchmark', 'ae2_capability_correctness', 'benchmark',
+                     'ae2_crafting_benchmark', 'ae2_adjacent_world_benchmark', 'benchmark',
                      'group_correctness', 'ae2_key_correctness']
 for name in names:
     if '/' in name or '\\' in name or '..' in name:

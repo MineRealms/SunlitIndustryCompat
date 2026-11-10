@@ -73,7 +73,7 @@ try{
    if(operation.equals("primitiveCraftMerge")&&((java.util.Map<appeng.api.crafting.IPatternDetails,Long>)craftsField.get(fixture)).get(pattern)!=2000000L)throw new IllegalStateException("Craft total changed");
    samples.add(operation,rounds);
   }
-  samples.addProperty("enabled",com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.hotPrimaries());result.add(optimized?"optimized":"native",samples);
+  samples.addProperty("primitiveCountsEnabled",com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.primitiveCounts());result.add(optimized?"optimized":"native",samples);
  }
  if(!stateSnapshots.get(0).equals(stateSnapshots.get(1)))throw new IllegalStateException("State divergence "+stateSnapshots);
  result.addProperty("differentialState",stateSnapshots.get(0));

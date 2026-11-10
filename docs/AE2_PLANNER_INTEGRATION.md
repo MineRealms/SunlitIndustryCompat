@@ -11,7 +11,8 @@ Register these dedicated-server/exact-AE2-15.4.10 mixins behind the existing inc
 - `performance.ae2.planner.AE2PlannerGraphMemoMixin`
 - `performance.ae2.planner.AE2PlannerSimulationStateMixin`
 
-Config: `sunlitindustry-ae2-planner.toml`. All three features default on and expose individual switches.
+Config: `sunlitindustry-ae2-planner.toml`. Primitive craft counts and graph metadata default on and
+expose individual switches.
 Flags refresh on Sunlit configuration load/reload; hot paths read a volatile immutable flag snapshot.
 
 ## Adaptation
@@ -24,10 +25,6 @@ per-pattern craft counts (`U3164U08F2U08E5U08FE.java`).
 
 This module keeps AE2's native search/branching algorithm and applies compatible state/graph techniques:
 
-- Per-simulation two-entry identity cache for already initialized primary-key groups. Native KeyCounter
-  itself uses primary identity. Cold groups still use native lazy parent enumeration and quantity
-  extraction; only repeated initialization checks are skipped. There is no cached item quantity or
-  cross-branch/global result cache.
 - Primitive per-pattern craft counts avoid a boxed `Long` allocation on every process visit. The map
   still implements `Map<IPatternDetails, Long>` for native plan generation, merging and UI consumers.
 - Node counts and multiple-path metadata are memoized per node and per calculation graph generation.
@@ -37,6 +34,11 @@ This module keeps AE2's native search/branching algorithm and applies compatible
 No search decisions are cached: inventory branches, missing-item reporting, byproducts, substitution,
 cycle rejection, quantity arithmetic and native pause/cancellation points remain in the native engine.
 This is not a wholesale transplant of the GTO component/SCC planner.
+
+The two-entry primary-key shortcut was measured and rejected: repeated hot-key simulation was slower
+with the shortcut and allocated the same amount. It is not present in the runtime Mixin set. Primitive
+craft counts trade a few nanoseconds in a tiny local merge loop for avoiding a boxed count allocation;
+the independent config switch lets packs choose whether that allocation reduction is worthwhile.
 
 ## Verification
 

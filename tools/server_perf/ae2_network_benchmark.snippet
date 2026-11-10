@@ -25,7 +25,7 @@ for(int variant=0;variant<63;variant++){
 }
 final var accountingKey=cellKey;
 var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
-var result=new com.google.gson.JsonObject();result.addProperty("cacheEnabled",!Boolean.getBoolean("sunlitindustry.disableServerOptimizations"));result.addProperty("storageCount",stores.size());
+var result=new com.google.gson.JsonObject();result.addProperty("customRoutingOverridePresent",false);result.addProperty("storageCount",stores.size());
 for(var spec:new Object[][]{
  {"routingInsert",(java.util.function.LongSupplier)()->network.insert(key,1,appeng.api.config.Actionable.SIMULATE,source)},
  {"routingExtract",(java.util.function.LongSupplier)()->network.extract(key,1,appeng.api.config.Actionable.SIMULATE,source)},
