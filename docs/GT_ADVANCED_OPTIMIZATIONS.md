@@ -42,6 +42,41 @@ No controller manually ticks a member and there is no second scheduler for activ
 
 This option defaults off until live hatch/cover/unformation/chunk lifecycle probes pass.
 
+## Experimental ME Flush Scheduling
+
+Native ME output item buses and fluid hatches already accept recipe output into a persisted local
+KeyStorage. The optional scheduler coalesces each hatch's `autoIO` calls until END of the same level
+tick. The original autoIO method then rechecks grid connectivity, sync interval and storage insertion
+on the server thread. The queue contains no copied output amounts and cannot create a second item
+owner. Block removal or chunk unload leaves authoritative quantities in the original GT lifecycle.
+Queue overflow uses native immediate handling. There is no worker-thread mutation and no promise
+that every workload benefits; this scheduling experiment defaults off.
+
+## Experimental Preview Shapes
+
+Each machine definition can retain a bounded snapshot of its native preview pages. Returned shapes
+receive fresh arrays, BlockInfo objects, NBT and ItemStacks. Runtime `lastEntity` fields, callbacks,
+custom BlockInfo subclasses and worlds are never cached. Suppliers replaced through native setters,
+resource reload and server shutdown invalidate snapshots. Callback-bearing shapes use the native
+path. The current bounds are 32 pages and 65,536 cells per definition. This experiment defaults off;
+dynamic suppliers require additional pack-specific validation.
+
+## Central Wiring
+
+Call `GtAdvancedConfig.register()` during mod construction. Register the following mixins behind
+the existing dedicated-server/exact-GT-7.5.3/GTO-conflict gates:
+
+- `performance.gt.GtRecipePipelineMixin`, `performance.gt.GtReusableRecipeRunnerMixin`.
+- `performance.gt.GtItemParallelScratchMixin`, `performance.gt.GtFluidParallelScratchMixin`.
+- `performance.gt.GtChunkTickerAccess`, `performance.gt.GtDormantChunkTickerMixin`,
+  `performance.gt.GtDormantPartMachineMixin`, `performance.gt.GtDormantPartLifecycleMixin`.
+- `performance.gt.GtMatchingShapesMixin`, `performance.gt.GtPreviewBlockInfoAccess`.
+- `performance.gt.GtDeferredMeBusMixin`, `performance.gt.GtDeferredMeHatchMixin` additionally need AE2.
+
+The parallel scope mixins require MixinExtras 0.4+ WrapMethod. Central lifecycle forwards level END
+ticks, level unloads and server stop to GtAdvancedLifecycle. Resource/config reload on the server
+thread calls `resourcesReloaded()` to drop scratch/shape caches and restore dormant tickers.
+
 ## Not Equivalent To GTO's Modified Jar
 
 Stock 7.5.3 already computes voltage tier using leading-zero bit arithmetic. Adding a persistent tier

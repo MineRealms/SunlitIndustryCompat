@@ -1,0 +1,14 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var level=server.m_129783_();var count=new java.util.concurrent.atomic.AtomicInteger();
+com.society.sunlitindustry.performance.gt.GtDeferredFlushTarget target=()->{if(!server.m_18695_())throw new IllegalStateException("Off-thread flush");count.incrementAndGet();};
+if(!com.society.sunlitindustry.performance.gt.GtDeferredMeFlush.enqueue(level,target))throw new IllegalStateException("Initial queue rejected");
+if(!com.society.sunlitindustry.performance.gt.GtDeferredMeFlush.enqueue(level,target))throw new IllegalStateException("Duplicate queue rejected");
+if(count.get()!=0)throw new IllegalStateException("Flush ran before commit phase");
+com.society.sunlitindustry.performance.gt.GtDeferredMeFlush.flush(level);
+if(count.get()!=1)throw new IllegalStateException("Flush was not deduplicated");
+com.society.sunlitindustry.performance.gt.GtDeferredMeFlush.enqueue(level,target);
+com.society.sunlitindustry.performance.gt.GtDeferredMeFlush.unload(level);
+com.society.sunlitindustry.performance.gt.GtDeferredMeFlush.flush(level);
+if(count.get()!=1)throw new IllegalStateException("Unloaded target executed");
+return "PASS bounded ME scheduler phase, duplicate coalescing, server-thread commit and unload cancellation";

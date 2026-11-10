@@ -1,0 +1,55 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+com.gregtechceu.gtceu.api.recipe.GTRecipe seedRecipe=null;
+for(var candidate:server.m_129894_().m_44051_())if(candidate instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe r){seedRecipe=r;break;}
+if(seedRecipe==null)throw new IllegalStateException("Missing GT recipe");
+var cap=com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP;
+var holder=new com.gregtechceu.gtceu.api.capability.recipe.IRecipeCapabilityHolder(){
+ final java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.IO,java.util.List<com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList>> proxy=new java.util.EnumMap<>(com.gregtechceu.gtceu.api.capability.recipe.IO.class);
+ final java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.IO,java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<?>,java.util.List<com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler<?>>>> flat=new java.util.EnumMap<>(com.gregtechceu.gtceu.api.capability.recipe.IO.class);
+ public java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.IO,java.util.List<com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList>> getCapabilitiesProxy(){return proxy;}
+ public java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.IO,java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<?>,java.util.List<com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler<?>>>> getCapabilitiesFlat(){return flat;}
+};
+var trace=new StringBuilder();
+var handler=new com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler<net.minecraft.world.item.crafting.Ingredient>(){
+ public java.util.List<net.minecraft.world.item.crafting.Ingredient> handleRecipeInner(com.gregtechceu.gtceu.api.capability.recipe.IO io,com.gregtechceu.gtceu.api.recipe.GTRecipe recipe,java.util.List<net.minecraft.world.item.crafting.Ingredient> left,boolean simulated){
+  trace.append(io).append('/').append(simulated).append(':');
+  for(var ingredient:left)for(var stack:ingredient.m_43908_())trace.append(net.minecraft.core.registries.BuiltInRegistries.f_257033_.m_7981_(stack.m_41720_())).append('=').append(stack.m_41613_()).append(',');
+  trace.append(';');return null;
+ }
+ public java.util.List<Object> getContents(){return java.util.Collections.emptyList();}
+ public double getTotalContentAmount(){return 0;}
+ public com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<net.minecraft.world.item.crafting.Ingredient> getCapability(){return cap;}
+};
+holder.addHandlerList(com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList.of(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,handler));
+holder.addHandlerList(com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList.of(com.gregtechceu.gtceu.api.capability.recipe.IO.OUT,handler));
+int comparisons=0;
+for(var logic:java.util.List.of(com.gregtechceu.gtceu.api.recipe.chance.logic.ChanceLogic.OR,com.gregtechceu.gtceu.api.recipe.chance.logic.ChanceLogic.AND,com.gregtechceu.gtceu.api.recipe.chance.logic.ChanceLogic.XOR,com.gregtechceu.gtceu.api.recipe.chance.logic.ChanceLogic.FIRST)){
+ for(boolean simulated:new boolean[]{false,true})for(boolean tick:new boolean[]{false,true})for(var io:java.util.List.of(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,com.gregtechceu.gtceu.api.capability.recipe.IO.OUT)){
+  var recipe=seedRecipe.copy();
+  recipe.parallels=3;recipe.subtickParallels=2;recipe.batchParallels=2;recipe.ocLevel=1;
+  recipe.inputChanceLogics.put(cap,logic);recipe.outputChanceLogics.put(cap,logic);recipe.tickInputChanceLogics.put(cap,logic);recipe.tickOutputChanceLogics.put(cap,logic);
+  var entries=new java.util.LinkedHashMap<com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<?>,java.util.List<com.gregtechceu.gtceu.api.recipe.content.Content>>();
+  var contents=new java.util.ArrayList<com.gregtechceu.gtceu.api.recipe.content.Content>();
+  int[] chance={10000,2300,0,7100};var items=new net.minecraft.world.item.Item[4];var ids=new String[]{"minecraft:cobblestone","minecraft:dirt","minecraft:netherrack","minecraft:iron_ingot"};
+  for(int i=0;i<4;i++)items[i]=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation(ids[i]));
+  for(int i=0;i<4;i++)contents.add(new com.gregtechceu.gtceu.api.recipe.content.Content(cap.of(new net.minecraft.world.item.ItemStack(items[i],i+1)),chance[i],10000,i==3?175:0));
+  entries.put(cap,contents);
+  String expected=null;
+  for(boolean pooled:new boolean[]{false,true}){
+   var chances=new java.util.HashMap<com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<?>,it.unimi.dsi.fastutil.objects.Object2IntMap<?>>();
+   var debt=new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<Object>();chances.put(cap,debt);
+   trace.setLength(0);recipe.groupColor=-1;com.gregtechceu.gtceu.api.GTValues.RNG.m_188584_(94876213L);
+   for(int run=0;run<128;run++){
+    var runner=pooled?com.society.sunlitindustry.performance.gt.GtRunnerPool.acquire(recipe,io,tick,holder,chances,simulated):new com.gregtechceu.gtceu.api.recipe.RecipeRunner(recipe,io,tick,holder,chances,simulated);
+    try{var result=runner.handle(entries);trace.append(result.isSuccess()).append('#').append(runner.getGroupColor()).append('|');recipe.groupColor=runner.getGroupColor();}
+    finally{if(pooled)com.society.sunlitindustry.performance.gt.GtRunnerPool.release(runner);}
+    for(var content:contents)trace.append(debt.getInt(content.content)).append(',');
+   }
+   trace.append("rng=").append(com.gregtechceu.gtceu.api.GTValues.RNG.m_188505_());
+   if(!pooled)expected=trace.toString();else if(!expected.equals(trace.toString()))throw new IllegalStateException("Runner mismatch "+logic+" simulated="+simulated+" tick="+tick+" io="+io);
+  }
+  comparisons+=128;
+ }
+}
+return "PASS GT native/pooled probability, debt and RNG order comparisons="+comparisons;

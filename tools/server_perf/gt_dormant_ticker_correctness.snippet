@@ -1,0 +1,28 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+if(!com.society.sunlitindustry.performance.gt.GtAdvancedConfig.dormantPartTick())throw new IllegalStateException("Enable experimentalDormantPartTick in test server config first");
+var level=server.m_129783_();
+var partPos=new net.minecraft.core.BlockPos(96,100,80);var controllerPos=partPos.m_7918_(1,0,0);
+var oldPart=level.m_8055_(partPos);var oldController=level.m_8055_(controllerPos);
+try{
+ level.m_46597_(controllerPos,com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation("gtceu:assembly_line")).getBlock().m_49966_());
+ level.m_46597_(partPos,com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation("gtceu:iv_parallel_hatch")).getBlock().m_49966_());
+ var machine=com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,partPos);
+ var part=(com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart)machine;
+ var controller=(com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,controllerPos);
+ part.addedToController(controller);
+ for(int i=0;i<3;i++)machine.serverTick();
+ var dormant=(com.society.sunlitindustry.performance.gt.GtDormantPart)machine;
+ if(!dormant.sunlitindustry$isDormant())throw new IllegalStateException("Native empty formed part failed to sleep: "+machine.getClass());
+ var count=new java.util.concurrent.atomic.AtomicInteger();var sub=machine.subscribeServerTick(count::incrementAndGet);
+ if(dormant.sunlitindustry$isDormant())throw new IllegalStateException("Subscription did not restore ticker");
+ for(int i=0;i<13;i++)machine.serverTick();
+ if(count.get()!=13)throw new IllegalStateException("Subscription must execute once per invocation: "+count);
+ sub.unsubscribe();machine.serverTick();
+ if(!dormant.sunlitindustry$isDormant())throw new IllegalStateException("Unsubscribed empty part did not sleep");
+ part.removedFromController(controller);
+ if(dormant.sunlitindustry$isDormant())throw new IllegalStateException("Unformation did not restore ticker");
+ var pending=machine.subscribeServerTick(count::incrementAndGet);machine.serverTick();pending.unsubscribe();
+ if(count.get()!=14)throw new IllegalStateException("Unformed subscription count mismatch");
+ return "PASS native formed part sleep, subscribe wake, exact-once dispatch, unsubscribe and unformation";
+}finally{level.m_46597_(partPos,oldPart);level.m_46597_(controllerPos,oldController);}
