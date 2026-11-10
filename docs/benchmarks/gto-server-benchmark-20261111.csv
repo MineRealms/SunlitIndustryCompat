@@ -1,0 +1,5 @@
+allocationReductionPercent,baselineMedianBytesPerOp,baselineMedianNanosPerOp,cachedMedianBytesPerOp,cachedMedianNanosPerOp,iterationsPerRound,kind,latencyReductionPercent,nativeMedianBytesPerOp,nativeMedianNanosPerOp,optimizedMedianBytesPerOp,optimizedMedianNanosPerOp,rounds,scenario
+97.0,800.0,478.57,,,20000,recipe_path,78.86307123304846,,,24.0,101.155,3,empty_recipe_io
+12.390670553935855,10976.0,11483.48,,,20000,recipe_path,8.128677021251395,,,9616.0,10550.025,3,simulated_recipe_match
+100.0,,,0.0,368.26666666666665,24000,handler_group_microbenchmark,87.49140232045356,1296.4066666666668,2944.108333333333,,,3,baseline: native build vs warm cache
+99.95050917201196,,,0.6106666666666667,451.96666666666664,24000,handler_group_microbenchmark,81.25967492260062,1233.8986666666667,2411.733333333333,,,3,optimized: native build vs warm cache

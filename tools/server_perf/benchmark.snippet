@@ -1,0 +1,86 @@
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null || !server.m_18695_()) throw new IllegalStateException("Server thread required");
+var level = server.m_129783_();
+var recipes = server.m_129894_().m_44051_();
+com.gregtechceu.gtceu.api.recipe.GTRecipe selectedRecipe = null;
+long probeRecipeCount = 0;
+for (Object raw : recipes) {
+    if (raw instanceof net.minecraft.world.item.crafting.Recipe<?> vanillaRecipe
+            && vanillaRecipe.m_6423_().toString().equals("sunlitindustry:perf_reload_probe")) probeRecipeCount++;
+    if (selectedRecipe == null && raw instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe gtRecipe
+            && !gtRecipe.inputs.getOrDefault(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP,
+                java.util.Collections.emptyList()).isEmpty()) selectedRecipe = gtRecipe;
+}
+if (selectedRecipe == null) throw new IllegalStateException("No GT item recipe found");
+final com.gregtechceu.gtceu.api.recipe.GTRecipe recipe = selectedRecipe;
+var pos = new net.minecraft.core.BlockPos(96,100,64);
+var previous = level.m_8055_(pos);
+var result=new com.google.gson.JsonObject();
+try {
+ level.m_46597_(pos,com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES
+    .get(new net.minecraft.resources.ResourceLocation("gtceu:lv_assembler")).getBlock().m_49966_());
+ var machine = com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,pos);
+ if (machine == null) throw new IllegalStateException("GT assembler machine missing");
+ machine.onLoad();
+ var logicMachine = (com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine)machine;
+ com.gregtechceu.gtceu.api.capability.recipe.IRecipeCapabilityHolder holder = logicMachine;
+ for (int i=0;i<12;i++) {
+  final int slot=i;
+  var handler = new com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler<net.minecraft.world.item.crafting.Ingredient>() {
+   public java.util.List<net.minecraft.world.item.crafting.Ingredient> handleRecipeInner(com.gregtechceu.gtceu.api.capability.recipe.IO io,com.gregtechceu.gtceu.api.recipe.GTRecipe r,java.util.List<net.minecraft.world.item.crafting.Ingredient> left,boolean simulate){return left;}
+   public java.util.List<Object> getContents(){return java.util.Collections.emptyList();}
+   public double getTotalContentAmount(){return 0;}
+   public com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<net.minecraft.world.item.crafting.Ingredient> getCapability(){return com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP;}
+   public int getPriority(){return slot%3;}
+  };
+  holder.addHandlerList(com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList.of(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,slot%4-1,handler));
+ }
+ java.util.List<com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList> handlers = holder.getCapabilitiesForIO(com.gregtechceu.gtceu.api.capability.recipe.IO.IN);
+ var cache=new com.society.sunlitindustry.GTHandlerGroups();
+ var nativeBuild=new java.util.function.IntSupplier(){public int getAsInt(){var map=new java.util.HashMap<com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerGroup,java.util.List<com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList>>();for(var h:handlers)com.gregtechceu.gtceu.api.recipe.RecipeHelper.addToRecipeHandlerMap(h.getGroup(),h,map);return map.size();}};
+ var cachedBuild=new java.util.function.IntSupplier(){public int getAsInt(){return cache.get(0,handlers,null).size();}};
+ var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();
+ bean.setThreadAllocatedMemoryEnabled(true);
+ long tid=Thread.currentThread().getId();
+ result.addProperty("gtRecipeId",recipe.id.toString());
+ result.addProperty("registeredRecipeCount",recipes.size());
+ result.addProperty("probeRecipeCount",probeRecipeCount);
+ result.addProperty("javaVersion",System.getProperty("java.version"));
+ result.addProperty("maxHeapBytes",Runtime.getRuntime().maxMemory());
+ result.addProperty("inputHandlers",handlers.size());
+ result.addProperty("serverMixinsEnabled",!Boolean.getBoolean("sunlitindustry.disableServerOptimizations"));
+ var groups=new com.google.gson.JsonArray();
+ for(var spec:new Object[][]{{"native_group_build",nativeBuild},{"cached_group_lookup",cachedBuild}}){
+  var fn=(java.util.function.IntSupplier)spec[1];for(int i=0;i<6000;i++)fn.getAsInt();
+  for(int round=0;round<4;round++){
+   long beforeBytes=bean.getThreadAllocatedBytes(tid),start=System.nanoTime();int sum=0;
+   for(int i=0;i<24000;i++)sum+=fn.getAsInt();
+   long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-beforeBytes;
+   var sample=new com.google.gson.JsonObject();sample.addProperty("scenario",(String)spec[0]);sample.addProperty("round",round);sample.addProperty("iterations",24000);sample.addProperty("nanosPerOp",(double)elapsed/24000);sample.addProperty("bytesPerOp",(double)allocated/24000);sample.addProperty("checksum",sum);groups.add(sample);
+  }
+ }
+ var empty=java.util.Collections.<com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<?>,java.util.List<com.gregtechceu.gtceu.api.recipe.content.Content>>emptyMap();
+ var chances=logicMachine.getRecipeLogic().getChanceCaches();
+ var emptyAction=new java.util.function.IntSupplier(){public int getAsInt(){com.gregtechceu.gtceu.api.recipe.RecipeHelper.handleRecipe(holder,recipe,com.gregtechceu.gtceu.api.capability.recipe.IO.IN,empty,chances,false,false);return 1;}};
+ var simulationAction=new java.util.function.IntSupplier(){public int getAsInt(){com.gregtechceu.gtceu.api.recipe.RecipeHelper.handleRecipe(holder,recipe,com.gregtechceu.gtceu.api.capability.recipe.IO.IN,recipe.inputs,chances,true,true);return 1;}};
+ var paths=new com.google.gson.JsonArray();
+ for(var spec:new Object[][]{{"empty_recipe_io",emptyAction},{"simulated_recipe_match",simulationAction}}){
+  var fn=(java.util.function.IntSupplier)spec[1];for(int i=0;i<5000;i++)fn.getAsInt();
+  for(int round=0;round<4;round++){
+   long beforeBytes=bean.getThreadAllocatedBytes(tid),start=System.nanoTime();int sum=0;
+   for(int i=0;i<20000;i++)sum+=fn.getAsInt();
+   long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-beforeBytes;
+   var sample=new com.google.gson.JsonObject();sample.addProperty("scenario",(String)spec[0]);sample.addProperty("round",round);sample.addProperty("iterations",20000);sample.addProperty("nanosPerOp",(double)elapsed/20000);sample.addProperty("bytesPerOp",(double)allocated/20000);sample.addProperty("checksum",sum);paths.add(sample);
+  }
+ }
+ com.society.sunlitindustry.ServerPerformanceStats.reset();
+ com.society.sunlitindustry.ServerPerformanceStats.setRecording(true);
+ for(int i=0;i<5000;i++){emptyAction.getAsInt();simulationAction.getAsInt();}
+ com.society.sunlitindustry.ServerPerformanceStats.setRecording(false);
+ result.add("groupSamples",groups);result.add("recipeSamples",paths);
+ result.add("optimizationCounters",new com.google.gson.Gson().toJsonTree(com.society.sunlitindustry.ServerPerformanceStats.snapshot()));
+ System.out.println("SUNLIT_PERF_BENCHMARK="+result);
+} finally {
+ level.m_46597_(pos,previous);
+}
+return "PASS "+result;

@@ -90,7 +90,9 @@ def main():
     runmods = RUN / 'mods'
     runmods.mkdir(parents=True, exist_ok=True)
     chosen.add(Path('G:/emoney-full-phase4-20261104/mods/rosetta_remote_debug_bridge-1.0.0.jar'))
-    chosen.add(HERE / 'build/libs/sunlit-industry-compat-1.20.1-0.3.0.jar')
+    chosen.add(HERE / 'build/libs/sunlit-industry-compat-1.20.1-0.4.0.jar')
+    for old in runmods.glob('sunlit-industry-compat-*.jar'):
+        old.unlink()
     manifest = []
     for path in sorted(chosen):
         shutil.copy2(path, runmods / path.name)
@@ -120,12 +122,19 @@ def main():
     scripts = RUN / 'kubejs/server_scripts/industry'
     scripts.mkdir(parents=True, exist_ok=True)
     shutil.copy2(PACK / 'kubejs/server_scripts/industry/voidMekaSuitAssembly.js', scripts)
+    shutil.copy2(HERE / 'tools/server_perf/perf_reload_probe.js', RUN / 'kubejs/server_scripts/00_perf_reload_probe.js')
     config = RUN / 'config'
     config.mkdir(exist_ok=True)
     shutil.copy2(PACK / 'config/gtceu.yaml', config / 'gtceu.yaml')
     shutil.copy2(PACK / 'config/sunlitindustry-common.toml', config)
+    shutil.copy2(HERE / 'pack/config/sunlitindustry-server-performance.toml', config)
+    (RUN / 'server.properties').write_text(
+        'server-ip=127.0.0.1\nserver-port=25584\nonline-mode=false\nenable-rcon=false\n'
+        'level-name=sunlit_perf_test\nlevel-type=minecraft:flat\ngenerate-structures=false\n'
+        'view-distance=3\nsimulation-distance=3\nspawn-protection=0\nmax-tick-time=-1\n'
+        'allow-flight=true\nmax-players=2\n', encoding='ascii')
     (RUN / 'evidence').mkdir(exist_ok=True)
-    marker.write_text(json.dumps({'purpose': 'isolated void suit and EU item tests', 'mods': manifest}, indent=2), encoding='utf-8')
+    marker.write_text(json.dumps({'purpose': 'isolated GT server optimization and KubeJS reload benchmark', 'mods': manifest}, indent=2), encoding='utf-8')
     print('Staged', len(chosen), 'mods in', RUN)
 
 
