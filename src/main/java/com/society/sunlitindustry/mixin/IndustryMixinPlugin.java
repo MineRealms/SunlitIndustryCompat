@@ -21,6 +21,12 @@ public final class IndustryMixinPlugin implements IMixinConfigPlugin {
                 || mixin.endsWith(".GTItemParallelGroupsMixin") || mixin.endsWith(".GTFluidParallelGroupsMixin")) {
             return FMLLoader.getDist().isDedicatedServer() && supportsServerOptimizations();
         }
+        if (mixin.endsWith(".AE2ItemDefaultKeyMixin") || mixin.endsWith(".AE2DefaultItemKeyCacheMixin")
+                || mixin.endsWith(".AE2FluidDefaultKeyMixin")
+                || mixin.endsWith(".AE2DefaultFluidKeyCacheMixin")) {
+            return FMLLoader.getDist().isDedicatedServer() && modVersion("ae2", "15.4.10")
+                    && supportsServerOptimizations();
+        }
         if (mixin.endsWith(".RocketFuelMixin")) return modLoaded("gcyr");
         if (mixin.endsWith(".VintageDelightBrewingMixin")) return modLoaded("vintagedelight");
         if (mixin.endsWith(".WorldEditStateIndexMixin")) return modLoaded("worldedit");
@@ -44,9 +50,13 @@ public final class IndustryMixinPlugin implements IMixinConfigPlugin {
     private static boolean supportsServerOptimizations() {
         if (Boolean.getBoolean("sunlitindustry.disableServerOptimizations")
                 || modLoaded("gtocore") || modLoaded("gtolib") || modLoaded("warpload")) return false;
+        return modVersion("gtceu", "7.5.3");
+    }
+
+    private static boolean modVersion(String modId, String version) {
         var list = FMLLoader.getLoadingModList();
-        return list != null && list.getMods().stream().anyMatch(m -> m.getModId().equals("gtceu")
-                && m.getVersion().toString().equals("7.5.3"));
+        return list != null && list.getMods().stream().anyMatch(m -> m.getModId().equals(modId)
+                && m.getVersion().toString().equals(version));
     }
     public void acceptTargets(Set<String> mine, Set<String> others) {}
     public List<String> getMixins() { return null; }

@@ -4,4 +4,6 @@ emptyRecipeIO = true
 fastSimulation = true
 cacheHandlerGroups = true
 fastAndConditions = true
+ae2DefaultItemKeyCache = true
+ae2DefaultFluidKeyCache = true
 maxCachedHandlers = 64

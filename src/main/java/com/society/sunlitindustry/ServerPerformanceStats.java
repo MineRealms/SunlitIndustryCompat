@@ -5,7 +5,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
 public final class ServerPerformanceStats {
-    public enum Event { EMPTY_IO, SIMULATION, AND_CONDITIONS, GROUP_HIT, GROUP_BUILD, GROUP_FALLBACK }
+    public enum Event {
+        EMPTY_IO, SIMULATION, AND_CONDITIONS, GROUP_HIT, GROUP_BUILD, GROUP_FALLBACK,
+        AE2_DEFAULT_KEY_HIT, AE2_DEFAULT_KEY_MISS, AE2_DEFAULT_KEY_STORED,
+        AE2_DEFAULT_FLUID_KEY_HIT, AE2_DEFAULT_FLUID_KEY_MISS, AE2_DEFAULT_FLUID_KEY_STORED
+    }
     private static final LongAdder[] COUNTERS = new LongAdder[Event.values().length];
     private static volatile boolean recording;
 

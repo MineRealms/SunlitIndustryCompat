@@ -13,6 +13,10 @@ public final class ServerPerformanceConfig {
     private static final ForgeConfigSpec.BooleanValue SIMULATION = BUILDER.define("fastSimulation", true);
     private static final ForgeConfigSpec.BooleanValue GROUPS = BUILDER.define("cacheHandlerGroups", true);
     private static final ForgeConfigSpec.BooleanValue CONDITIONS = BUILDER.define("fastAndConditions", true);
+    private static final ForgeConfigSpec.BooleanValue AE2_DEFAULT_KEY_CACHE = BUILDER
+            .define("ae2DefaultItemKeyCache", true);
+    private static final ForgeConfigSpec.BooleanValue AE2_DEFAULT_FLUID_KEY_CACHE = BUILDER
+            .define("ae2DefaultFluidKeyCache", true);
     private static final ForgeConfigSpec.IntValue MAX_HANDLERS = BUILDER
             .comment("Maximum handler lists per cached topology; larger inventories use the original path.")
             .defineInRange("maxCachedHandlers", 64, 1, 256);
@@ -27,6 +31,8 @@ public final class ServerPerformanceConfig {
     public static boolean simulation() { return enabled() && read(SIMULATION); }
     public static boolean groups() { return enabled() && read(GROUPS); }
     public static boolean conditions() { return enabled() && read(CONDITIONS); }
+    public static boolean ae2DefaultKeyCache() { return enabled() && read(AE2_DEFAULT_KEY_CACHE); }
+    public static boolean ae2DefaultFluidKeyCache() { return enabled() && read(AE2_DEFAULT_FLUID_KEY_CACHE); }
     public static int maxHandlers() { return SPEC.isLoaded() ? MAX_HANDLERS.get() : 64; }
 
     public static void register() {
