@@ -79,6 +79,30 @@ class ArchiveSnapshotStoreTest {
         assertSame(snapshot, store.get(archive, store.identify(archive)));
     }
 
+    @Test
+    void admissionLimitDoesNotRepeatedlyReadAnUncacheableArchive() throws IOException {
+        Path archive = archive(Map.of("data/test/recipes/a.json", "{}"));
+        var store = new ArchiveSnapshotStore(temporary.resolve("small-cache"), 1);
+        String digest = store.identify(archive);
+        assertNull(store.get(archive, digest));
+        assertNull(store.get(archive, digest));
+        assertEquals(1L, store.statistics().get("builds"));
+        assertEquals(1L, store.statistics().get("bypassed"));
+        assertEquals(0L, store.statistics().get("retainedBytes"));
+    }
+
+    @Test
+    void serverSnapshotIndexesModelSourcesButDoesNotRetainTheirBytes() throws IOException {
+        Path archive = archive(Map.of("data/test/recipes/a.json", "{}", "assets/test/models/a.json", "{}",
+                "assets/test/lang/en_us.json", "{}"));
+        var store = new ArchiveSnapshotStore(temporary.resolve("server-cache"), 4 << 20, false);
+        var snapshot = store.get(archive, store.identify(archive));
+        assertTrue(snapshot.contains("assets/test/models/a.json"));
+        assertFalse(snapshot.hasBytes("assets/test/models/a.json"));
+        assertTrue(snapshot.hasBytes("assets/test/lang/en_us.json"));
+        assertTrue(snapshot.hasBytes("data/test/recipes/a.json"));
+    }
+
     private ArchiveSnapshotStore store() { return new ArchiveSnapshotStore(temporary.resolve("cache"), 4 << 20); }
 
     private Path archive(Map<String, String> entries) throws IOException {

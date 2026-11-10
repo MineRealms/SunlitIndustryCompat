@@ -50,6 +50,7 @@ public final class ArchiveResourceCache {
         if (binding == null || FAILED.contains(binding.archive())) return null;
         try {
             var result = getStore().get(binding.archive(), binding.digest());
+            if (result == null) return null;
             if (result.weight() > (long) ResourceCacheConfig.memoryMiB() << 20) {
                 FAILED.add(binding.archive());
                 return null;
@@ -69,8 +70,9 @@ public final class ArchiveResourceCache {
             synchronized (ArchiveResourceCache.class) {
                 current = store;
                 if (current == null) store = current = new ArchiveSnapshotStore(
-                        FMLPaths.GAMEDIR.get().resolve("cache/sunlitindustry/archives-v1"),
-                        (long) ResourceCacheConfig.memoryMiB() << 20);
+                        FMLPaths.GAMEDIR.get().resolve(FMLLoader.getDist().isClient()
+                                ? "cache/sunlitindustry/archives-v2-client" : "cache/sunlitindustry/archives-v2-server"),
+                        (long) ResourceCacheConfig.memoryMiB() << 20, FMLLoader.getDist().isClient());
             }
         }
         return current;

@@ -24,6 +24,12 @@ public abstract class AE2CompactCellNbtMixin {
         if (stack.hasTag()) CompactCellNbt.expand(stack.getTag());
     }
 
+    @Inject(method = "persist", at = @At("HEAD"))
+    private void sunlitindustry$expandBeforeNativeWrite(CallbackInfo ci) {
+        // Repeated writes on the same live inventory must replace the previous compact payload.
+        if (i.hasTag()) CompactCellNbt.expand(i.getTag());
+    }
+
     @Inject(method = "persist", at = @At("RETURN"))
     private void sunlitindustry$writeCompactKeys(CallbackInfo ci) {
         if (ServerPerformanceConfig.ae2CompactCellNbt() && i.hasTag()) CompactCellNbt.compact(i.getTag());

@@ -1,0 +1,18 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var level=server.m_129783_();
+var recipe=server.m_129894_().m_44043_(new net.minecraft.resources.ResourceLocation("minecraft:oak_planks")).orElseThrow();
+var input=new net.minecraft.world.item.ItemStack[9];java.util.Arrays.fill(input,net.minecraft.world.item.ItemStack.f_41583_);
+input[0]=new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:oak_log")));
+var output=new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:oak_planks")),4);
+var item=appeng.core.definitions.AEItems.CRAFTING_PATTERN.m_5456_();
+var stack=item.encode((net.minecraft.world.item.crafting.CraftingRecipe)recipe,input,output,true,false);
+var definition=appeng.api.stacks.AEItemKey.of(stack);
+var first=item.decode(definition,level);if(first==null)throw new IllegalStateException("Native crafting decode failed");
+boolean enabled=!Boolean.getBoolean("sunlitindustry.disableServerOptimizations")&&com.society.sunlitindustry.performance.ae2.crafting.Ae2CraftingConfig.patterns();
+if(enabled&&first!=item.decode(definition,level))throw new IllegalStateException("Static crafting pattern did not reuse decode");
+com.society.sunlitindustry.performance.ae2.crafting.PatternDecodeCache.invalidate();
+if(first==item.decode(definition,level))throw new IllegalStateException("Crafting recipe epoch did not invalidate decode");
+var broken=appeng.core.definitions.AEItems.CRAFTING_PATTERN.stack();
+if(item.decode(appeng.api.stacks.AEItemKey.of(broken),level)!=null)throw new IllegalStateException("Malformed pattern must remain a failed decode");
+return "PASS vanilla crafting decode, positive reuse, epoch invalidation and native failed decode";

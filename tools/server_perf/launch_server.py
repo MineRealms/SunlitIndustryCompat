@@ -11,7 +11,8 @@ mode = sys.argv[1] if len(sys.argv) == 2 else ''
 if mode not in {'baseline', 'optimized', 'ae2-baseline', 'ae2-optimized',
                  'ae2-final-baseline', 'ae2-final-optimized',
                  'ae2-fluid-baseline', 'ae2-fluid-optimized', 'clean-baseline', 'clean-optimized',
-                 'clean-warm-baseline'}:
+                 'clean-warm-baseline', 'expanded-baseline', 'expanded-optimized',
+                 'expanded-warm', 'expanded-experimental', 'expanded-rollback'}:
     raise SystemExit('Usage: launch_server.py <baseline|optimized|clean-baseline|clean-optimized|ae2[-final|-fluid]-baseline|ae2[-final|-fluid]-optimized>')
 if not (RUN / 'VOID_SUIT_TEST.json').is_file():
     raise SystemExit('Missing isolated test marker')

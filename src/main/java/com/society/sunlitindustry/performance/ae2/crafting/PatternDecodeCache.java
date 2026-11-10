@@ -3,14 +3,12 @@ package com.society.sunlitindustry.performance.ae2.crafting;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.stacks.AEItemKey;
 import appeng.crafting.pattern.AECraftingPattern;
-import com.society.sunlitindustry.mixin.performance.ae2.AE2PatternEncodingAccess;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -37,8 +35,11 @@ public final class PatternDecodeCache {
     public static void registerEvents() { MinecraftForge.EVENT_BUS.register(PatternDecodeCache.class); }
 
     private static boolean isStaticCraftingRecipe(AEItemKey key, Level level) {
-        var recipeId = AE2PatternEncodingAccess.sunlitindustry$recipeId(key.getTag());
-        var recipe = level.getRecipeManager().byType(RecipeType.CRAFTING).get(recipeId);
+        var tag = key.getTag();
+        if (tag == null) return false;
+        var recipeId = net.minecraft.resources.ResourceLocation.tryParse(tag.getString("recipe"));
+        if (recipeId == null) return false;
+        var recipe = level.getRecipeManager().byKey(recipeId).orElse(null);
         if (recipe == null || recipe.getClass() != ShapedRecipe.class && recipe.getClass() != ShapelessRecipe.class) {
             return false;
         }

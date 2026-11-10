@@ -21,6 +21,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.zip.ZipFile;
@@ -35,8 +37,10 @@ public final class ArchiveSnapshotStore {
     private static final long MAX_DISK = 512L << 20;
     private final Path directory;
     private final long memoryLimit;
+    private final boolean clientSources;
     private final LinkedHashMap<Path, String> digests = new LinkedHashMap<>();
     private final LinkedHashMap<String, Snapshot> snapshots = new LinkedHashMap<>(16, .75f, true);
+    private final Set<String> bypassed = new HashSet<>();
     private long retained;
     private final LongAdder hits = new LongAdder();
     private final LongAdder diskHits = new LongAdder();
@@ -44,8 +48,13 @@ public final class ArchiveSnapshotStore {
     private final LongAdder failures = new LongAdder();
 
     public ArchiveSnapshotStore(Path directory, long memoryLimit) {
+        this(directory, memoryLimit, true);
+    }
+
+    public ArchiveSnapshotStore(Path directory, long memoryLimit, boolean clientSources) {
         this.directory = directory;
         this.memoryLimit = memoryLimit;
+        this.clientSources = clientSources;
     }
 
     public synchronized String identify(Path archive) throws IOException {
@@ -62,6 +71,7 @@ public final class ArchiveSnapshotStore {
     }
 
     public synchronized Snapshot get(Path archive, String digest) throws IOException {
+        if (bypassed.contains(digest)) return null;
         Snapshot existing = snapshots.get(digest);
         if (existing != null) {
             hits.increment();
@@ -82,30 +92,30 @@ public final class ArchiveSnapshotStore {
             }
         }
         long weight = snapshot.weight();
-        if (weight <= memoryLimit) {
-            while (!snapshots.isEmpty() && retained + weight > memoryLimit) {
-                var iterator = snapshots.entrySet().iterator();
-                var eldest = iterator.next();
-                retained -= eldest.getValue().weight();
-                iterator.remove();
-            }
+        if (retained + weight <= memoryLimit) {
             snapshots.put(digest, snapshot);
             retained += weight;
+        } else {
+            // Admission control avoids repeatedly reloading evicted packs during parallel tag scans.
+            bypassed.add(digest);
+            return null;
         }
         return snapshot;
     }
 
     public synchronized void clearMemory() {
         snapshots.clear();
+        bypassed.clear();
         retained = 0;
     }
 
     public synchronized Map<String, Long> statistics() {
         return Map.of("memoryHits", hits.sum(), "diskHits", diskHits.sum(), "builds", builds.sum(),
-                "writeFailures", failures.sum(), "retainedBytes", retained, "snapshots", (long) snapshots.size());
+                "writeFailures", failures.sum(), "retainedBytes", retained, "snapshots", (long) snapshots.size(),
+                "bypassed", (long) bypassed.size());
     }
 
-    private static Snapshot build(Path archive) throws IOException {
+    private Snapshot build(Path archive) throws IOException {
         TreeMap<String, byte[]> entries = new TreeMap<>();
         int dataBytes = 0;
         try (ZipFile zip = new ZipFile(archive.toFile())) {
@@ -116,7 +126,8 @@ public final class ArchiveSnapshotStore {
                 if (entry.isDirectory() || !validName(name)) continue;
                 if (entries.size() >= MAX_ENTRIES) throw new IOException("Archive resource count exceeds limit");
                 byte[] bytes = null;
-                if (cacheable(name) && entry.getSize() >= 0 && entry.getSize() <= MAX_FILE
+                if (cacheable(name) && (clientSources || name.startsWith("data/") || name.contains("/lang/"))
+                        && entry.getSize() >= 0 && entry.getSize() <= MAX_FILE
                         && dataBytes + entry.getSize() <= MAX_DATA) {
                     try (InputStream input = zip.getInputStream(entry)) {
                         bytes = input.readNBytes(MAX_FILE + 1);

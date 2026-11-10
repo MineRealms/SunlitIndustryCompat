@@ -4,12 +4,13 @@ buildscript {
 }
 plugins { id 'java'; id 'net.minecraftforge.gradle' version '6.0.54' }
 apply plugin: 'org.spongepowered.mixin'
-version = '0.5.0'
+version = '0.6.0'
 group = 'com.society.sunlitindustry'
 base { archivesName = 'sunlit-industry-compat-1.20.1' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 minecraft { mappings channel: 'official', version: '1.20.1' }
 mixin { add sourceSets.main, 'sunlitindustry.refmap.json'; config 'sunlitindustry.mixins.json' }
+jarJar.enable()
 repositories {
     maven { url = 'https://maven.minecraftforge.net' }
     maven { url = 'https://maven.gtceu.com' }
@@ -33,12 +34,23 @@ dependencies {
         exclude group: 'mezz.jei'
     })) { transitive = false }
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    compileOnly annotationProcessor('io.github.llamalad7:mixinextras-common:0.5.3')
+    implementation(jarJar('io.github.llamalad7:mixinextras-forge:0.5.3')) {
+        jarJar.ranged(it, '[0.5.3,0.6)')
+    }
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 tasks.named('test', Test).configure { useJUnitPlatform() }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 tasks.named('jar', Jar).configure {
+    archiveClassifier = 'slim'
     manifest { attributes('MixinConfigs': 'sunlitindustry.mixins.json') }
     finalizedBy 'reobfJar'
+}
+
+tasks.named('jarJar', Jar).configure {
+    archiveClassifier = ''
+    manifest { attributes('MixinConfigs': 'sunlitindustry.mixins.json') }
+    finalizedBy 'reobfJarJar'
 }

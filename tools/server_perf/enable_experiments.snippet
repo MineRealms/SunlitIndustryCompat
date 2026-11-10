@@ -1,0 +1,9 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+for(String name:new String[]{"TICK","SHAPES","ME"}){
+ var field=com.society.sunlitindustry.performance.gt.GtAdvancedConfig.class.getDeclaredField(name);field.setAccessible(true);
+ ((net.minecraftforge.common.ForgeConfigSpec.BooleanValue)field.get(null)).set(true);
+}
+var cell=com.society.sunlitindustry.ServerPerformanceConfig.class.getDeclaredField("AE2_COMPACT_CELL");cell.setAccessible(true);
+((net.minecraftforge.common.ForgeConfigSpec.BooleanValue)cell.get(null)).set(true);
+return "PASS experiments enabled in isolated process";

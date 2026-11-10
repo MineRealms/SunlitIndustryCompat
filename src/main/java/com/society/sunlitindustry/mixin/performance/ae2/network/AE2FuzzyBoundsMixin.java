@@ -30,7 +30,7 @@ public abstract class AE2FuzzyBoundsMixin {
 
     @Inject(method = "makeLowerBound", at = @At("RETURN"))
     private static void sunlitindustry$rememberLower(AEKey key, FuzzyMode fuzzy, CallbackInfoReturnable<Object> cir) {
-        if (ServerPerformanceConfig.ae2FuzzyBounds()) {
+        if (ServerPerformanceConfig.ae2FuzzyBounds() && key.getFuzzySearchMaxValue() > 0) {
             FuzzyBoundCache.local().put(sunlitindustry$damage(key, fuzzy, true), cir.getReturnValue());
         }
     }
@@ -44,7 +44,7 @@ public abstract class AE2FuzzyBoundsMixin {
 
     @Inject(method = "makeUpperBound", at = @At("RETURN"))
     private static void sunlitindustry$rememberUpper(AEKey key, FuzzyMode fuzzy, CallbackInfoReturnable<Object> cir) {
-        if (ServerPerformanceConfig.ae2FuzzyBounds()) {
+        if (ServerPerformanceConfig.ae2FuzzyBounds() && key.getFuzzySearchMaxValue() > 0) {
             FuzzyBoundCache.local().put(sunlitindustry$damage(key, fuzzy, false), cir.getReturnValue());
         }
     }

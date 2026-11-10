@@ -1,0 +1,28 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var before=com.society.sunlitindustry.performance.resources.ArchiveResourceCache.statistics();
+if(before.get("memoryHits")==0||before.get("snapshots")==0)throw new IllegalStateException("Archive interception did not engage: "+before);
+if(before.get("retainedBytes")>(32L<<20))throw new IllegalStateException("Archive memory cap exceeded");
+var info=net.minecraftforge.fml.loading.FMLLoader.getLoadingModList().getModFiles().stream().filter(f->f.getMods().stream().anyMatch(m->m.getModId().equals("zmod"))).findFirst().orElseThrow();
+var file=info.getFile();
+var binding=com.society.sunlitindustry.performance.resources.ArchiveResourceCache.bind(file.getFilePath());
+var snapshot=com.society.sunlitindustry.performance.resources.ArchiveResourceCache.snapshot(binding);
+if(snapshot==null)throw new IllegalStateException("zmod archive was not admitted for source benchmark");
+var paths=snapshot.list("data/zmod/recipes/").stream().filter(snapshot::hasBytes).limit(100).toList();
+if(paths.size()<10)throw new IllegalStateException("Insufficient recipe source samples");
+for(var path:paths){try(var original=java.nio.file.Files.newInputStream(file.findResource(path.split("/")));var cached=snapshot.open(path)){
+ if(!java.util.Arrays.equals(original.readAllBytes(),cached.readAllBytes()))throw new IllegalStateException("Source bytes differ: "+path);
+}}
+var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
+var result=new com.google.gson.JsonObject();result.add("actualInterceptionCounters",new com.google.gson.Gson().toJsonTree(before));result.addProperty("sourceCount",paths.size());
+var samples=new com.google.gson.JsonArray();
+for(boolean cached:new boolean[]{false,true})for(int round=-3;round<4;round++){
+ long allocatedBefore=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;int iterations=10000;
+ for(int i=0;i<iterations;i++){
+  String path=paths.get(i%paths.size());
+  try(var stream=cached?snapshot.open(path):java.nio.file.Files.newInputStream(file.findResource(path.split("/")))){checksum+=stream.readAllBytes().length;}
+ }
+ long nanos=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-allocatedBefore;
+ var row=new com.google.gson.JsonObject();row.addProperty("cached",cached);row.addProperty("round",round);row.addProperty("iterations",iterations);row.addProperty("nanosPerOp",nanos/(double)iterations);row.addProperty("bytesPerOp",allocated/(double)iterations);row.addProperty("checksum",checksum);samples.add(row);
+}
+result.add("samples",samples);return "PASS "+result;

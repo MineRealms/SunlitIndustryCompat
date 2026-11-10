@@ -3,7 +3,7 @@ if(server==null||!server.m_18695_())throw new IllegalStateException("Server thre
 var level=server.m_129783_();
 var input=appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:cobblestone")));
 var output=appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond")));
-var item=appeng.core.definitions.AEItems.PROCESSING_PATTERN.asItem();
+var item=appeng.core.definitions.AEItems.PROCESSING_PATTERN.m_5456_();
 var encoded=item.encode(new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(input,1)},new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(output,1)});
 var definition=appeng.api.stacks.AEItemKey.of(encoded);
 boolean cacheEnabled=com.society.sunlitindustry.performance.ae2.crafting.Ae2CraftingConfig.patterns()&&!Boolean.getBoolean("sunlitindustry.disableServerOptimizations");
@@ -26,12 +26,12 @@ for(int i=0;i<64;i++){
  var encodedPattern=item.encode(new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(input,i+1)},new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(output,1)});
  var pattern=item.decode(appeng.api.stacks.AEItemKey.of(encodedPattern),level);
  if(i==63)highestPriorityPattern=pattern.getDefinition();
- var provider=(appeng.api.networking.crafting.ICraftingProvider)java.lang.reflect.Proxy.newProxyInstance(stateType.getClassLoader(),new Class<?>[]{appeng.api.networking.crafting.ICraftingProvider.class},(proxy,method,args)->switch(method.getName()){
-  case "getEmitableItems"->java.util.List.of();
+ var provider=(appeng.api.networking.crafting.ICraftingProvider)java.lang.reflect.Proxy.newProxyInstance(stateType.getClassLoader(),new Class<?>[]{appeng.api.networking.crafting.ICraftingProvider.class},(proxy,method,arguments)->switch(method.getName()){
+  case "getEmitableItems"->java.util.Set.of();
   case "getAvailablePatterns"->java.util.List.of(pattern);
   case "getPatternPriority"->priority;
   case "hashCode"->System.identityHashCode(proxy);
-  case "equals"->proxy==args[0];
+  case "equals"->proxy==arguments[0];
   case "toString"->"SunlitBenchmarkProvider"+priority;
   default->throw new UnsupportedOperationException(method.getName());
  });
