@@ -1,0 +1,62 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var level=server.m_129783_();
+var input=appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:cobblestone")));
+var output=appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond")));
+var item=appeng.core.definitions.AEItems.PROCESSING_PATTERN.asItem();
+var encoded=item.encode(new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(input,1)},new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(output,1)});
+var definition=appeng.api.stacks.AEItemKey.of(encoded);
+boolean cacheEnabled=com.society.sunlitindustry.performance.ae2.crafting.Ae2CraftingConfig.patterns()&&!Boolean.getBoolean("sunlitindustry.disableServerOptimizations");
+var first=item.decode(definition,level);
+if(first==null)throw new IllegalStateException("Processing decode failed");
+if(cacheEnabled&&first!=item.decode(definition,level))throw new IllegalStateException("Pattern cache did not reuse decode");
+com.society.sunlitindustry.performance.ae2.crafting.PatternDecodeCache.invalidate();
+if(first==item.decode(definition,level))throw new IllegalStateException("Pattern epoch did not invalidate decode");
+var changed=item.encode(new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(input,2)},new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(output,1)});
+var changedPattern=item.decode(appeng.api.stacks.AEItemKey.of(changed),level);
+if(changedPattern.getInputs()[0].getMultiplier()!=2)throw new IllegalStateException("Encoded input change lost");
+var providers=new appeng.me.service.helpers.NetworkCraftingProviders();
+var stateType=Class.forName("appeng.me.service.helpers.NetworkCraftingProviders$ProviderState");
+var stateConstructor=stateType.getDeclaredConstructor(appeng.api.networking.crafting.ICraftingProvider.class);stateConstructor.setAccessible(true);
+var mount=stateType.getDeclaredMethod("mount",appeng.me.service.helpers.NetworkCraftingProviders.class);mount.setAccessible(true);
+var unmount=stateType.getDeclaredMethod("unmount",appeng.me.service.helpers.NetworkCraftingProviders.class);unmount.setAccessible(true);
+Object lastState=null;appeng.api.stacks.AEItemKey highestPriorityPattern=null;
+for(int i=0;i<64;i++){
+ final int priority=i;
+ var encodedPattern=item.encode(new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(input,i+1)},new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(output,1)});
+ var pattern=item.decode(appeng.api.stacks.AEItemKey.of(encodedPattern),level);
+ if(i==63)highestPriorityPattern=pattern.getDefinition();
+ var provider=(appeng.api.networking.crafting.ICraftingProvider)java.lang.reflect.Proxy.newProxyInstance(stateType.getClassLoader(),new Class<?>[]{appeng.api.networking.crafting.ICraftingProvider.class},(proxy,method,args)->switch(method.getName()){
+  case "getEmitableItems"->java.util.List.of();
+  case "getAvailablePatterns"->java.util.List.of(pattern);
+  case "getPatternPriority"->priority;
+  case "hashCode"->System.identityHashCode(proxy);
+  case "equals"->proxy==args[0];
+  case "toString"->"SunlitBenchmarkProvider"+priority;
+  default->throw new UnsupportedOperationException(method.getName());
+ });
+ lastState=stateConstructor.newInstance(provider);mount.invoke(lastState,providers);
+}
+var sorted=providers.getCraftingFor(output);
+if(sorted.size()!=64||!sorted.iterator().next().getDefinition().equals(highestPriorityPattern))throw new IllegalStateException("Pattern priority order changed");
+var stable=providers.getCraftingFor(output);
+boolean sortingEnabled=com.society.sunlitindustry.performance.ae2.crafting.Ae2CraftingConfig.sorting()&&!Boolean.getBoolean("sunlitindustry.disableServerOptimizations");
+if(sortingEnabled&&sorted!=stable)throw new IllegalStateException("Provider sorted-list cache did not hit");
+unmount.invoke(lastState,providers);
+if(providers.getCraftingFor(output).size()!=63)throw new IllegalStateException("Provider removal did not invalidate sorting");
+mount.invoke(lastState,providers);
+if(providers.getCraftingFor(output).size()!=64)throw new IllegalStateException("Provider restore did not invalidate sorting");
+var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
+var result=new com.google.gson.JsonObject();result.addProperty("cacheEnabled",cacheEnabled);result.addProperty("sortingEnabled",sortingEnabled);result.addProperty("providerCount",64);
+for(var spec:new Object[][]{{"processingPatternDecode",(java.util.function.Supplier<Object>)()->item.decode(definition,level)},{"providerPatternSelection",(java.util.function.Supplier<Object>)()->providers.getCraftingFor(output)}}){
+ var operation=(java.util.function.Supplier<?>)spec[1];var samples=new com.google.gson.JsonArray();
+ for(int round=-5;round<4;round++){
+  long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;
+  for(int i=0;i<20000;i++)checksum+=System.identityHashCode(operation.get());
+  long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-before;
+  var sample=new com.google.gson.JsonObject();sample.addProperty("round",round);sample.addProperty("iterations",20000);sample.addProperty("nanosPerOp",(double)elapsed/20000);sample.addProperty("bytesPerOp",(double)allocated/20000);sample.addProperty("checksum",checksum);samples.add(sample);
+ }
+ result.add((String)spec[0],samples);
+}
+System.out.println("SUNLIT_AE2_CRAFTING_BENCHMARK="+result);
+return "PASS "+result;
