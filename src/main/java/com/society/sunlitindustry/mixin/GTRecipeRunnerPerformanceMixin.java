@@ -10,6 +10,7 @@ import com.society.sunlitindustry.GTHandlerGroupOwner;
 import com.society.sunlitindustry.GTHandlerGroups;
 import com.society.sunlitindustry.ServerPerformanceConfig;
 import com.society.sunlitindustry.ServerPerformanceStats;
+import com.society.sunlitindustry.performance.gt.GtRunnerGroupOwnerAccess;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,13 +26,16 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 @Mixin(value = RecipeRunner.class, remap = false)
-public abstract class GTRecipeRunnerPerformanceMixin {
+public abstract class GTRecipeRunnerPerformanceMixin implements GtRunnerGroupOwnerAccess {
     @Shadow @Final private IO io;
     @Shadow @Final private boolean simulated;
     @Shadow @Final private Map<IO, List<RecipeHandlerList>> capabilityProxies;
     @Shadow @Final private Predicate<RecipeCapability<?>> outputVoid;
     @Shadow private Map<RecipeCapability<?>, List<Object>> recipeContents;
     @Unique private GTHandlerGroupOwner sunlitindustry$owner;
+
+    @Override
+    public void sunlitindustry$setGroupOwner(GTHandlerGroupOwner owner) { sunlitindustry$owner = owner; }
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void sunlitindustry$owner(GTRecipe recipe, IO io, boolean isTick, IRecipeCapabilityHolder holder,
