@@ -1,0 +1,166 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var level=server.m_129783_();
+var patternItem=appeng.core.definitions.AEItems.PROCESSING_PATTERN.m_5456_();
+class Probe {
+ final java.util.Map<appeng.api.stacks.AEKey,java.util.List<appeng.api.crafting.IPatternDetails>> patterns=new java.util.LinkedHashMap<>();
+ final java.util.Set<appeng.api.stacks.AEKey> emitted=new java.util.HashSet<>();
+ final appeng.api.stacks.KeyCounter stock=new appeng.api.stacks.KeyCounter();
+ final java.util.Map<appeng.api.crafting.IPatternDetails,String> names=new java.util.IdentityHashMap<>();
+ appeng.api.networking.IGrid grid;
+ final appeng.api.networking.IGridNode node;
+ final appeng.api.networking.crafting.ICraftingSimulationRequester requester;
+ Probe(){
+  var inventory=(appeng.api.storage.MEStorage)java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(),new Class<?>[]{appeng.api.storage.MEStorage.class},(proxy,method,arguments)->switch(method.getName()){
+   case "extract"->Math.min(stock.get((appeng.api.stacks.AEKey)arguments[0]),(Long)arguments[1]);
+   case "getAvailableStacks"->{if(arguments==null||arguments.length==0)yield stock;((appeng.api.stacks.KeyCounter)arguments[0]).addAll(stock);yield null;}
+   default->throw new UnsupportedOperationException(method.getName());
+  });
+  var storage=(appeng.api.networking.storage.IStorageService)java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(),new Class<?>[]{appeng.api.networking.storage.IStorageService.class},(proxy,method,arguments)->switch(method.getName()){
+   case "getInventory"->inventory;
+   case "getCachedInventory"->stock;
+   default->throw new UnsupportedOperationException(method.getName());
+  });
+  var crafting=(appeng.api.networking.crafting.ICraftingService)java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(),new Class<?>[]{appeng.api.networking.crafting.ICraftingService.class},(proxy,method,arguments)->switch(method.getName()){
+   case "canEmitFor"->emitted.contains(arguments[0]);
+   case "getCraftingFor"->patterns.getOrDefault(arguments[0],java.util.List.of());
+   case "getFuzzyCraftable"->{
+    var wanted=(appeng.api.stacks.AEKey)arguments[0];var filter=(appeng.api.storage.AEKeyFilter)arguments[1];appeng.api.stacks.AEKey found=null;
+    for(var candidate:patterns.keySet())if(candidate.getPrimaryKey()==wanted.getPrimaryKey()&&filter.matches(candidate)){found=candidate;break;}
+    yield found;
+   }
+   default->throw new UnsupportedOperationException(method.getName());
+  });
+  grid=(appeng.api.networking.IGrid)java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(),new Class<?>[]{appeng.api.networking.IGrid.class},(proxy,method,arguments)->switch(method.getName()){
+   case "getCraftingService"->crafting;
+   case "getStorageService"->storage;
+   default->throw new UnsupportedOperationException(method.getName());
+  });
+  node=(appeng.api.networking.IGridNode)java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(),new Class<?>[]{appeng.api.networking.IGridNode.class},(proxy,method,arguments)->switch(method.getName()){
+   case "getGrid"->grid;
+   default->throw new UnsupportedOperationException(method.getName());
+  });
+  requester=new appeng.api.networking.crafting.ICraftingSimulationRequester(){
+   public appeng.api.networking.security.IActionSource getActionSource(){return appeng.api.networking.security.IActionSource.empty();}
+   public appeng.api.networking.IGridNode getGridNode(){return node;}
+  };
+ }
+ appeng.api.stacks.AEItemKey item(String name){return appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation(name)));}
+ appeng.api.crafting.IPatternDetails.IInput input(appeng.api.stacks.AEKey[] possibilities,long multiplier,appeng.api.stacks.AEKey remainder){
+  var possible=new appeng.api.stacks.GenericStack[possibilities.length];for(int i=0;i<possible.length;i++)possible[i]=new appeng.api.stacks.GenericStack(possibilities[i],1);
+  return new appeng.api.crafting.IPatternDetails.IInput(){
+   public appeng.api.stacks.GenericStack[] getPossibleInputs(){return possible;}
+   public long getMultiplier(){return multiplier;}
+   public boolean isValid(appeng.api.stacks.AEKey key,net.minecraft.world.level.Level world){for(var entry:possible)if(entry.what().equals(key))return true;return false;}
+   public appeng.api.stacks.AEKey getRemainingKey(appeng.api.stacks.AEKey key){return remainder;}
+  };
+ }
+ appeng.api.crafting.IPatternDetails pattern(String name,appeng.api.crafting.IPatternDetails.IInput[] inputs,appeng.api.stacks.GenericStack... outputs){
+  var encodedInputs=new appeng.api.stacks.GenericStack[inputs.length];
+  for(int i=0;i<inputs.length;i++)encodedInputs[i]=new appeng.api.stacks.GenericStack(inputs[i].getPossibleInputs()[0].what(),inputs[i].getMultiplier());
+  var definition=appeng.api.stacks.AEItemKey.of(patternItem.encode(encodedInputs,outputs));
+  var pattern=new appeng.api.crafting.IPatternDetails(){
+   public appeng.api.stacks.AEItemKey getDefinition(){return definition;}
+   public appeng.api.crafting.IPatternDetails.IInput[] getInputs(){return inputs;}
+   public appeng.api.stacks.GenericStack[] getOutputs(){return outputs;}
+  };
+  names.put(pattern,name);
+  for(var output:outputs)patterns.computeIfAbsent(output.what(),unused->new java.util.ArrayList<>()).add(pattern);
+  return pattern;
+ }
+ appeng.crafting.CraftingCalculation calculation(appeng.api.stacks.AEKey output,long amount,appeng.api.networking.crafting.CalculationStrategy strategy)throws Exception{
+  var calculation=new appeng.crafting.CraftingCalculation(level,grid,requester,new appeng.api.stacks.GenericStack(output,amount),strategy);
+  var running=appeng.crafting.CraftingCalculation.class.getDeclaredField("running");running.setAccessible(true);running.setBoolean(calculation,true);
+  var time=appeng.crafting.CraftingCalculation.class.getDeclaredField("time");time.setAccessible(true);time.setInt(calculation,Integer.MAX_VALUE);
+  return calculation;
+ }
+ appeng.api.networking.crafting.ICraftingPlan calculate(appeng.api.stacks.AEKey output,long amount,appeng.api.networking.crafting.CalculationStrategy strategy)throws Exception{
+  var calculate=appeng.crafting.CraftingCalculation.class.getDeclaredMethod("computePlan");calculate.setAccessible(true);
+  return (appeng.api.networking.crafting.ICraftingPlan)calculate.invoke(calculation(output,amount,strategy));
+ }
+ java.util.SortedMap<String,Long> counter(appeng.api.stacks.KeyCounter counter){
+  var result=new java.util.TreeMap<String,Long>();for(var entry:counter)if(entry.getLongValue()!=0)result.put(entry.getKey().toString(),entry.getLongValue());return result;
+ }
+ String snapshot(appeng.api.networking.crafting.ICraftingPlan plan){
+  var crafts=new java.util.TreeMap<String,Long>();plan.patternTimes().forEach((pattern,count)->crafts.put(names.get(pattern),count));
+  return plan.finalOutput()+"|"+plan.bytes()+"|"+plan.simulation()+"|"+plan.multiplePaths()+"|"+counter(plan.usedItems())+"|"+counter(plan.emittedItems())+"|"+counter(plan.missingItems())+"|"+crafts;
+ }
+ String exercise(String scenario)throws Exception{
+  var a=item("minecraft:cobblestone");var b=item("minecraft:stone");var c=item("minecraft:diamond");var d=item("minecraft:emerald");var e=item("minecraft:gold_ingot");
+  var report=appeng.api.networking.crafting.CalculationStrategy.REPORT_MISSING_ITEMS;
+  var single=new appeng.api.crafting.IPatternDetails.IInput[]{input(new appeng.api.stacks.AEKey[]{a},1,null)};
+  switch(scenario){
+   case "chain"->{stock.add(a,1000);pattern("stage-one",single,new appeng.api.stacks.GenericStack(b,2));pattern("stage-two",new appeng.api.crafting.IPatternDetails.IInput[]{input(new appeng.api.stacks.AEKey[]{b},3,null)},new appeng.api.stacks.GenericStack(c,1));return snapshot(calculate(c,101,report));}
+   case "branch-rollback"->{stock.add(b,5);pattern("unavailable",single,new appeng.api.stacks.GenericStack(c,1));pattern("available",new appeng.api.crafting.IPatternDetails.IInput[]{input(new appeng.api.stacks.AEKey[]{b},1,null)},new appeng.api.stacks.GenericStack(c,1));return snapshot(calculate(c,5,report));}
+   case "missing"->{pattern("missing",single,new appeng.api.stacks.GenericStack(c,1));return snapshot(calculate(c,7,report));}
+   case "craft-less"->{stock.add(a,19);pattern("limited",single,new appeng.api.stacks.GenericStack(c,2));return snapshot(calculate(c,99,appeng.api.networking.crafting.CalculationStrategy.CRAFT_LESS));}
+   case "byproduct"->{stock.add(a,40);pattern("split",single,new appeng.api.stacks.GenericStack(b,1),new appeng.api.stacks.GenericStack(d,1));pattern("combine",new appeng.api.crafting.IPatternDetails.IInput[]{input(new appeng.api.stacks.AEKey[]{b},1,null),input(new appeng.api.stacks.AEKey[]{d},1,null)},new appeng.api.stacks.GenericStack(c,1));return snapshot(calculate(c,11,report));}
+   case "substitute"->{stock.add(b,13);pattern("substitute",new appeng.api.crafting.IPatternDetails.IInput[]{input(new appeng.api.stacks.AEKey[]{a,b},1,null)},new appeng.api.stacks.GenericStack(c,1));return snapshot(calculate(c,13,report));}
+   case "container"->{stock.add(a,20);pattern("return-container",new appeng.api.crafting.IPatternDetails.IInput[]{input(new appeng.api.stacks.AEKey[]{a},1,b)},new appeng.api.stacks.GenericStack(c,1));return snapshot(calculate(c,8,report));}
+   case "cycle"->{pattern("cycle-a",new appeng.api.crafting.IPatternDetails.IInput[]{input(new appeng.api.stacks.AEKey[]{b},1,null)},new appeng.api.stacks.GenericStack(c,1));pattern("cycle-b",new appeng.api.crafting.IPatternDetails.IInput[]{input(new appeng.api.stacks.AEKey[]{c},1,null)},new appeng.api.stacks.GenericStack(b,1));return snapshot(calculate(c,3,report));}
+   case "emitted"->{emitted.add(a);pattern("emitted",single,new appeng.api.stacks.GenericStack(c,1));return snapshot(calculate(c,9,report));}
+   case "fluid"->{var water=appeng.api.stacks.AEFluidKey.of(net.minecraftforge.registries.ForgeRegistries.FLUIDS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:water")));stock.add(water,31000);pattern("fluid",new appeng.api.crafting.IPatternDetails.IInput[]{input(new appeng.api.stacks.AEKey[]{water},1000,null)},new appeng.api.stacks.GenericStack(c,1));return snapshot(calculate(c,23,report));}
+   default->throw new IllegalArgumentException(scenario);
+  }
+ }
+}
+var enabledField=com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.class.getDeclaredField("ENABLED");enabledField.setAccessible(true);
+var enabled=(net.minecraftforge.common.ForgeConfigSpec.BooleanValue)enabledField.get(null);boolean previous=enabled.get();
+var result=new com.google.gson.JsonObject();
+try{
+ for(String scenario:new String[]{"chain","branch-rollback","missing","craft-less","byproduct","substitute","container","cycle","emitted","fluid"}){
+  enabled.set(false);com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.refresh();String nativeResult=new Probe().exercise(scenario);
+  enabled.set(true);com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.refresh();String optimizedResult=new Probe().exercise(scenario);
+  if(!nativeResult.equals(optimizedResult))throw new IllegalStateException(scenario+" mismatch: "+nativeResult+" != "+optimizedResult);
+  result.addProperty(scenario,nativeResult);
+ }
+ // Reuse the native cancellation point, with the synthetic job already marked runnable.
+ for(boolean optimization:new boolean[]{false,true}){
+  enabled.set(optimization);com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.refresh();
+  var probe=new Probe();var calculation=probe.calculation(probe.item("minecraft:diamond"),1,appeng.api.networking.crafting.CalculationStrategy.REPORT_MISSING_ITEMS);
+  var calculate=appeng.crafting.CraftingCalculation.class.getDeclaredMethod("computePlan");calculate.setAccessible(true);
+  boolean interrupted=false;
+  try{Thread.currentThread().interrupt();calculate.invoke(calculation);}catch(java.lang.reflect.InvocationTargetException expected){interrupted=expected.getCause() instanceof InterruptedException;}finally{Thread.interrupted();}
+  if(!interrupted)throw new IllegalStateException("Native cancellation was not preserved");
+ }
+ result.addProperty("cancellation","native InterruptedException preserved");
+ // A deeply nested native tree, then late expansion after its metadata has been cached.
+ var graph=new Probe();var keys=new appeng.api.stacks.AEItemKey[129];
+ var baseItem=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:paper"));
+ for(int i=0;i<keys.length;i++){var tag=new net.minecraft.nbt.CompoundTag();tag.m_128405_("sunlit_probe_node",i);keys[i]=appeng.api.stacks.AEItemKey.of(baseItem,tag);}
+ graph.stock.add(keys[0],100);
+ for(int i=1;i<keys.length;i++)graph.pattern("deep-"+i,new appeng.api.crafting.IPatternDetails.IInput[]{graph.input(new appeng.api.stacks.AEKey[]{keys[i-1]},1,null)},new appeng.api.stacks.GenericStack(keys[i],1));
+ var graphJob=graph.calculation(keys[128],1,appeng.api.networking.crafting.CalculationStrategy.REPORT_MISSING_ITEMS);
+ var treeField=appeng.crafting.CraftingCalculation.class.getDeclaredField("tree");treeField.setAccessible(true);Object root=treeField.get(graphJob);
+ var count=appeng.crafting.CraftingTreeNode.class.getDeclaredMethod("getNodeCount");count.setAccessible(true);
+ var paths=appeng.crafting.CraftingTreeNode.class.getDeclaredMethod("hasMultiplePaths");paths.setAccessible(true);
+ var build=appeng.crafting.CraftingTreeNode.class.getDeclaredMethod("buildChildPatterns");build.setAccessible(true);
+ var childProcesses=appeng.crafting.CraftingTreeNode.class.getDeclaredField("nodes");childProcesses.setAccessible(true);
+ var processChildren=appeng.crafting.CraftingTreeProcess.class.getDeclaredField("nodes");processChildren.setAccessible(true);
+ enabled.set(true);com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.refresh();
+ if((Long)count.invoke(root)!=1L||(Boolean)paths.invoke(root))throw new IllegalStateException("Initial graph metadata incorrect");
+ var queue=new java.util.ArrayDeque<Object>();queue.add(root);long expansions=0;
+ while(!queue.isEmpty()){
+  var treeNode=queue.remove();build.invoke(treeNode);expansions++;
+  for(Object process:(java.util.List<?>)childProcesses.get(treeNode))queue.addAll(((java.util.Map<?,?>)processChildren.get(process)).keySet());
+  enabled.set(false);com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.refresh();long expectedCount=(Long)count.invoke(root);boolean expectedPaths=(Boolean)paths.invoke(root);
+  enabled.set(true);com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.refresh();
+  if((Long)count.invoke(root)!=expectedCount||(Boolean)paths.invoke(root)!=expectedPaths)throw new IllegalStateException("Lazy graph metadata stale at "+expansions);
+ }
+ result.addProperty("lazyGraphExpansions",expansions);result.addProperty("deepGraphNodeCount",(Long)count.invoke(root));
+ var graphBenchmark=new com.google.gson.JsonObject();
+ var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
+ for(boolean optimized:new boolean[]{false,true}){
+  enabled.set(optimized);com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.refresh();var rounds=new com.google.gson.JsonArray();
+  for(int round=-5;round<5;round++){
+   long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;
+   for(int i=0;i<20000;i++)checksum+=(Long)count.invoke(root)+((Boolean)paths.invoke(root)?1:0);
+   long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-before;
+   var sample=new com.google.gson.JsonObject();sample.addProperty("round",round);sample.addProperty("iterations",20000);sample.addProperty("nanosPerOp",(double)elapsed/20000);sample.addProperty("bytesPerOp",(double)allocated/20000);sample.addProperty("checksum",checksum);rounds.add(sample);
+  }
+  graphBenchmark.add(optimized?"optimized":"native",rounds);
+ }
+ result.add("nativeGraphMetadataBenchmark",graphBenchmark);
+}finally{enabled.set(previous);com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.refresh();}
+System.out.println("SUNLIT_AE2_PLANNER_CORRECTNESS="+result);
+return "PASS "+result;

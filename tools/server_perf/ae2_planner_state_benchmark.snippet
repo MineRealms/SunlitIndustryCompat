@@ -1,0 +1,82 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+class State extends appeng.crafting.inv.CraftingSimulationState {
+ final appeng.api.stacks.KeyCounter parent=new appeng.api.stacks.KeyCounter();
+ protected long simulateExtractParent(appeng.api.stacks.AEKey key,long amount){return Math.min(parent.get(key),amount);}
+ protected Iterable<appeng.api.stacks.AEKey> findFuzzyParent(appeng.api.stacks.AEKey input){
+  var result=new java.util.ArrayList<appeng.api.stacks.AEKey>();for(var entry:parent.findFuzzy(input,appeng.api.config.FuzzyMode.IGNORE_ALL))result.add(entry.getKey());return result;
+ }
+}
+class ForeignKey extends appeng.api.stacks.AEKey {
+ final appeng.api.stacks.AEKeyType type;final Object primary;final int variant;
+ ForeignKey(appeng.api.stacks.AEKeyType type,Object primary,int variant){this.type=type;this.primary=primary;this.variant=variant;}
+ public appeng.api.stacks.AEKeyType getType(){return type;}
+ public appeng.api.stacks.AEKey dropSecondary(){return new ForeignKey(type,primary,0);}
+ public net.minecraft.nbt.CompoundTag toTag(){var tag=new net.minecraft.nbt.CompoundTag();tag.m_128405_("variant",variant);return tag;}
+ public Object getPrimaryKey(){return primary;}
+ public net.minecraft.resources.ResourceLocation getId(){return new net.minecraft.resources.ResourceLocation("sunlit_probe:foreign");}
+ public void writeToPacket(net.minecraft.network.FriendlyByteBuf buffer){throw new UnsupportedOperationException();}
+ protected net.minecraft.network.chat.Component computeDisplayName(){return net.minecraft.network.chat.Component.m_237113_("Foreign probe key");}
+ public void addDrops(long count,java.util.List<net.minecraft.world.item.ItemStack> drops,net.minecraft.world.level.Level level,net.minecraft.core.BlockPos position){}
+ public int hashCode(){return System.identityHashCode(primary)*31+variant;}
+ public boolean equals(Object other){return other instanceof ForeignKey key&&key.type==type&&key.primary==primary&&key.variant==variant;}
+ public String toString(){return "foreign:"+variant;}
+}
+var foreignType=new appeng.api.stacks.AEKeyType(new net.minecraft.resources.ResourceLocation("sunlit_probe:foreign"),ForeignKey.class,net.minecraft.network.chat.Component.m_237113_("Foreign probe type")){
+ public appeng.api.stacks.AEKey readFromPacket(net.minecraft.network.FriendlyByteBuf buffer){throw new UnsupportedOperationException();}
+ public appeng.api.stacks.AEKey loadKeyFromTag(net.minecraft.nbt.CompoundTag tag){throw new UnsupportedOperationException();}
+};
+Object primary=new Object();var foreignA=new ForeignKey(foreignType,primary,1);var foreignB=new ForeignKey(foreignType,primary,2);var empty=new ForeignKey(foreignType,new Object(),3);
+var a=appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:cobblestone")));
+var b=appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:stone")));
+var patternItem=appeng.core.definitions.AEItems.PROCESSING_PATTERN.m_5456_();
+var encoded=patternItem.encode(new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(a,1)},new appeng.api.stacks.GenericStack[]{new appeng.api.stacks.GenericStack(b,1)});
+var pattern=patternItem.decode(appeng.api.stacks.AEItemKey.of(encoded),server.m_129783_());if(pattern==null)throw new IllegalStateException("Pattern fixture failed");
+var enabledField=com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.class.getDeclaredField("ENABLED");enabledField.setAccessible(true);
+var enabled=(net.minecraftforge.common.ForgeConfigSpec.BooleanValue)enabledField.get(null);boolean previous=enabled.get();
+var craftsField=appeng.crafting.inv.CraftingSimulationState.class.getDeclaredField("crafts");craftsField.setAccessible(true);
+var stateSnapshots=new java.util.ArrayList<String>();var result=new com.google.gson.JsonObject();
+try{
+ for(boolean optimized:new boolean[]{false,true}){
+  enabled.set(optimized);com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.refresh();
+  var state=new State();state.parent.add(foreignA,90);state.parent.add(foreignB,40);
+  var trace=new java.util.ArrayList<Long>();
+  trace.add(state.extract(foreignA,20,appeng.api.config.Actionable.SIMULATE));
+  trace.add(state.extract(foreignA,30,appeng.api.config.Actionable.MODULATE));
+  trace.add(state.extract(empty,4,appeng.api.config.Actionable.MODULATE));
+  state.insert(empty,9,appeng.api.config.Actionable.MODULATE);
+  trace.add(state.extract(empty,4,appeng.api.config.Actionable.MODULATE));
+  var abandoned=new appeng.crafting.inv.ChildCraftingSimulationState(state);abandoned.extract(foreignA,13,appeng.api.config.Actionable.MODULATE);
+  trace.add(state.extract(foreignA,100,appeng.api.config.Actionable.SIMULATE));
+  var committed=new appeng.crafting.inv.ChildCraftingSimulationState(state);committed.extract(foreignA,11,appeng.api.config.Actionable.MODULATE);committed.insert(foreignB,7,appeng.api.config.Actionable.MODULATE);committed.addCrafting(pattern,400);committed.applyDiff(state);
+  state.ignore(foreignB);
+  state.addCrafting(pattern,Long.MAX_VALUE);state.addCrafting(pattern,1);
+  trace.add(state.extract(foreignA,100,appeng.api.config.Actionable.SIMULATE));trace.add(state.extract(foreignB,100,appeng.api.config.Actionable.SIMULATE));trace.add(state.extract(empty,100,appeng.api.config.Actionable.SIMULATE));
+  trace.add(((java.util.Map<appeng.api.crafting.IPatternDetails,Long>)craftsField.get(state)).get(pattern));
+  var counters=new java.util.TreeMap<String,java.util.SortedMap<String,Long>>();
+  for(String fieldName:new String[]{"unmodifiedCache","modifiableCache","requiredExtract","emittedItems"}){
+   var field=appeng.crafting.inv.CraftingSimulationState.class.getDeclaredField(fieldName);field.setAccessible(true);var counter=(appeng.api.stacks.KeyCounter)field.get(state);var snapshot=new java.util.TreeMap<String,Long>();
+   for(var entry:counter)snapshot.put(entry.getKey().toString(),entry.getLongValue());counters.put(fieldName,snapshot);
+  }
+  stateSnapshots.add(trace+"|"+counters);
+  var samples=new com.google.gson.JsonObject();
+  for(String operation:new String[]{"hotInventorySimulation","primitiveCraftMerge"}){
+   var fixture=new State();fixture.parent.add(a,1000000000L);fixture.extract(a,1,appeng.api.config.Actionable.SIMULATE);
+   java.util.function.LongSupplier call=operation.equals("hotInventorySimulation")?()->fixture.extract(a,1,appeng.api.config.Actionable.SIMULATE):()->{fixture.addCrafting(pattern,1);return 1;};
+   var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();var rounds=new com.google.gson.JsonArray();
+   for(int round=-5;round<5;round++){
+    long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;
+    for(int i=0;i<200000;i++)checksum+=call.getAsLong();
+    long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-before;
+    var sample=new com.google.gson.JsonObject();sample.addProperty("round",round);sample.addProperty("iterations",200000);sample.addProperty("nanosPerOp",(double)elapsed/200000);sample.addProperty("bytesPerOp",(double)allocated/200000);sample.addProperty("checksum",checksum);rounds.add(sample);
+   }
+   if(operation.equals("primitiveCraftMerge")&&((java.util.Map<appeng.api.crafting.IPatternDetails,Long>)craftsField.get(fixture)).get(pattern)!=2000000L)throw new IllegalStateException("Craft total changed");
+   samples.add(operation,rounds);
+  }
+  samples.addProperty("enabled",com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.hotPrimaries());result.add(optimized?"optimized":"native",samples);
+ }
+ if(!stateSnapshots.get(0).equals(stateSnapshots.get(1)))throw new IllegalStateException("State divergence "+stateSnapshots);
+ result.addProperty("differentialState",stateSnapshots.get(0));
+}finally{enabled.set(previous);com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.refresh();}
+System.out.println("SUNLIT_AE2_PLANNER_STATE_BENCHMARK="+result);
+return "PASS "+result;
