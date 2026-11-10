@@ -122,6 +122,10 @@ public abstract class GtReusableRecipeRunnerMixin implements GtReusableRunner {
     @Override
     public boolean sunlitindustry$release() {
         sunlitindustry$borrowed = false;
+        boolean bounded = !sunlitindustry$oversized && sunlitindustry$actualLists.size() <= 16
+                && sunlitindustry$searchLists.size() <= 16;
+        for (var list : sunlitindustry$actualLists.values()) bounded &= list.size() <= 512;
+        for (var list : sunlitindustry$searchLists.values()) bounded &= list.size() <= 512;
         sunlitindustry$actualLists.values().forEach(List::clear);
         sunlitindustry$searchLists.values().forEach(List::clear);
         sunlitindustry$actual.clear();
@@ -135,7 +139,6 @@ public abstract class GtReusableRecipeRunnerMixin implements GtReusableRunner {
         outputVoid = sunlitindustry$voidPredicate;
         recipeContents = sunlitindustry$actual;
         searchRecipeContents = sunlitindustry$search;
-        return !sunlitindustry$oversized && sunlitindustry$actualLists.size() <= 16
-                && sunlitindustry$searchLists.size() <= 16;
+        return bounded;
     }
 }

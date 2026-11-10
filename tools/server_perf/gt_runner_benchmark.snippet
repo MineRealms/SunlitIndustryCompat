@@ -1,0 +1,31 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+com.gregtechceu.gtceu.api.recipe.GTRecipe selected=null;
+for(var candidate:server.m_129894_().m_44051_())if(candidate instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe r&&!r.inputs.getOrDefault(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP,java.util.Collections.emptyList()).isEmpty()){selected=r;break;}
+if(selected==null)throw new IllegalStateException("Missing GT item recipe");
+final var recipe=selected;
+var cap=com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP;
+var holder=new com.gregtechceu.gtceu.api.capability.recipe.IRecipeCapabilityHolder(){
+ final java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.IO,java.util.List<com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList>> proxy=new java.util.EnumMap<>(com.gregtechceu.gtceu.api.capability.recipe.IO.class);
+ final java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.IO,java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<?>,java.util.List<com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler<?>>>> flat=new java.util.EnumMap<>(com.gregtechceu.gtceu.api.capability.recipe.IO.class);
+ public java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.IO,java.util.List<com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList>> getCapabilitiesProxy(){return proxy;}
+ public java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.IO,java.util.Map<com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<?>,java.util.List<com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler<?>>>> getCapabilitiesFlat(){return flat;}
+};
+var handler=new com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler<net.minecraft.world.item.crafting.Ingredient>(){
+ public java.util.List<net.minecraft.world.item.crafting.Ingredient> handleRecipeInner(com.gregtechceu.gtceu.api.capability.recipe.IO io,com.gregtechceu.gtceu.api.recipe.GTRecipe r,java.util.List<net.minecraft.world.item.crafting.Ingredient> left,boolean simulate){return null;}
+ public java.util.List<Object> getContents(){return java.util.Collections.emptyList();}
+ public double getTotalContentAmount(){return 0;}
+ public com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<net.minecraft.world.item.crafting.Ingredient> getCapability(){return cap;}
+};
+holder.addHandlerList(com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList.of(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,handler));
+var entries=java.util.Map.<com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<?>,java.util.List<com.gregtechceu.gtceu.api.recipe.content.Content>>of(cap,recipe.inputs.get(cap));
+var chances=java.util.Collections.<com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<?>,it.unimi.dsi.fastutil.objects.Object2IntMap<?>>emptyMap();
+var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
+var results=new com.google.gson.JsonArray();
+for(boolean simulated:new boolean[]{false,true})for(boolean pooled:new boolean[]{false,true}){
+ var action=new java.util.function.IntSupplier(){public int getAsInt(){var runner=pooled?com.society.sunlitindustry.performance.gt.GtRunnerPool.acquire(recipe,com.gregtechceu.gtceu.api.capability.recipe.IO.IN,false,holder,chances,simulated):new com.gregtechceu.gtceu.api.recipe.RecipeRunner(recipe,com.gregtechceu.gtceu.api.capability.recipe.IO.IN,false,holder,chances,simulated);try{return runner.handle(entries).isSuccess()?1:0;}finally{if(pooled)com.society.sunlitindustry.performance.gt.GtRunnerPool.release(runner);}}};
+ for(int round=-5;round<5;round++){long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime();int checksum=0;for(int i=0;i<24000;i++)checksum+=action.getAsInt();long nanos=System.nanoTime()-start,bytes=bean.getThreadAllocatedBytes(tid)-before;
+  var row=new com.google.gson.JsonObject();row.addProperty("scenario",simulated?"simulated_runner":"executing_runner");row.addProperty("pooled",pooled);row.addProperty("round",round);row.addProperty("iterations",24000);row.addProperty("nanosPerOp",nanos/24000.0);row.addProperty("bytesPerOp",bytes/24000.0);row.addProperty("checksum",checksum);results.add(row);
+ }
+}
+var result=new com.google.gson.JsonObject();result.addProperty("recipeId",recipe.id.toString());result.add("samples",results);return result;
