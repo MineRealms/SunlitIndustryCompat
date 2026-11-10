@@ -28,7 +28,7 @@ public abstract class GtRecipePipelineMixin {
             Map<RecipeCapability<?>, List<Content>> contents,
             Map<RecipeCapability<?>, Object2IntMap<?>> chances, boolean tick, boolean simulated,
             CallbackInfoReturnable<ActionResult> cir) {
-        if (!GtAdvancedConfig.runners()) return;
+        if (!GtAdvancedConfig.runners() || contents.isEmpty()) return;
         RecipeRunner runner = GtRunnerPool.acquire(recipe, io, tick, holder, chances, simulated);
         ActionResult result;
         try {
