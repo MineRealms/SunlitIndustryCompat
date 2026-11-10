@@ -7,7 +7,8 @@
     "gtceu": "7.5.3",
     "kubejs": "2001.6.5-build.16",
     "heap": "2G initial / 6G max",
-    "recipeCount": 43489,
+    "modJarCount": 18,
+    "recipeCount": 42493,
     "kubejsProbeCount": 1,
     "inputHandlers": 14
   },
@@ -17,7 +18,13 @@
     "AND_CONDITIONS": 0,
     "GROUP_HIT": 0,
     "GROUP_BUILD": 0,
-    "GROUP_FALLBACK": 0
+    "GROUP_FALLBACK": 0,
+    "AE2_DEFAULT_KEY_HIT": 0,
+    "AE2_DEFAULT_KEY_MISS": 0,
+    "AE2_DEFAULT_KEY_STORED": 0,
+    "AE2_DEFAULT_FLUID_KEY_HIT": 0,
+    "AE2_DEFAULT_FLUID_KEY_MISS": 0,
+    "AE2_DEFAULT_FLUID_KEY_STORED": 0
   },
   "optimizedCounters": {
     "EMPTY_IO": 5000,
@@ -25,15 +32,21 @@
     "AND_CONDITIONS": 0,
     "GROUP_HIT": 5000,
     "GROUP_BUILD": 0,
-    "GROUP_FALLBACK": 0
+    "GROUP_FALLBACK": 0,
+    "AE2_DEFAULT_KEY_HIT": 0,
+    "AE2_DEFAULT_KEY_MISS": 0,
+    "AE2_DEFAULT_KEY_STORED": 0,
+    "AE2_DEFAULT_FLUID_KEY_HIT": 0,
+    "AE2_DEFAULT_FLUID_KEY_MISS": 0,
+    "AE2_DEFAULT_FLUID_KEY_STORED": 0
   },
   "metrics": [
     {
       "kind": "recipe_path",
       "scenario": "empty_recipe_io",
-      "baselineMedianNanosPerOp": 478.57,
-      "optimizedMedianNanosPerOp": 101.155,
-      "latencyReductionPercent": 78.86307123304846,
+      "baselineMedianNanosPerOp": 305.775,
+      "optimizedMedianNanosPerOp": 74.195,
+      "latencyReductionPercent": 75.73542637560297,
       "baselineMedianBytesPerOp": 800.0,
       "optimizedMedianBytesPerOp": 24.0,
       "allocationReductionPercent": 97.0,
@@ -43,22 +56,22 @@
     {
       "kind": "recipe_path",
       "scenario": "simulated_recipe_match",
-      "baselineMedianNanosPerOp": 11483.48,
-      "optimizedMedianNanosPerOp": 10550.025,
-      "latencyReductionPercent": 8.128677021251395,
-      "baselineMedianBytesPerOp": 10976.0,
-      "optimizedMedianBytesPerOp": 9616.0,
-      "allocationReductionPercent": 12.390670553935855,
+      "baselineMedianNanosPerOp": 13252.77,
+      "optimizedMedianNanosPerOp": 11200.18,
+      "latencyReductionPercent": 15.488007412789928,
+      "baselineMedianBytesPerOp": 10944.0,
+      "optimizedMedianBytesPerOp": 9920.0,
+      "allocationReductionPercent": 9.35672514619883,
       "rounds": 3,
       "iterationsPerRound": 20000
     },
     {
       "kind": "handler_group_microbenchmark",
       "scenario": "baseline: native build vs warm cache",
-      "nativeMedianNanosPerOp": 2944.108333333333,
-      "cachedMedianNanosPerOp": 368.26666666666665,
-      "latencyReductionPercent": 87.49140232045356,
-      "nativeMedianBytesPerOp": 1296.4066666666668,
+      "nativeMedianNanosPerOp": 1611.7458333333334,
+      "cachedMedianNanosPerOp": 390.79583333333335,
+      "latencyReductionPercent": 75.75325927630236,
+      "nativeMedianBytesPerOp": 1224.0,
       "cachedMedianBytesPerOp": 0.0,
       "allocationReductionPercent": 100.0,
       "rounds": 3,
@@ -67,12 +80,12 @@
     {
       "kind": "handler_group_microbenchmark",
       "scenario": "optimized: native build vs warm cache",
-      "nativeMedianNanosPerOp": 2411.733333333333,
-      "cachedMedianNanosPerOp": 451.96666666666664,
-      "latencyReductionPercent": 81.25967492260062,
-      "nativeMedianBytesPerOp": 1233.8986666666667,
-      "cachedMedianBytesPerOp": 0.6106666666666667,
-      "allocationReductionPercent": 99.95050917201196,
+      "nativeMedianNanosPerOp": 1768.9791666666667,
+      "cachedMedianNanosPerOp": 504.57916666666665,
+      "latencyReductionPercent": 71.47625160462131,
+      "nativeMedianBytesPerOp": 1224.0,
+      "cachedMedianBytesPerOp": 0.0,
+      "allocationReductionPercent": 100.0,
       "rounds": 3,
       "iterationsPerRound": 24000
     }
@@ -81,7 +94,7 @@
     "baseline": {
       "recipes": {
         "empty_recipe_io": {
-          "medianNanosPerOp": 478.57,
+          "medianNanosPerOp": 305.775,
           "medianBytesPerOp": 800.0,
           "rounds": 3,
           "iterationsPerRound": 20000,
@@ -90,7 +103,7 @@
               "scenario": "empty_recipe_io",
               "round": 1,
               "iterations": 20000,
-              "nanosPerOp": 487.405,
+              "nanosPerOp": 305.775,
               "bytesPerOp": 800.0,
               "checksum": 20000
             },
@@ -98,7 +111,7 @@
               "scenario": "empty_recipe_io",
               "round": 2,
               "iterations": 20000,
-              "nanosPerOp": 381.73,
+              "nanosPerOp": 324.615,
               "bytesPerOp": 800.0,
               "checksum": 20000
             },
@@ -106,15 +119,15 @@
               "scenario": "empty_recipe_io",
               "round": 3,
               "iterations": 20000,
-              "nanosPerOp": 478.57,
+              "nanosPerOp": 268.385,
               "bytesPerOp": 800.0,
               "checksum": 20000
             }
           ]
         },
         "simulated_recipe_match": {
-          "medianNanosPerOp": 11483.48,
-          "medianBytesPerOp": 10976.0,
+          "medianNanosPerOp": 13252.77,
+          "medianBytesPerOp": 10944.0,
           "rounds": 3,
           "iterationsPerRound": 20000,
           "samples": [
@@ -122,24 +135,24 @@
               "scenario": "simulated_recipe_match",
               "round": 1,
               "iterations": 20000,
-              "nanosPerOp": 11798.425,
-              "bytesPerOp": 10976.0,
+              "nanosPerOp": 13476.605,
+              "bytesPerOp": 10944.0,
               "checksum": 20000
             },
             {
               "scenario": "simulated_recipe_match",
               "round": 2,
               "iterations": 20000,
-              "nanosPerOp": 11483.48,
-              "bytesPerOp": 10976.0,
+              "nanosPerOp": 13060.91,
+              "bytesPerOp": 10944.0,
               "checksum": 20000
             },
             {
               "scenario": "simulated_recipe_match",
               "round": 3,
               "iterations": 20000,
-              "nanosPerOp": 11202.415,
-              "bytesPerOp": 10976.0,
+              "nanosPerOp": 13252.77,
+              "bytesPerOp": 10944.0,
               "checksum": 20000
             }
           ]
@@ -147,7 +160,7 @@
       },
       "groups": {
         "cached_group_lookup": {
-          "medianNanosPerOp": 368.26666666666665,
+          "medianNanosPerOp": 390.79583333333335,
           "medianBytesPerOp": 0.0,
           "rounds": 3,
           "iterationsPerRound": 24000,
@@ -156,7 +169,7 @@
               "scenario": "cached_group_lookup",
               "round": 1,
               "iterations": 24000,
-              "nanosPerOp": 368.71666666666664,
+              "nanosPerOp": 486.52916666666664,
               "bytesPerOp": 0.0,
               "checksum": 120000
             },
@@ -164,7 +177,7 @@
               "scenario": "cached_group_lookup",
               "round": 2,
               "iterations": 24000,
-              "nanosPerOp": 366.4375,
+              "nanosPerOp": 390.79583333333335,
               "bytesPerOp": 0.0,
               "checksum": 120000
             },
@@ -172,15 +185,15 @@
               "scenario": "cached_group_lookup",
               "round": 3,
               "iterations": 24000,
-              "nanosPerOp": 368.26666666666665,
+              "nanosPerOp": 389.28333333333336,
               "bytesPerOp": 0.0,
               "checksum": 120000
             }
           ]
         },
         "native_group_build": {
-          "medianNanosPerOp": 2944.108333333333,
-          "medianBytesPerOp": 1296.4066666666668,
+          "medianNanosPerOp": 1611.7458333333334,
+          "medianBytesPerOp": 1224.0,
           "rounds": 3,
           "iterationsPerRound": 24000,
           "samples": [
@@ -188,24 +201,24 @@
               "scenario": "native_group_build",
               "round": 1,
               "iterations": 24000,
-              "nanosPerOp": 4940.379166666667,
-              "bytesPerOp": 1416.7833333333333,
+              "nanosPerOp": 1570.7541666666666,
+              "bytesPerOp": 1224.0,
               "checksum": 120000
             },
             {
               "scenario": "native_group_build",
               "round": 2,
               "iterations": 24000,
-              "nanosPerOp": 2944.108333333333,
-              "bytesPerOp": 1296.4066666666668,
+              "nanosPerOp": 1611.7458333333334,
+              "bytesPerOp": 1224.0,
               "checksum": 120000
             },
             {
               "scenario": "native_group_build",
               "round": 3,
               "iterations": 24000,
-              "nanosPerOp": 2006.9666666666667,
-              "bytesPerOp": 1256.0,
+              "nanosPerOp": 1642.1,
+              "bytesPerOp": 1224.0,
               "checksum": 120000
             }
           ]
@@ -215,7 +228,7 @@
     "optimized": {
       "recipes": {
         "empty_recipe_io": {
-          "medianNanosPerOp": 101.155,
+          "medianNanosPerOp": 74.195,
           "medianBytesPerOp": 24.0,
           "rounds": 3,
           "iterationsPerRound": 20000,
@@ -224,7 +237,7 @@
               "scenario": "empty_recipe_io",
               "round": 1,
               "iterations": 20000,
-              "nanosPerOp": 101.155,
+              "nanosPerOp": 77.125,
               "bytesPerOp": 24.0,
               "checksum": 20000
             },
@@ -232,7 +245,7 @@
               "scenario": "empty_recipe_io",
               "round": 2,
               "iterations": 20000,
-              "nanosPerOp": 100.17,
+              "nanosPerOp": 73.275,
               "bytesPerOp": 24.0,
               "checksum": 20000
             },
@@ -240,15 +253,15 @@
               "scenario": "empty_recipe_io",
               "round": 3,
               "iterations": 20000,
-              "nanosPerOp": 133.895,
+              "nanosPerOp": 74.195,
               "bytesPerOp": 24.0,
               "checksum": 20000
             }
           ]
         },
         "simulated_recipe_match": {
-          "medianNanosPerOp": 10550.025,
-          "medianBytesPerOp": 9616.0,
+          "medianNanosPerOp": 11200.18,
+          "medianBytesPerOp": 9920.0,
           "rounds": 3,
           "iterationsPerRound": 20000,
           "samples": [
@@ -256,24 +269,24 @@
               "scenario": "simulated_recipe_match",
               "round": 1,
               "iterations": 20000,
-              "nanosPerOp": 10441.58,
-              "bytesPerOp": 9616.0,
+              "nanosPerOp": 11389.655,
+              "bytesPerOp": 9920.0,
               "checksum": 20000
             },
             {
               "scenario": "simulated_recipe_match",
               "round": 2,
               "iterations": 20000,
-              "nanosPerOp": 10550.025,
-              "bytesPerOp": 9616.0,
+              "nanosPerOp": 11200.18,
+              "bytesPerOp": 9920.0,
               "checksum": 20000
             },
             {
               "scenario": "simulated_recipe_match",
               "round": 3,
               "iterations": 20000,
-              "nanosPerOp": 12117.235,
-              "bytesPerOp": 9616.0,
+              "nanosPerOp": 11049.13,
+              "bytesPerOp": 9920.0,
               "checksum": 20000
             }
           ]
@@ -281,8 +294,8 @@
       },
       "groups": {
         "cached_group_lookup": {
-          "medianNanosPerOp": 451.96666666666664,
-          "medianBytesPerOp": 0.6106666666666667,
+          "medianNanosPerOp": 504.57916666666665,
+          "medianBytesPerOp": 0.0,
           "rounds": 3,
           "iterationsPerRound": 24000,
           "samples": [
@@ -290,31 +303,31 @@
               "scenario": "cached_group_lookup",
               "round": 1,
               "iterations": 24000,
-              "nanosPerOp": 787.7375,
-              "bytesPerOp": 32.0,
+              "nanosPerOp": 494.25416666666666,
+              "bytesPerOp": 0.0,
               "checksum": 120000
             },
             {
               "scenario": "cached_group_lookup",
               "round": 2,
               "iterations": 24000,
-              "nanosPerOp": 445.87083333333334,
-              "bytesPerOp": 0.6106666666666667,
+              "nanosPerOp": 504.57916666666665,
+              "bytesPerOp": 0.0,
               "checksum": 120000
             },
             {
               "scenario": "cached_group_lookup",
               "round": 3,
               "iterations": 24000,
-              "nanosPerOp": 451.96666666666664,
+              "nanosPerOp": 512.4583333333334,
               "bytesPerOp": 0.0,
               "checksum": 120000
             }
           ]
         },
         "native_group_build": {
-          "medianNanosPerOp": 2411.733333333333,
-          "medianBytesPerOp": 1233.8986666666667,
+          "medianNanosPerOp": 1768.9791666666667,
+          "medianBytesPerOp": 1224.0,
           "rounds": 3,
           "iterationsPerRound": 24000,
           "samples": [
@@ -322,28 +335,662 @@
               "scenario": "native_group_build",
               "round": 1,
               "iterations": 24000,
-              "nanosPerOp": 11057.8625,
-              "bytesPerOp": 1361.2383333333332,
+              "nanosPerOp": 1768.4666666666667,
+              "bytesPerOp": 1224.0,
               "checksum": 120000
             },
             {
               "scenario": "native_group_build",
               "round": 2,
               "iterations": 24000,
-              "nanosPerOp": 2411.733333333333,
-              "bytesPerOp": 1233.8986666666667,
+              "nanosPerOp": 1795.2625,
+              "bytesPerOp": 1224.0,
               "checksum": 120000
             },
             {
               "scenario": "native_group_build",
               "round": 3,
               "iterations": 24000,
-              "nanosPerOp": 1647.8958333333333,
+              "nanosPerOp": 1768.9791666666667,
               "bytesPerOp": 1224.0,
               "checksum": 120000
             }
           ]
         }
+      }
+    }
+  },
+  "rawCaptures": {
+    "baseline": {
+      "gtRecipeId": "gtceu:cutter/oak_slab",
+      "registeredRecipeCount": 42493,
+      "probeRecipeCount": 1,
+      "javaVersion": "17.0.18",
+      "maxHeapBytes": 6442450944,
+      "inputHandlers": 14,
+      "serverMixinsEnabled": false,
+      "warmupRoundsPerScenario": 5,
+      "groupSamples": [
+        {
+          "scenario": "native_group_build",
+          "round": -5,
+          "iterations": 24000,
+          "nanosPerOp": 5606.470833333334,
+          "bytesPerOp": 1376.0016666666668,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": -4,
+          "iterations": 24000,
+          "nanosPerOp": 7283.908333333334,
+          "bytesPerOp": 1376.0016666666668,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": -3,
+          "iterations": 24000,
+          "nanosPerOp": 8872.941666666668,
+          "bytesPerOp": 1271.795,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": -2,
+          "iterations": 24000,
+          "nanosPerOp": 1621.2041666666667,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": -1,
+          "iterations": 24000,
+          "nanosPerOp": 1620.4333333333334,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": 0,
+          "iterations": 24000,
+          "nanosPerOp": 1600.8416666666667,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": 1,
+          "iterations": 24000,
+          "nanosPerOp": 1570.7541666666666,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": 2,
+          "iterations": 24000,
+          "nanosPerOp": 1611.7458333333334,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": 3,
+          "iterations": 24000,
+          "nanosPerOp": 1642.1,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": -5,
+          "iterations": 24000,
+          "nanosPerOp": 1109.8416666666667,
+          "bytesPerOp": 32.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": -4,
+          "iterations": 24000,
+          "nanosPerOp": 781.6875,
+          "bytesPerOp": 16.134666666666668,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": -3,
+          "iterations": 24000,
+          "nanosPerOp": 438.1875,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": -2,
+          "iterations": 24000,
+          "nanosPerOp": 399.80833333333334,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": -1,
+          "iterations": 24000,
+          "nanosPerOp": 400.12083333333334,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": 0,
+          "iterations": 24000,
+          "nanosPerOp": 397.0875,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": 1,
+          "iterations": 24000,
+          "nanosPerOp": 486.52916666666664,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": 2,
+          "iterations": 24000,
+          "nanosPerOp": 390.79583333333335,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": 3,
+          "iterations": 24000,
+          "nanosPerOp": 389.28333333333336,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        }
+      ],
+      "recipeSamples": [
+        {
+          "scenario": "empty_recipe_io",
+          "round": -5,
+          "iterations": 20000,
+          "nanosPerOp": 474.515,
+          "bytesPerOp": 800.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": -4,
+          "iterations": 20000,
+          "nanosPerOp": 364.045,
+          "bytesPerOp": 800.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": -3,
+          "iterations": 20000,
+          "nanosPerOp": 345.765,
+          "bytesPerOp": 800.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": -2,
+          "iterations": 20000,
+          "nanosPerOp": 407.565,
+          "bytesPerOp": 800.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": -1,
+          "iterations": 20000,
+          "nanosPerOp": 379.985,
+          "bytesPerOp": 800.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": 0,
+          "iterations": 20000,
+          "nanosPerOp": 316.1,
+          "bytesPerOp": 800.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": 1,
+          "iterations": 20000,
+          "nanosPerOp": 305.775,
+          "bytesPerOp": 800.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": 2,
+          "iterations": 20000,
+          "nanosPerOp": 324.615,
+          "bytesPerOp": 800.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": 3,
+          "iterations": 20000,
+          "nanosPerOp": 268.385,
+          "bytesPerOp": 800.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": -5,
+          "iterations": 20000,
+          "nanosPerOp": 19132.785,
+          "bytesPerOp": 11272.6652,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": -4,
+          "iterations": 20000,
+          "nanosPerOp": 13344.26,
+          "bytesPerOp": 10944.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": -3,
+          "iterations": 20000,
+          "nanosPerOp": 13564.665,
+          "bytesPerOp": 10944.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": -2,
+          "iterations": 20000,
+          "nanosPerOp": 12978.33,
+          "bytesPerOp": 10944.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": -1,
+          "iterations": 20000,
+          "nanosPerOp": 13056.9,
+          "bytesPerOp": 10944.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": 0,
+          "iterations": 20000,
+          "nanosPerOp": 13058.99,
+          "bytesPerOp": 10944.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": 1,
+          "iterations": 20000,
+          "nanosPerOp": 13476.605,
+          "bytesPerOp": 10944.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": 2,
+          "iterations": 20000,
+          "nanosPerOp": 13060.91,
+          "bytesPerOp": 10944.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": 3,
+          "iterations": 20000,
+          "nanosPerOp": 13252.77,
+          "bytesPerOp": 10944.0,
+          "checksum": 20000
+        }
+      ],
+      "optimizationCounters": {
+        "EMPTY_IO": 0,
+        "SIMULATION": 0,
+        "AND_CONDITIONS": 0,
+        "GROUP_HIT": 0,
+        "GROUP_BUILD": 0,
+        "GROUP_FALLBACK": 0,
+        "AE2_DEFAULT_KEY_HIT": 0,
+        "AE2_DEFAULT_KEY_MISS": 0,
+        "AE2_DEFAULT_KEY_STORED": 0,
+        "AE2_DEFAULT_FLUID_KEY_HIT": 0,
+        "AE2_DEFAULT_FLUID_KEY_MISS": 0,
+        "AE2_DEFAULT_FLUID_KEY_STORED": 0
+      }
+    },
+    "optimized": {
+      "gtRecipeId": "gtceu:cutter/oak_slab",
+      "registeredRecipeCount": 42493,
+      "probeRecipeCount": 1,
+      "javaVersion": "17.0.18",
+      "maxHeapBytes": 6442450944,
+      "inputHandlers": 14,
+      "serverMixinsEnabled": true,
+      "warmupRoundsPerScenario": 5,
+      "groupSamples": [
+        {
+          "scenario": "native_group_build",
+          "round": -5,
+          "iterations": 24000,
+          "nanosPerOp": 1918.4208333333333,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": -4,
+          "iterations": 24000,
+          "nanosPerOp": 1974.9458333333334,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": -3,
+          "iterations": 24000,
+          "nanosPerOp": 1901.9,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": -2,
+          "iterations": 24000,
+          "nanosPerOp": 1943.2083333333333,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": -1,
+          "iterations": 24000,
+          "nanosPerOp": 1815.3375,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": 0,
+          "iterations": 24000,
+          "nanosPerOp": 1890.4833333333333,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": 1,
+          "iterations": 24000,
+          "nanosPerOp": 1768.4666666666667,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": 2,
+          "iterations": 24000,
+          "nanosPerOp": 1795.2625,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "native_group_build",
+          "round": 3,
+          "iterations": 24000,
+          "nanosPerOp": 1768.9791666666667,
+          "bytesPerOp": 1224.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": -5,
+          "iterations": 24000,
+          "nanosPerOp": 533.5916666666667,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": -4,
+          "iterations": 24000,
+          "nanosPerOp": 536.8083333333333,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": -3,
+          "iterations": 24000,
+          "nanosPerOp": 527.1625,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": -2,
+          "iterations": 24000,
+          "nanosPerOp": 502.49583333333334,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": -1,
+          "iterations": 24000,
+          "nanosPerOp": 501.3,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": 0,
+          "iterations": 24000,
+          "nanosPerOp": 493.925,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": 1,
+          "iterations": 24000,
+          "nanosPerOp": 494.25416666666666,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": 2,
+          "iterations": 24000,
+          "nanosPerOp": 504.57916666666665,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        },
+        {
+          "scenario": "cached_group_lookup",
+          "round": 3,
+          "iterations": 24000,
+          "nanosPerOp": 512.4583333333334,
+          "bytesPerOp": 0.0,
+          "checksum": 120000
+        }
+      ],
+      "recipeSamples": [
+        {
+          "scenario": "empty_recipe_io",
+          "round": -5,
+          "iterations": 20000,
+          "nanosPerOp": 116.215,
+          "bytesPerOp": 24.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": -4,
+          "iterations": 20000,
+          "nanosPerOp": 120.59,
+          "bytesPerOp": 24.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": -3,
+          "iterations": 20000,
+          "nanosPerOp": 119.695,
+          "bytesPerOp": 24.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": -2,
+          "iterations": 20000,
+          "nanosPerOp": 115.975,
+          "bytesPerOp": 24.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": -1,
+          "iterations": 20000,
+          "nanosPerOp": 88.9,
+          "bytesPerOp": 24.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": 0,
+          "iterations": 20000,
+          "nanosPerOp": 72.67,
+          "bytesPerOp": 24.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": 1,
+          "iterations": 20000,
+          "nanosPerOp": 77.125,
+          "bytesPerOp": 24.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": 2,
+          "iterations": 20000,
+          "nanosPerOp": 73.275,
+          "bytesPerOp": 24.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "empty_recipe_io",
+          "round": 3,
+          "iterations": 20000,
+          "nanosPerOp": 74.195,
+          "bytesPerOp": 24.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": -5,
+          "iterations": 20000,
+          "nanosPerOp": 11584.205,
+          "bytesPerOp": 9920.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": -4,
+          "iterations": 20000,
+          "nanosPerOp": 11047.97,
+          "bytesPerOp": 9920.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": -3,
+          "iterations": 20000,
+          "nanosPerOp": 14106.705,
+          "bytesPerOp": 9920.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": -2,
+          "iterations": 20000,
+          "nanosPerOp": 18219.335,
+          "bytesPerOp": 9920.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": -1,
+          "iterations": 20000,
+          "nanosPerOp": 12745.2,
+          "bytesPerOp": 9920.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": 0,
+          "iterations": 20000,
+          "nanosPerOp": 12706.985,
+          "bytesPerOp": 9920.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": 1,
+          "iterations": 20000,
+          "nanosPerOp": 11389.655,
+          "bytesPerOp": 9920.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": 2,
+          "iterations": 20000,
+          "nanosPerOp": 11200.18,
+          "bytesPerOp": 9920.0,
+          "checksum": 20000
+        },
+        {
+          "scenario": "simulated_recipe_match",
+          "round": 3,
+          "iterations": 20000,
+          "nanosPerOp": 11049.13,
+          "bytesPerOp": 9920.0,
+          "checksum": 20000
+        }
+      ],
+      "optimizationCounters": {
+        "EMPTY_IO": 5000,
+        "SIMULATION": 5000,
+        "AND_CONDITIONS": 0,
+        "GROUP_HIT": 5000,
+        "GROUP_BUILD": 0,
+        "GROUP_FALLBACK": 0,
+        "AE2_DEFAULT_KEY_HIT": 0,
+        "AE2_DEFAULT_KEY_MISS": 0,
+        "AE2_DEFAULT_KEY_STORED": 0,
+        "AE2_DEFAULT_FLUID_KEY_HIT": 0,
+        "AE2_DEFAULT_FLUID_KEY_MISS": 0,
+        "AE2_DEFAULT_FLUID_KEY_STORED": 0
       }
     }
   }

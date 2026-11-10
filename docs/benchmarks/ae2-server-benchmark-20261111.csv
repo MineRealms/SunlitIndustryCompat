@@ -1,0 +1,4 @@
+scenario,baselineMedianNanosPerOp,optimizedMedianNanosPerOp,latencyReductionPercent,baselineMedianBytesPerOp,optimizedMedianBytesPerOp,allocationReductionPercent,rounds,iterationsPerRound
+ItemLike,97.1955,22.6145,76.73297632092022,80.0,0.0,100.0,3,200000
+Fluid,53.5515,78.333,-46.27601467746001,56.0,0.0,100.0,3,200000
+FluidStack,56.7155,19.22,66.11155680545883,56.0,0.0,100.0,3,200000

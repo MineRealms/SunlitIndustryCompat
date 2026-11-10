@@ -1,0 +1,500 @@
+{
+  "date": "2026-11-11",
+  "environment": {
+    "minecraft": "1.20.1",
+    "forge": "47.4.23",
+    "java": "17.0.18",
+    "ae2": "15.4.10",
+    "gtceu": "7.5.3",
+    "modJarCount": 18,
+    "kubejs": "2001.6.5-build.16",
+    "heap": "2G initial / 6G max",
+    "recipeCount": 42493,
+    "compatJar": {
+      "file": "sunlit-industry-compat-1.20.1-0.5.0.jar",
+      "sha256": "b9b2970f92536a472a6678d7fc9b3983531a46d6ff9646d79554ba6c9e316322"
+    }
+  },
+  "method": "Server-thread factory microbenchmark; identity consumed; diagnostic counters enabled; median of rounds 1-3; not a network TPS/heap/GC measurement.",
+  "metrics": [
+    {
+      "scenario": "ItemLike",
+      "baselineMedianNanosPerOp": 97.1955,
+      "optimizedMedianNanosPerOp": 22.6145,
+      "latencyReductionPercent": 76.73297632092022,
+      "baselineMedianBytesPerOp": 80.0,
+      "optimizedMedianBytesPerOp": 0.0,
+      "allocationReductionPercent": 100.0,
+      "rounds": 3,
+      "iterationsPerRound": 200000
+    },
+    {
+      "scenario": "Fluid",
+      "baselineMedianNanosPerOp": 53.5515,
+      "optimizedMedianNanosPerOp": 78.333,
+      "latencyReductionPercent": -46.27601467746001,
+      "baselineMedianBytesPerOp": 56.0,
+      "optimizedMedianBytesPerOp": 0.0,
+      "allocationReductionPercent": 100.0,
+      "rounds": 3,
+      "iterationsPerRound": 200000
+    },
+    {
+      "scenario": "FluidStack",
+      "baselineMedianNanosPerOp": 56.7155,
+      "optimizedMedianNanosPerOp": 19.22,
+      "latencyReductionPercent": 66.11155680545883,
+      "baselineMedianBytesPerOp": 56.0,
+      "optimizedMedianBytesPerOp": 0.0,
+      "allocationReductionPercent": 100.0,
+      "rounds": 3,
+      "iterationsPerRound": 200000
+    }
+  ],
+  "validation": {
+    "keyCorrectness": "PASS {\"checks\":[\"item NBT snapshot and empty stack\",\"fluid NBT snapshot, empty stack and default FluidStack cache\",\"Mekanism energy and Forge capability-sensitive conversion\"]}  [13ms]",
+    "keyCorrectnessAfterReload": "PASS {\"checks\":[\"item NBT snapshot and empty stack\",\"fluid NBT snapshot, empty stack and default FluidStack cache\",\"Mekanism energy and Forge capability-sensitive conversion\"]}  [2ms]",
+    "groupCorrectness": "PASS topologies=300 comparisons=14400 changes=color,distinct,bypass,order,filter,add,remove  [244ms]",
+    "reloadAlternate": "PASS variant=alternate recipeCount=42493 probe=1  [65ms]",
+    "reloadRemoved": "PASS variant=removed recipeCount=42492 probe=0  [64ms]",
+    "reloadRestored": "PASS variant=base recipeCount=42493 probe=1  [62ms]"
+  },
+  "rawSamples": {
+    "baseline": {
+      "registeredRecipeCount": 42493,
+      "javaVersion": "17.0.18",
+      "cacheEnabled": false,
+      "warmupRoundsPerScenario": 5,
+      "itemSameKeyAfterInit": false,
+      "fluidSameKeyAfterInit": false,
+      "fluidStackSameKeyAfterInit": false,
+      "itemSamples": [
+        {
+          "round": -5,
+          "iterations": 200000,
+          "nanosPerOp": 148.007,
+          "bytesPerOp": 80.0,
+          "checksum": 214474609679597
+        },
+        {
+          "round": -4,
+          "iterations": 200000,
+          "nanosPerOp": 76.078,
+          "bytesPerOp": 80.0,
+          "checksum": 214735375998747
+        },
+        {
+          "round": -3,
+          "iterations": 200000,
+          "nanosPerOp": 131.3785,
+          "bytesPerOp": 80.0,
+          "checksum": 215105720964297
+        },
+        {
+          "round": -2,
+          "iterations": 200000,
+          "nanosPerOp": 129.851,
+          "bytesPerOp": 80.0,
+          "checksum": 214457017798630
+        },
+        {
+          "round": -1,
+          "iterations": 200000,
+          "nanosPerOp": 128.945,
+          "bytesPerOp": 80.0,
+          "checksum": 214607202685234
+        },
+        {
+          "round": 0,
+          "iterations": 200000,
+          "nanosPerOp": 129.1565,
+          "bytesPerOp": 80.0,
+          "checksum": 214499933120446
+        },
+        {
+          "round": 1,
+          "iterations": 200000,
+          "nanosPerOp": 128.3955,
+          "bytesPerOp": 80.0,
+          "checksum": 214301537164984
+        },
+        {
+          "round": 2,
+          "iterations": 200000,
+          "nanosPerOp": 97.1955,
+          "bytesPerOp": 80.0,
+          "checksum": 214807611622068
+        },
+        {
+          "round": 3,
+          "iterations": 200000,
+          "nanosPerOp": 63.3925,
+          "bytesPerOp": 80.0,
+          "checksum": 214542464450858
+        }
+      ],
+      "fluidSamples": [
+        {
+          "round": -5,
+          "iterations": 200000,
+          "nanosPerOp": 114.946,
+          "bytesPerOp": 56.0,
+          "checksum": 214977101116502
+        },
+        {
+          "round": -4,
+          "iterations": 200000,
+          "nanosPerOp": 109.0265,
+          "bytesPerOp": 56.0,
+          "checksum": 214770845210300
+        },
+        {
+          "round": -3,
+          "iterations": 200000,
+          "nanosPerOp": 69.599,
+          "bytesPerOp": 56.0,
+          "checksum": 214758561935434
+        },
+        {
+          "round": -2,
+          "iterations": 200000,
+          "nanosPerOp": 52.946,
+          "bytesPerOp": 56.0,
+          "checksum": 215164892041230
+        },
+        {
+          "round": -1,
+          "iterations": 200000,
+          "nanosPerOp": 55.0525,
+          "bytesPerOp": 56.0,
+          "checksum": 214920967861349
+        },
+        {
+          "round": 0,
+          "iterations": 200000,
+          "nanosPerOp": 52.438,
+          "bytesPerOp": 56.0,
+          "checksum": 214915885612399
+        },
+        {
+          "round": 1,
+          "iterations": 200000,
+          "nanosPerOp": 53.5515,
+          "bytesPerOp": 56.0,
+          "checksum": 215053162304702
+        },
+        {
+          "round": 2,
+          "iterations": 200000,
+          "nanosPerOp": 51.358,
+          "bytesPerOp": 56.0,
+          "checksum": 214638998124666
+        },
+        {
+          "round": 3,
+          "iterations": 200000,
+          "nanosPerOp": 53.9585,
+          "bytesPerOp": 56.0,
+          "checksum": 214907788906676
+        }
+      ],
+      "fluidStackSamples": [
+        {
+          "round": -5,
+          "iterations": 200000,
+          "nanosPerOp": 138.857,
+          "bytesPerOp": 56.0,
+          "checksum": 214990583931407
+        },
+        {
+          "round": -4,
+          "iterations": 200000,
+          "nanosPerOp": 90.976,
+          "bytesPerOp": 56.0,
+          "checksum": 214503570197010
+        },
+        {
+          "round": -3,
+          "iterations": 200000,
+          "nanosPerOp": 57.206,
+          "bytesPerOp": 56.0,
+          "checksum": 214189035502232
+        },
+        {
+          "round": -2,
+          "iterations": 200000,
+          "nanosPerOp": 57.6335,
+          "bytesPerOp": 56.0,
+          "checksum": 214815722786783
+        },
+        {
+          "round": -1,
+          "iterations": 200000,
+          "nanosPerOp": 58.2685,
+          "bytesPerOp": 56.0,
+          "checksum": 214606650519944
+        },
+        {
+          "round": 0,
+          "iterations": 200000,
+          "nanosPerOp": 57.916,
+          "bytesPerOp": 56.0,
+          "checksum": 214911869251945
+        },
+        {
+          "round": 1,
+          "iterations": 200000,
+          "nanosPerOp": 57.5035,
+          "bytesPerOp": 56.0,
+          "checksum": 214738549063322
+        },
+        {
+          "round": 2,
+          "iterations": 200000,
+          "nanosPerOp": 56.7155,
+          "bytesPerOp": 56.0,
+          "checksum": 214719332745904
+        },
+        {
+          "round": 3,
+          "iterations": 200000,
+          "nanosPerOp": 56.0725,
+          "bytesPerOp": 56.0,
+          "checksum": 214733782994803
+        }
+      ],
+      "optimizationCounters": {
+        "EMPTY_IO": 0,
+        "SIMULATION": 0,
+        "AND_CONDITIONS": 0,
+        "GROUP_HIT": 0,
+        "GROUP_BUILD": 0,
+        "GROUP_FALLBACK": 0,
+        "AE2_DEFAULT_KEY_HIT": 0,
+        "AE2_DEFAULT_KEY_MISS": 0,
+        "AE2_DEFAULT_KEY_STORED": 0,
+        "AE2_DEFAULT_FLUID_KEY_HIT": 0,
+        "AE2_DEFAULT_FLUID_KEY_MISS": 0,
+        "AE2_DEFAULT_FLUID_KEY_STORED": 0
+      }
+    },
+    "optimized": {
+      "registeredRecipeCount": 42493,
+      "javaVersion": "17.0.18",
+      "cacheEnabled": true,
+      "warmupRoundsPerScenario": 5,
+      "itemSameKeyAfterInit": true,
+      "fluidSameKeyAfterInit": true,
+      "fluidStackSameKeyAfterInit": true,
+      "itemSamples": [
+        {
+          "round": -5,
+          "iterations": 200000,
+          "nanosPerOp": 67.599,
+          "bytesPerOp": 0.0,
+          "checksum": 201493626600000
+        },
+        {
+          "round": -4,
+          "iterations": 200000,
+          "nanosPerOp": 26.046,
+          "bytesPerOp": 0.0,
+          "checksum": 201493626600000
+        },
+        {
+          "round": -3,
+          "iterations": 200000,
+          "nanosPerOp": 26.2455,
+          "bytesPerOp": 0.0,
+          "checksum": 201493626600000
+        },
+        {
+          "round": -2,
+          "iterations": 200000,
+          "nanosPerOp": 26.0275,
+          "bytesPerOp": 0.0,
+          "checksum": 201493626600000
+        },
+        {
+          "round": -1,
+          "iterations": 200000,
+          "nanosPerOp": 25.956,
+          "bytesPerOp": 0.0,
+          "checksum": 201493626600000
+        },
+        {
+          "round": 0,
+          "iterations": 200000,
+          "nanosPerOp": 24.579,
+          "bytesPerOp": 0.0,
+          "checksum": 201493626600000
+        },
+        {
+          "round": 1,
+          "iterations": 200000,
+          "nanosPerOp": 22.313,
+          "bytesPerOp": 0.0,
+          "checksum": 201493626600000
+        },
+        {
+          "round": 2,
+          "iterations": 200000,
+          "nanosPerOp": 23.445,
+          "bytesPerOp": 0.0,
+          "checksum": 201493626600000
+        },
+        {
+          "round": 3,
+          "iterations": 200000,
+          "nanosPerOp": 22.6145,
+          "bytesPerOp": 0.0,
+          "checksum": 201493626600000
+        }
+      ],
+      "fluidSamples": [
+        {
+          "round": -5,
+          "iterations": 200000,
+          "nanosPerOp": 27.97,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": -4,
+          "iterations": 200000,
+          "nanosPerOp": 25.3315,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": -3,
+          "iterations": 200000,
+          "nanosPerOp": 26.6315,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": -2,
+          "iterations": 200000,
+          "nanosPerOp": 24.3675,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": -1,
+          "iterations": 200000,
+          "nanosPerOp": 25.5785,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": 0,
+          "iterations": 200000,
+          "nanosPerOp": 25.9645,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": 1,
+          "iterations": 200000,
+          "nanosPerOp": 73.143,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": 2,
+          "iterations": 200000,
+          "nanosPerOp": 78.333,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": 3,
+          "iterations": 200000,
+          "nanosPerOp": 79.507,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        }
+      ],
+      "fluidStackSamples": [
+        {
+          "round": -5,
+          "iterations": 200000,
+          "nanosPerOp": 79.7455,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": -4,
+          "iterations": 200000,
+          "nanosPerOp": 79.278,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": -3,
+          "iterations": 200000,
+          "nanosPerOp": 78.5785,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": -2,
+          "iterations": 200000,
+          "nanosPerOp": 83.566,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": -1,
+          "iterations": 200000,
+          "nanosPerOp": 33.1485,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": 0,
+          "iterations": 200000,
+          "nanosPerOp": 19.308,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": 1,
+          "iterations": 200000,
+          "nanosPerOp": 19.0645,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": 2,
+          "iterations": 200000,
+          "nanosPerOp": 19.372,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        },
+        {
+          "round": 3,
+          "iterations": 200000,
+          "nanosPerOp": 19.22,
+          "bytesPerOp": 0.0,
+          "checksum": 178046095200000
+        }
+      ],
+      "optimizationCounters": {
+        "EMPTY_IO": 0,
+        "SIMULATION": 0,
+        "AND_CONDITIONS": 0,
+        "GROUP_HIT": 0,
+        "GROUP_BUILD": 0,
+        "GROUP_FALLBACK": 0,
+        "AE2_DEFAULT_KEY_HIT": 1800000,
+        "AE2_DEFAULT_KEY_MISS": 0,
+        "AE2_DEFAULT_KEY_STORED": 0,
+        "AE2_DEFAULT_FLUID_KEY_HIT": 3600000,
+        "AE2_DEFAULT_FLUID_KEY_MISS": 0,
+        "AE2_DEFAULT_FLUID_KEY_STORED": 0
+      }
+    }
+  }
+}
