@@ -1,0 +1,75 @@
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null || !server.m_18695_()) throw new IllegalStateException("Server thread required");
+var level = server.m_129783_();
+var positions = new java.util.LinkedHashMap<net.minecraft.core.BlockPos,net.minecraft.world.level.block.state.BlockState>();
+var report = new com.google.gson.JsonArray();
+try {
+ String[] parts = {"helmet", "bodyarmor", "pants", "boots", "helmet"};
+ for (int pass = 0; pass < parts.length; pass++) {
+  String sourceId = "mekanism:mekasuit_" + parts[pass];
+  final String recipeId = "society:assembly_line/industry/void_mekasuit_" + parts[pass];
+  var recipe = server.m_129894_().m_44051_().stream().filter(r -> r.m_6423_().toString().equals(recipeId))
+   .map(r -> (com.gregtechceu.gtceu.api.recipe.GTRecipe)r).findFirst().orElseThrow();
+  var pos = new net.minecraft.core.BlockPos(80 + pass * 2,100,64);
+  positions.put(pos,level.m_8055_(pos));
+  level.m_46597_(pos,com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation("gtceu:assembly_line")).getBlock().m_49966_());
+  var machine = (com.gregtechceu.gtceu.common.machine.multiblock.electric.AssemblyLineMachine)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,pos);
+  machine.onLoad();
+  var logic = machine.getRecipeLogic();
+  machine.getCapabilitiesFlat().clear(); machine.getCapabilitiesProxy().clear();
+  var buses = new java.util.ArrayList<com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler>();
+  net.minecraft.nbt.CompoundTag expected = null;
+  for (var input : recipe.inputs.get(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP)) {
+   var stack = com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(input.content).m_43908_()[0].m_41777_();
+   if (sourceId.equals(String.valueOf(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.m_41720_())))) {
+    if (pass < 4) {
+     stack.m_41751_(net.minecraft.nbt.TagParser.m_129359_("{sunlit_test:42,Enchantments:[{id:\"minecraft:unbreaking\",lvl:3s}],display:{Name:'{\"text\":\"Inherited suit\"}'}}"));
+     ((mekanism.common.content.gear.IModuleContainerItem)(Object)stack.m_41720_()).addModule(stack,mekanism.common.registries.MekanismModules.ENERGY_UNIT.getModuleData());
+     var eu = com.gregtechceu.gtceu.api.capability.GTCapabilityHelper.getElectricItem(stack);
+     if(eu.charge(1000,14,true,false)<=0)throw new IllegalStateException("Unable to charge specimen");
+    }
+    expected = stack.m_41739_(new net.minecraft.nbt.CompoundTag());
+    expected.m_128359_("id","zmod:void_mekasuit_"+parts[pass]);
+   }
+   var bus = new com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler(machine,1,com.gregtechceu.gtceu.api.capability.recipe.IO.IN);
+   bus.setStackInSlot(0,stack); buses.add(bus);
+   machine.addHandlerList(com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList.of(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,bus));
+  }
+  if(expected==null)throw new IllegalStateException("Missing source input");
+  var fluids = new java.util.ArrayList<com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank>();
+  for(var input:recipe.inputs.get(com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP)){
+   var stack=com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP.of(input.content).getStacks()[0];
+   var tank=new com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank(machine,1,64000,com.gregtechceu.gtceu.api.capability.recipe.IO.IN);
+   if(tank.fill(stack.copy(),net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE)!=stack.getAmount())throw new IllegalStateException("Tank fill failed");
+   fluids.add(tank); machine.addHandlerList(com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList.of(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,tank));
+  }
+  var output=new com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler(machine,1,com.gregtechceu.gtceu.api.capability.recipe.IO.OUT);
+  machine.addHandlerList(com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList.of(com.gregtechceu.gtceu.api.capability.recipe.IO.OUT,output));
+  var energy=com.gregtechceu.gtceu.api.machine.trait.NotifiableEnergyContainer.receiverContainer(machine,10_000_000_000L,2097152L,1L);
+  energy.changeEnergy(energy.getEnergyCapacity());
+  machine.addHandlerList(com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList.of(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,energy));
+  logic.setSuspendAfterFinish(true);
+  logic.setupRecipe(recipe.copy());
+  if(!logic.isWorking())throw new IllegalStateException("Native setup failed "+parts[pass]);
+  for(var bus:buses)if(!bus.getStackInSlot(0).m_41619_())throw new IllegalStateException("Input not consumed");
+  for(var tank:fluids)if(!tank.getFluidInTank(0).isEmpty())throw new IllegalStateException("Fluid not consumed");
+  var saved=com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer.CODEC.encodeStart(net.minecraft.nbt.NbtOps.f_128958_,logic.getLastRecipe()).getOrThrow(false,error -> {});
+  var restored=com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer.CODEC.parse(net.minecraft.nbt.NbtOps.f_128958_,saved).getOrThrow(false,error -> {});
+  var restoredOutput=com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(restored.outputs.get(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP).get(0).content).m_43908_()[0];
+  if(!expected.equals(restoredOutput.m_41739_(new net.minecraft.nbt.CompoundTag())))throw new IllegalStateException("Recipe save/load lost suit NBT");
+  long beforeEnergy=energy.getEnergyStored();
+  for(int tick=0;tick<recipe.duration;tick++)logic.serverTick();
+  if(!logic.isSuspend())throw new IllegalStateException("Native recipe did not finish "+logic.getStatus()+" progress="+logic.getProgress());
+  var actual=output.getStackInSlot(0);
+  if(!expected.equals(actual.m_41739_(new net.minecraft.nbt.CompoundTag())))throw new IllegalStateException("Output NBT mismatch "+parts[pass]+" expected="+expected+" actual="+actual.m_41739_(new net.minecraft.nbt.CompoundTag()));
+  long spent=beforeEnergy-energy.getEnergyStored();
+  if(spent!=1966080L*recipe.duration)throw new IllegalStateException("Incorrect energy cost "+spent);
+  var globalOutput=com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(recipe.outputs.get(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP).get(0).content).m_43908_()[0];
+  if(globalOutput.m_41739_(new net.minecraft.nbt.CompoundTag()).toString().contains("sunlit_test"))throw new IllegalStateException("Shared recipe contaminated");
+  var row=new com.google.gson.JsonObject();row.addProperty("part",parts[pass]);row.addProperty("ticks",recipe.duration);
+  row.addProperty("spentEU",spent);row.addProperty("customData",pass<4);row.addProperty("serializationPreserved",true);report.add(row);
+ }
+ return "PASS "+report;
+}finally{
+ for(var entry:positions.entrySet())level.m_46597_(entry.getKey(),entry.getValue());
+}

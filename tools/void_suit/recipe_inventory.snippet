@@ -1,0 +1,67 @@
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null || !server.m_18695_()) throw new IllegalStateException("Server thread required");
+var recipes = server.m_129894_().m_44051_();
+var report = new com.google.gson.JsonArray();
+String[] parts = {"helmet", "bodyarmor", "pants", "boots"};
+String[] samples = {"awakened_ichorcloth_cowl", "awakened_ichorcloth_robe", "awakened_ichorcloth_leggings", "awakened_ichorcloth_boots"};
+for (int i = 0; i < parts.length; i++) {
+ final String part = parts[i];
+ String source = "mekanism:mekasuit_" + part;
+ String target = "zmod:void_mekasuit_" + part;
+ var matches = new java.util.ArrayList<com.gregtechceu.gtceu.api.recipe.GTRecipe>();
+ for (var recipe : recipes) {
+  if (recipe.m_6423_().toString().equals(target)) throw new IllegalStateException("Old infusion remains: " + target);
+  if (!(recipe instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe)) continue;
+  var gt = (com.gregtechceu.gtceu.api.recipe.GTRecipe)recipe;
+  for (var content : gt.outputs.getOrDefault(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP,java.util.List.of())) {
+   for (var item : com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(content.content).m_43908_()) {
+    if (target.equals(String.valueOf(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(item.m_41720_())))) matches.add(gt);
+   }
+  }
+ }
+ if (matches.size() != 1) throw new IllegalStateException("Expected one final recipe: " + target + " got " + matches.size());
+ var gt = matches.get(0);
+ if (gt.recipeType != com.gregtechceu.gtceu.common.data.GTRecipeTypes.ASSEMBLY_LINE_RECIPES || gt.getInputEUt().getTotalEU() != 1966080L)
+  throw new IllegalStateException("Wrong type or voltage " + target);
+ if (!source.equals(gt.data.m_128461_("sunlitindustry.armor_source"))) throw new IllegalStateException("Missing inheritance marker");
+ var inputs = gt.inputs.get(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP);
+ if (inputs.size() > 16) throw new IllegalStateException("Too many buses");
+ for (var input : inputs) if (com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(input.content).m_43908_().length == 0)
+  throw new IllegalStateException("Empty input " + input.content);
+ var encoded = com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, gt).getOrThrow(false, error -> {});
+ if (!encoded.toString().contains("gtceu:circuits/uhv")) throw new IllegalStateException("Circuit tag replaced by concrete item");
+ String researchId = "sunlit_void_mekasuit_" + part + "_v1";
+ int conditions = 0;
+ for (var condition : gt.conditions) if (condition instanceof com.gregtechceu.gtceu.common.recipe.condition.ResearchCondition) {
+  var research = (com.gregtechceu.gtceu.common.recipe.condition.ResearchCondition)condition;
+  for (var entry : research.data) {
+   conditions++;
+   if (!entry.getResearchId().equals(researchId) || !"gtceu:data_orb".equals(String.valueOf(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(entry.getDataItem().m_41720_()))))
+    throw new IllegalStateException("Wrong assembly research " + target);
+  }
+ }
+ if (conditions != 1) throw new IllegalStateException("Expected independent research");
+ int stationCount = 0;
+ net.minecraft.world.item.ItemStack orb = net.minecraft.world.item.ItemStack.f_41583_;
+ for (var recipe : recipes) {
+  if (!(recipe instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe)) continue;
+  var research = (com.gregtechceu.gtceu.api.recipe.GTRecipe)recipe;
+  if (research.recipeType != com.gregtechceu.gtceu.common.data.GTRecipeTypes.RESEARCH_STATION_RECIPES) continue;
+  for (var output : research.outputs.getOrDefault(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP,java.util.List.of())) {
+   for (var stack : com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(output.content).m_43908_()) {
+    var data = com.gregtechceu.gtceu.utils.ResearchManager.readResearchId(stack);
+    if (data == null || !researchId.equals(data.researchId())) continue;
+    stationCount++; orb = stack.m_41777_();
+    String definition = com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE,research).getOrThrow(false,error -> {}).toString();
+    if (!definition.contains("thaumictinkerer:" + samples[i]) || !"gtceu:data_orb".equals(String.valueOf(net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.m_41720_()))))
+     throw new IllegalStateException("Wrong research sample/carrier");
+    if (research.getInputEUt().getTotalEU() != 491520L) throw new IllegalStateException("Wrong station voltage");
+   }
+  }
+ }
+ if (stationCount != 1 || orb.m_41619_()) throw new IllegalStateException("Missing station recipe " + target);
+ var row = new com.google.gson.JsonObject(); row.addProperty("target", target); row.addProperty("recipe", gt.id.toString());
+ row.addProperty("eut", gt.getInputEUt().getTotalEU()); row.addProperty("duration",gt.duration); row.addProperty("inputs",inputs.size());
+ row.addProperty("research",researchId); row.addProperty("sample",samples[i]); report.add(row);
+}
+return "PASS " + report;

@@ -1,0 +1,7 @@
+# GT item capability over the existing Mekanism energy container. Restart after changing tiers.
+enabled = true
+energyTabletTier = 1
+basicEnergyCubeTier = 1
+energizedToolTier = 3
+mekaSuitTier = 5
+voidMekaSuitTier = 9

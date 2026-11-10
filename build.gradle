@@ -4,7 +4,7 @@ buildscript {
 }
 plugins { id 'java'; id 'net.minecraftforge.gradle' version '6.0.54' }
 apply plugin: 'org.spongepowered.mixin'
-version = '0.2.1'
+version = '0.3.0'
 group = 'com.society.sunlitindustry'
 base { archivesName = 'sunlit-industry-compat-1.20.1' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -14,12 +14,16 @@ repositories {
     maven { url = 'https://maven.minecraftforge.net' }
     maven { url = 'https://maven.gtceu.com' }
     maven { url = 'https://maven.firstdark.dev/snapshots' }
+    maven { url = 'https://modmaven.dev/' }
     maven { url = uri('../Pollution-Unofficial-1.20.1/local-repo') }
     mavenCentral()
 }
 dependencies {
     minecraft 'net.minecraftforge:forge:1.20.1-47.4.23'
     compileOnly(fg.deobf('com.gregtechceu.gtceu:gtceu-1.20.1:7.5.3')) { transitive = false }
+    compileOnly(fg.deobf('mekanism:Mekanism:1.20.1-10.4.16.80')) { transitive = false }
+    testImplementation(fg.deobf('com.gregtechceu.gtceu:gtceu-1.20.1:7.5.3')) { transitive = false }
+    testImplementation(fg.deobf('mekanism:Mekanism:1.20.1-10.4.16.80')) { transitive = false }
     compileOnly(fg.deobf('local.gcyr:gcyr:0.2.9')) { transitive = false }
     compileOnly(fg.deobf('com.lowdragmc.ldlib:ldlib-forge-1.20.1:1.0.40.b', {
         exclude group: 'appeng'

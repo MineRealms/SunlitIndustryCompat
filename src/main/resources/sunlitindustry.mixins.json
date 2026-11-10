@@ -13,6 +13,7 @@
     "FTBBackupsPreviewMixin",
     "KubeJSRecipeCacheMixin",
     "GTResearchDataCopyMixin",
+    "GTVoidMekaSuitAssemblyMixin",
     "WanxiangFormationMixin",
     "ForgeTagConcurrencyMixin",
     "AliClientTooltipCacheMixin",

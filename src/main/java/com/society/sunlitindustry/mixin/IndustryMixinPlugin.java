@@ -22,6 +22,7 @@ public final class IndustryMixinPlugin implements IMixinConfigPlugin {
         if (mixin.endsWith(".FTBBackupsPreviewMixin")) return modLoaded("ftbbackups2");
         if (mixin.endsWith(".KubeJSRecipeCacheMixin")) return modLoaded("kubejs");
         if (mixin.endsWith(".GTResearchDataCopyMixin")) return modLoaded("gtceu");
+        if (mixin.endsWith(".GTVoidMekaSuitAssemblyMixin")) return modLoaded("gtceu") && modLoaded("zmod");
         if (mixin.endsWith(".WanxiangFormationMixin")) return modLoaded("zmod") && modLoaded("gtceu");
         if (mixin.endsWith(".AliClientTooltipCacheMixin")) return FMLLoader.getDist().isClient() && modLoaded("ali");
         if (mixin.endsWith(".MekanismFusionBalanceMixin")

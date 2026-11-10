@@ -1,0 +1,48 @@
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null || !server.m_18695_()) throw new IllegalStateException("Server thread required");
+var results = new com.google.gson.JsonArray();
+String[] ids = {"mekanism:energy_tablet", "mekanism:basic_energy_cube", "mekanism:advanced_energy_cube",
+ "mekanism:elite_energy_cube", "mekanism:ultimate_energy_cube", "mekanism:atomic_disassembler", "mekanism:meka_tool",
+ "mekanism:free_runners", "mekanism:free_runners_armored", "mekanism:mekasuit_helmet", "mekanism:mekasuit_bodyarmor",
+ "mekanism:mekasuit_pants", "mekanism:mekasuit_boots", "zmod:void_mekasuit_helmet", "zmod:void_mekasuit_bodyarmor",
+ "zmod:void_mekasuit_pants", "zmod:void_mekasuit_boots"};
+var unit = mekanism.common.util.UnitDisplayUtils.EnergyUnit.FORGE_ENERGY.convertFrom(
+ com.gregtechceu.gtceu.api.capability.compat.FeCompat.ratio(false));
+for (String id : ids) {
+ var item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation(id));
+ if (item == null || item == net.minecraft.world.item.Items.f_41852_) throw new IllegalStateException("Missing " + id);
+ var stack = new net.minecraft.world.item.ItemStack(item);
+ var eu = com.gregtechceu.gtceu.api.capability.GTCapabilityHelper.getElectricItem(stack);
+ if (!(eu instanceof com.society.sunlitindustry.MekEuEnergyAdapter)) throw new IllegalStateException("Missing EU adapter " + id);
+ var nativeEnergy = ((net.minecraftforge.common.capabilities.ICapabilityProvider)(Object)stack).getCapability(mekanism.common.capabilities.Capabilities.STRICT_ENERGY, null).resolve().orElseThrow();
+ var before = nativeEnergy.getEnergy(0).copy();
+ long simulated = eu.charge(1000, 14, true, true);
+ if (simulated <= 0 || !before.equals(nativeEnergy.getEnergy(0))) throw new IllegalStateException("Charge simulation " + id);
+ long charged = eu.charge(1000, 14, true, false);
+ if (charged != simulated || !nativeEnergy.getEnergy(0).equals(before.add(unit.multiply(charged))))
+  throw new IllegalStateException("Charge conservation " + id);
+ if (eu.charge(1, eu.getTier() - 1, true, false) != 0) throw new IllegalStateException("Tier bypass " + id);
+ boolean battery = id.equals("mekanism:energy_tablet") || id.endsWith("_energy_cube");
+ if (eu.canProvideChargeExternally() != battery) throw new IllegalStateException("External policy " + id);
+ before = nativeEnergy.getEnergy(0).copy();
+ long discharged = eu.discharge(32, 14, true, true, true);
+ if (!before.equals(nativeEnergy.getEnergy(0))) throw new IllegalStateException("Discharge simulation " + id);
+ if (battery) {
+  if (discharged <= 0 || discharged != eu.discharge(32, 14, true, true, false)
+   || !nativeEnergy.getEnergy(0).equals(before.subtract(unit.multiply(discharged))))
+   throw new IllegalStateException("Discharge conservation " + id);
+ } else if (discharged != 0) throw new IllegalStateException("Armor/tool discharged " + id);
+ var restored = net.minecraft.world.item.ItemStack.m_41712_(stack.m_41739_(new net.minecraft.nbt.CompoundTag()));
+ var restoredEU = com.gregtechceu.gtceu.api.capability.GTCapabilityHelper.getElectricItem(restored);
+ if (restoredEU.getCharge() != eu.getCharge()) throw new IllegalStateException("Save/load " + id);
+ var row = new com.google.gson.JsonObject();
+ row.addProperty("id", id); row.addProperty("tier", eu.getTier()); row.addProperty("battery", battery);
+ row.addProperty("chargedEU", charged); row.addProperty("remainingEU", eu.getCharge()); results.add(row);
+ stack.m_41764_(2);
+ if (eu.charge(32, 14, true, false) != 0 || eu.discharge(32,14,true,true,false) != 0)
+  throw new IllegalStateException("Stacked energy bypass " + id);
+}
+var creative = new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("mekanism:creative_energy_cube")));
+if (com.gregtechceu.gtceu.api.capability.GTCapabilityHelper.getElectricItem(creative) != null)
+ throw new IllegalStateException("Creative cube must not expose EU");
+return "PASS " + results;

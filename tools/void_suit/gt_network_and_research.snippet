@@ -1,0 +1,74 @@
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if (server == null || !server.m_18695_()) throw new IllegalStateException("Server thread required");
+var level = server.m_129783_();
+var positions = new java.util.LinkedHashMap<net.minecraft.core.BlockPos,net.minecraft.world.level.block.state.BlockState>();
+var report = new com.google.gson.JsonObject();
+try {
+ var bufferPos = new net.minecraft.core.BlockPos(64,100,64);
+ positions.put(bufferPos,level.m_8055_(bufferPos));
+ level.m_46597_(bufferPos,com.gregtechceu.gtceu.common.data.GTMachines.BATTERY_BUFFER_4[1].getBlock().m_49966_());
+ var buffer = (com.gregtechceu.gtceu.common.machine.electric.BatteryBufferMachine)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,bufferPos);
+ buffer.onLoad();
+ var chargerPos = bufferPos.m_121945_(buffer.getFrontFacing());
+ positions.put(chargerPos,level.m_8055_(chargerPos));
+ level.m_46597_(chargerPos,com.gregtechceu.gtceu.common.data.GTMachines.CHARGER_4[1].getBlock().m_49966_());
+ var charger = (com.gregtechceu.gtceu.common.machine.electric.ChargerMachine)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,chargerPos);
+ charger.onLoad();
+ var item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("mekanism:energy_tablet"));
+ var sender = new net.minecraft.world.item.ItemStack(item);
+ var receiver = new net.minecraft.world.item.ItemStack(item);
+ var sourceEU = com.gregtechceu.gtceu.api.capability.GTCapabilityHelper.getElectricItem(sender);
+ var targetEU = com.gregtechceu.gtceu.api.capability.GTCapabilityHelper.getElectricItem(receiver);
+ sourceEU.charge(1000,14,true,false);
+ buffer.getBatteryInventory().setStackInSlot(0,sender);
+ charger.getChargerInventory().setStackInSlot(0,receiver);
+ long beforeSource = sourceEU.getCharge();
+ long beforeTarget = targetEU.getCharge();
+ buffer.energyContainer.serverTick();
+ long sent = beforeSource - sourceEU.getCharge();
+ long received = targetEU.getCharge() - beforeTarget;
+ if (sent != 32 || received != 32) throw new IllegalStateException("Native buffer -> charger transfer failed " + sent + "/" + received);
+ report.addProperty("nativeBufferToChargerEU",sent);
+ var hatchPos = new net.minecraft.core.BlockPos(66,100,64);
+ positions.put(hatchPos,level.m_8055_(hatchPos));
+ level.m_46597_(hatchPos,com.gregtechceu.gtceu.common.data.machines.GTResearchMachines.DATA_ACCESS_HATCH.getBlock().m_49966_());
+ var hatch = (com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachine)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,hatchPos);
+ hatch.onLoad();
+ if(hatch.isCreative())throw new IllegalStateException("Creative hatch would bypass research");
+ var assembly = new java.util.ArrayList<com.gregtechceu.gtceu.api.recipe.GTRecipe>();
+ var orbs = new java.util.HashMap<String,net.minecraft.world.item.ItemStack>();
+ for(var recipe:server.m_129894_().m_44051_()){
+  if(!(recipe instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe))continue;
+  var gt=(com.gregtechceu.gtceu.api.recipe.GTRecipe)recipe;
+  if(gt.data.m_128461_("sunlitindustry.armor_source").startsWith("mekanism:mekasuit_"))assembly.add(gt);
+  if(gt.recipeType!=com.gregtechceu.gtceu.common.data.GTRecipeTypes.RESEARCH_STATION_RECIPES)continue;
+  for(var content:gt.outputs.getOrDefault(com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP,java.util.List.of())){
+   for(var stack:com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP.of(content.content).m_43908_()){
+    var data=com.gregtechceu.gtceu.utils.ResearchManager.readResearchId(stack);
+    if(data!=null&&data.researchId().startsWith("sunlit_void_mekasuit_"))orbs.put(data.researchId(),stack.m_41777_());
+   }
+  }
+ }
+ if(assembly.size()!=4||orbs.size()!=4)throw new IllegalStateException("Expected four recipes and research outputs");
+ int accepted=0;
+ for(var gt:assembly){
+  hatch.importItems.setStackInSlot(0,net.minecraft.world.item.ItemStack.f_41583_);
+  if(hatch.modifyRecipe(gt)!=null)throw new IllegalStateException("Missing-data bypass "+gt.id);
+  hatch.importItems.setStackInSlot(0,new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("gtceu:data_orb"))));
+  if(hatch.modifyRecipe(gt)!=null)throw new IllegalStateException("Blank-orb bypass "+gt.id);
+  String part=gt.data.m_128461_("sunlitindustry.armor_source").substring("mekanism:mekasuit_".length());
+  String expected="sunlit_void_mekasuit_"+part+"_v1";
+  for(var entry:orbs.entrySet()){
+   hatch.importItems.setStackInSlot(0,entry.getValue().m_41777_());
+   boolean allowed=hatch.modifyRecipe(gt)!=null;
+   if(allowed!=entry.getKey().equals(expected))throw new IllegalStateException("Cross-research bypass "+gt.id+" / "+entry.getKey());
+   if(allowed)accepted++;
+  }
+ }
+ if(accepted!=4)throw new IllegalStateException("Not all matching orbs accepted");
+ report.addProperty("missingDataRejected",4); report.addProperty("blankOrbsRejected",4);
+ report.addProperty("wrongResearchRejected",12); report.addProperty("matchingOrbsAccepted",accepted);
+ return "PASS "+report;
+}finally{
+ for(var entry:positions.entrySet())level.m_46597_(entry.getKey(),entry.getValue());
+}

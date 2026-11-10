@@ -3,7 +3,7 @@ loaderVersion="[47,48)"
 license="All Rights Reserved"
 [[mods]]
 modId="sunlitindustry"
-version="0.2.1"
+version="0.3.0"
 displayName="Sunlit Industry Compat"
 description='''Targeted Sunlit Valley compatibility and balance fixes for Mekanism, GregTech, TianGong, GCYR, VintageDelight, and WorldEdit.'''
 [[dependencies.sunlitindustry]]
@@ -34,6 +34,12 @@ side="BOTH"
 modId="vintagedelight"
 mandatory=false
 versionRange="*"
+ordering="AFTER"
+side="BOTH"
+[[dependencies.sunlitindustry]]
+modId="mekanism"
+mandatory=false
+versionRange="[10.4.16,10.5)"
 ordering="AFTER"
 side="BOTH"
 [[dependencies.sunlitindustry]]

@@ -16,6 +16,33 @@ behaviour. This reduces recipe-filter allocation traffic; it does not remove rec
 Pinned targets: **Forge 47.4.23**, **GCYR 0.2.9**, **GTCEu 7.5.3**, and
 **Mekanism Generators 10.4.16.80**. Mod-specific mixins are skipped when their target mod is absent.
 
+## Mekanism EU Items And Void Armor
+
+Version 0.3.0 exposes GT's `IElectricItem` on Mekanism energized tools, MekaSuit, free runners,
+energy tablets and survival energy cubes, including TianGong's Void MekaSuit subclass. The adapter
+uses the original Mekanism strict energy container; it creates no additional energy NBT or buffer.
+Conversion follows GT's native item conversion (`euToFeRatio`) and Mekanism's configured FE/J rate.
+At pack defaults, 1 EU = 4 FE = 10 J. Transfers round down to whole EU, preserve native rate limits,
+and respect simulation, stack size and GT charger tiers. Only tablets and survival cubes can supply
+external EU; tools and armor cannot be used as GT batteries. Creative cubes are excluded.
+
+`sunlitindustry-item-energy.toml` controls the adapter and charger tiers. Defaults: tablet LV,
+basic/advanced/elite/ultimate cubes LV/MV/HV/EV, energized tools HV, MekaSuit IV, Void MekaSuit UHV.
+Restart after changing tier settings. Existing FE charging remains available through native FE devices.
+
+The pack's `industry/voidMekaSuitAssembly.js` replaces all four direct Void MekaSuit infusion recipes
+with UHV assembly-line recipes (1,966,080 EU/t). Four independent UV/32 CWU/t research-station recipes
+consume the corresponding awakened KAMI armor and a blank data orb. Each researched orb is reusable
+in an ordinary data access hatch. No data module or per-player quest unlock substitutes for the orb.
+
+`GTVoidMekaSuitAssemblyMixin` copies the input MekaSuit's serialized stack into the output before
+GT consumes inputs. It only handles the four explicitly marked assembly recipes and operates on a
+private recipe copy, persisted by GT's existing RecipeLogic save fields. Module, energy, enchantment
+and name data are inherited, and TianGong's existing forbidden-module restrictions remain effective.
+
+Local runtime tools: `tools/void_suit/stage_test_server.py` stages a separate loopback-only server at
+`G:/emoney-void-suit-test`; `tools/void_suit/bridge.py` accesses its Rosetta bridge on port 48793.
+
 ## Nuclear Limits And Recipe Tags
 
 `[gregtech].preventDataCarrierDowngrade` in `sunlitindustry-common.toml` defaults to true.
