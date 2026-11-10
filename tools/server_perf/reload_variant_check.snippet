@@ -1,0 +1,20 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var file=java.nio.file.Path.of("G:/emoney-void-suit-test/kubejs/config/sunlit_perf_probe.json");
+var variant=java.nio.file.Files.isRegularFile(file)?com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(file)).getAsJsonObject().get("variant").getAsString():"base";
+net.minecraft.world.item.crafting.Recipe<?> probe=null;
+int count=0;
+for(var recipe:server.m_129894_().m_44051_()){
+ if(recipe.m_6423_().toString().equals("sunlitindustry:perf_reload_probe")){probe=recipe;count++;}
+}
+int expected=variant.equals("removed")?0:1;
+if(count!=expected)throw new IllegalStateException("Expected probe count "+expected+", got "+count);
+if(probe!=null){
+ var accepted=variant.equals("alternate")?"minecraft:dirt":"minecraft:cobblestone";
+ var rejected=variant.equals("alternate")?"minecraft:cobblestone":"minecraft:dirt";
+ var ingredient=probe.m_7527_().get(0);
+ var acceptStack=new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation(accepted)));
+ var rejectStack=new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation(rejected)));
+ if(!ingredient.test(acceptStack)||ingredient.test(rejectStack))throw new IllegalStateException("Stale recipe input for "+variant);
+}
+return "PASS variant="+variant+" recipeCount="+server.m_129894_().m_44051_().size()+" probe="+count;

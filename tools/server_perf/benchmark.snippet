@@ -49,10 +49,11 @@ try {
  result.addProperty("maxHeapBytes",Runtime.getRuntime().maxMemory());
  result.addProperty("inputHandlers",handlers.size());
  result.addProperty("serverMixinsEnabled",!Boolean.getBoolean("sunlitindustry.disableServerOptimizations"));
+ result.addProperty("warmupRoundsPerScenario",5);
  var groups=new com.google.gson.JsonArray();
  for(var spec:new Object[][]{{"native_group_build",nativeBuild},{"cached_group_lookup",cachedBuild}}){
   var fn=(java.util.function.IntSupplier)spec[1];for(int i=0;i<6000;i++)fn.getAsInt();
-  for(int round=0;round<4;round++){
+  for(int round=-5;round<4;round++){
    long beforeBytes=bean.getThreadAllocatedBytes(tid),start=System.nanoTime();int sum=0;
    for(int i=0;i<24000;i++)sum+=fn.getAsInt();
    long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-beforeBytes;
@@ -66,7 +67,7 @@ try {
  var paths=new com.google.gson.JsonArray();
  for(var spec:new Object[][]{{"empty_recipe_io",emptyAction},{"simulated_recipe_match",simulationAction}}){
   var fn=(java.util.function.IntSupplier)spec[1];for(int i=0;i<5000;i++)fn.getAsInt();
-  for(int round=0;round<4;round++){
+  for(int round=-5;round<4;round++){
    long beforeBytes=bean.getThreadAllocatedBytes(tid),start=System.nanoTime();int sum=0;
    for(int i=0;i<20000;i++)sum+=fn.getAsInt();
    long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-beforeBytes;

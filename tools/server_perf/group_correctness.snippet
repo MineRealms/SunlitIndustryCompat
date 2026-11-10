@@ -1,0 +1,41 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var rng=new java.util.Random(20261111L);
+var cap=com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP;
+var euCap=com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability.CAP;
+var dummy=new com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler<net.minecraft.world.item.crafting.Ingredient>(){
+ public java.util.List<net.minecraft.world.item.crafting.Ingredient> handleRecipeInner(com.gregtechceu.gtceu.api.capability.recipe.IO io,com.gregtechceu.gtceu.api.recipe.GTRecipe r,java.util.List<net.minecraft.world.item.crafting.Ingredient> left,boolean simulate){return left;}
+ public java.util.List<Object> getContents(){return java.util.Collections.emptyList();}
+ public double getTotalContentAmount(){return 0;}
+ public com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<net.minecraft.world.item.crafting.Ingredient> getCapability(){return cap;}
+};
+int comparisons=0;
+for(int trial=0;trial<300;trial++){
+ var handlers=new java.util.ArrayList<com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList>();
+ for(int i=0,n=1+rng.nextInt(20);i<n;i++){
+  var h=com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList.of(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,rng.nextInt(5)-1,dummy);
+  if(rng.nextBoolean())h.setDistinct(true);
+  handlers.add(h);
+ }
+ var cache=new com.society.sunlitindustry.GTHandlerGroups();
+ for(int mutation=0;mutation<8;mutation++){
+  if(mutation==1)handlers.get(0).setColor(rng.nextInt(5)-1);
+  if(mutation==2)handlers.get(0).setDistinct(!handlers.get(0).isDistinct());
+  if(mutation==3)handlers.get(0).getHandlerMap().put(euCap,java.util.Collections.emptyList());
+  if(mutation==4)java.util.Collections.reverse(handlers);
+  if(mutation==5)handlers.get(0).getHandlerMap().remove(cap);
+  if(mutation==6)handlers.add(com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList.of(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,-1,dummy));
+  if(mutation==7)handlers.remove(0);
+  for(var filter:new com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability<?>[]{null,cap,euCap}){
+   var expected=new java.util.HashMap<com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerGroup,java.util.List<com.gregtechceu.gtceu.api.machine.trait.RecipeHandlerList>>();
+   for(var h:handlers)if(filter==null||h.hasCapability(filter))com.gregtechceu.gtceu.api.recipe.RecipeHelper.addToRecipeHandlerMap(h.getGroup(),h,expected);
+   for(int hit=0;hit<2;hit++){
+    var actual=cache.get(0,handlers,filter);
+    for(var h:handlers)if(filter==null||h.hasCapability(filter))com.society.sunlitindustry.GTHandlerGroups.append(h.getGroup(),h,actual);
+    if(!expected.equals(actual)||!new java.util.ArrayList<>(expected.keySet()).equals(new java.util.ArrayList<>(actual.keySet())))throw new IllegalStateException("Grouping mismatch trial="+trial+" mutation="+mutation);
+    comparisons++;
+   }
+  }
+ }
+}
+return "PASS topologies=300 comparisons="+comparisons+" changes=color,distinct,bypass,order,filter,add,remove";

@@ -1,0 +1,43 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var item=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond"));
+var fluid=net.minecraftforge.registries.ForgeRegistries.FLUIDS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:water"));
+var fluidStack=new net.minecraftforge.fluids.FluidStack(fluid,1000);
+var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();
+bean.setThreadAllocatedMemoryEnabled(true);
+long tid=Thread.currentThread().getId();
+var result=new com.google.gson.JsonObject();
+result.addProperty("registeredRecipeCount",server.m_129894_().m_44051_().size());
+result.addProperty("javaVersion",System.getProperty("java.version"));
+result.addProperty("cacheEnabled",!Boolean.getBoolean("sunlitindustry.disableServerOptimizations"));
+result.addProperty("warmupRoundsPerScenario",5);
+result.addProperty("itemSameKeyAfterInit",appeng.api.stacks.AEItemKey.of(item)==appeng.api.stacks.AEItemKey.of(item));
+result.addProperty("fluidSameKeyAfterInit",appeng.api.stacks.AEFluidKey.of(fluid)==appeng.api.stacks.AEFluidKey.of(fluid));
+result.addProperty("fluidStackSameKeyAfterInit",appeng.api.stacks.AEFluidKey.of(fluidStack)==appeng.api.stacks.AEFluidKey.of(fluidStack));
+for(int i=0;i<50000;i++){
+ appeng.api.stacks.AEItemKey.of(item);
+ appeng.api.stacks.AEFluidKey.of(fluid);
+ appeng.api.stacks.AEFluidKey.of(fluidStack);
+}
+com.society.sunlitindustry.ServerPerformanceStats.reset();
+com.society.sunlitindustry.ServerPerformanceStats.setRecording(true);
+for(var spec:new Object[][]{
+ {"itemSamples",(java.util.function.Supplier<Object>)()->appeng.api.stacks.AEItemKey.of(item)},
+ {"fluidSamples",(java.util.function.Supplier<Object>)()->appeng.api.stacks.AEFluidKey.of(fluid)},
+ {"fluidStackSamples",(java.util.function.Supplier<Object>)()->appeng.api.stacks.AEFluidKey.of(fluidStack)}}){
+ var fn=(java.util.function.Supplier<?>)spec[1];
+ var samples=new com.google.gson.JsonArray();
+ for(int round=-5;round<4;round++){
+  long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;
+  for(int i=0;i<200000;i++)checksum+=System.identityHashCode(fn.get());
+  long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-before;
+  var sample=new com.google.gson.JsonObject();sample.addProperty("round",round);sample.addProperty("iterations",200000);
+  sample.addProperty("nanosPerOp",(double)elapsed/200000);sample.addProperty("bytesPerOp",(double)allocated/200000);
+  sample.addProperty("checksum",checksum);samples.add(sample);
+ }
+ result.add((String)spec[0],samples);
+}
+com.society.sunlitindustry.ServerPerformanceStats.setRecording(false);
+result.add("optimizationCounters",new com.google.gson.Gson().toJsonTree(com.society.sunlitindustry.ServerPerformanceStats.snapshot()));
+System.out.println("SUNLIT_AE2_KEY_BENCHMARK="+result);
+return "PASS "+result;

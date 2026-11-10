@@ -8,8 +8,11 @@ import time
 RUN = Path('G:/emoney-void-suit-test')
 JAVA = Path('C:/Program Files/Eclipse Adoptium/jdk-17.0.18.8-hotspot/bin/java.exe')
 mode = sys.argv[1] if len(sys.argv) == 2 else ''
-if mode not in {'baseline', 'optimized'}:
-    raise SystemExit('Usage: launch_server.py baseline|optimized')
+if mode not in {'baseline', 'optimized', 'ae2-baseline', 'ae2-optimized',
+                 'ae2-final-baseline', 'ae2-final-optimized',
+                 'ae2-fluid-baseline', 'ae2-fluid-optimized', 'clean-baseline', 'clean-optimized',
+                 'clean-warm-baseline'}:
+    raise SystemExit('Usage: launch_server.py <baseline|optimized|clean-baseline|clean-optimized|ae2[-final|-fluid]-baseline|ae2[-final|-fluid]-optimized>')
 if not (RUN / 'VOID_SUIT_TEST.json').is_file():
     raise SystemExit('Missing isolated test marker')
 if (RUN / 'server.pid').exists():
@@ -29,10 +32,11 @@ args = [str(JAVA), '-Xms2G', '-Xmx6G', '-Dfile.encoding=UTF-8',
         '-Drosetta.remote.bind=127.0.0.1', '-Drosetta.remote.port=48793',
         '-Xlog:gc*,safepoint:file=evidence/gc-' + mode + '.log:time,uptime,level,tags:filecount=2,filesize=16m',
         '-XX:StartFlightRecording=filename=evidence/' + mode + '.jfr,settings=profile,duration=900s,dumponexit=true']
-if mode == 'baseline':
+if mode.endswith('baseline'):
     args.append('-Dsunlitindustry.disableServerOptimizations=true')
 args += ['@forge-test-args.txt', 'nogui']
-with (evidence / ('server-' + mode + '-stdout.log')).open('wb') as output:
+stdout_path = evidence / ('server-' + mode + '-stdout.log')
+with stdout_path.open('wb') as output:
     process = subprocess.Popen(args, cwd=RUN, stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT,
                                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
 (RUN / 'server.pid').write_text(str(process.pid), encoding='ascii')
@@ -42,6 +46,14 @@ start = time.monotonic()
 while time.monotonic() - start < 1500:
     if process.poll() is not None:
         raise SystemExit('Server exited with code ' + str(process.returncode))
+    with stdout_path.open('rb') as output:
+        output.seek(0, 2)
+        output.seek(max(0, output.tell() - 65536))
+        tail = output.read()
+    if b'Failed to load datapacks' in tail or b'Encountered an unexpected exception' in tail:
+        process.terminate()
+        process.wait(timeout=30)
+        raise SystemExit('Isolated server startup failed; see ' + str(stdout_path))
     try:
         with socket.create_connection(('127.0.0.1', 48793), timeout=1):
             print(json.dumps({'pid': process.pid, 'mode': mode, 'readyAfterSeconds': round(time.monotonic()-start, 1)}))

@@ -15,7 +15,7 @@ PACK = Path('G:/MinecraftGames/Sunlit Valley(BaopuEdition)/.minecraft/versions/S
 RUN = Path('G:/emoney-void-suit-test')
 HERE = Path(__file__).resolve().parents[2]
 SEEDS = {'gtceu', 'mekanism', 'mekanismgenerators', 'zmod', 'thaumcraft',
-         'thaumictinkerer', 'tainted_magic', 'forbidden_magic', 'kubejs', 'ldlib'}
+         'thaumictinkerer', 'tainted_magic', 'forbidden_magic', 'kubejs', 'ldlib', 'ae2'}
 BUILTINS = {'forge', 'minecraft', 'java'}
 
 
@@ -45,6 +45,8 @@ def archive_metadata(archive):
 
 
 def main():
+    if (RUN / 'server.pid').exists():
+        raise SystemExit('PID marker exists; verify the isolated server has exited before restaging')
     try:
         connection = socket.create_connection(('127.0.0.1', 48793), timeout=1)
     except OSError:
@@ -90,7 +92,12 @@ def main():
     runmods = RUN / 'mods'
     runmods.mkdir(parents=True, exist_ok=True)
     chosen.add(Path('G:/emoney-full-phase4-20261104/mods/rosetta_remote_debug_bridge-1.0.0.jar'))
-    chosen.add(HERE / 'build/libs/sunlit-industry-compat-1.20.1-0.4.0.jar')
+    chosen.add(HERE / 'build/libs/sunlit-industry-compat-1.20.1-0.5.0.jar')
+    expected = {path.name for path in chosen} | {'test-mixinextras-core-0.5.3.jar'}
+    extras = [path.name for path in runmods.glob('*.jar')
+              if path.name not in expected and not path.name.startswith('sunlit-industry-compat-')]
+    if extras:
+        raise SystemExit('Unexpected mod jars in isolated server: ' + ', '.join(sorted(extras)))
     for old in runmods.glob('sunlit-industry-compat-*.jar'):
         old.unlink()
     manifest = []
@@ -114,15 +121,13 @@ def main():
                           else line.replace('libraries/', forge.as_posix() + '/') for line in arguments.splitlines()) + '\n'
     (RUN / 'forge-test-args.txt').write_text(arguments, encoding='utf-8')
     (RUN / 'eula.txt').write_text('eula=true\n', encoding='ascii')
-    (RUN / 'server.properties').write_text(
-        'server-ip=127.0.0.1\nserver-port=25583\nonline-mode=false\nenable-rcon=false\n'
-        'level-name=void_suit_test\nlevel-type=minecraft:flat\ngenerate-structures=false\n'
-        'view-distance=3\nsimulation-distance=3\nspawn-protection=0\nmax-tick-time=-1\n'
-        'allow-flight=true\nmax-players=2\n', encoding='ascii')
     scripts = RUN / 'kubejs/server_scripts/industry'
     scripts.mkdir(parents=True, exist_ok=True)
     shutil.copy2(PACK / 'kubejs/server_scripts/industry/voidMekaSuitAssembly.js', scripts)
     shutil.copy2(HERE / 'tools/server_perf/perf_reload_probe.js', RUN / 'kubejs/server_scripts/00_perf_reload_probe.js')
+    probe_config = RUN / 'kubejs/config'
+    probe_config.mkdir(exist_ok=True)
+    shutil.copy2(HERE / 'tools/server_perf/perf_reload_probe.json', probe_config / 'sunlit_perf_probe.json')
     config = RUN / 'config'
     config.mkdir(exist_ok=True)
     shutil.copy2(PACK / 'config/gtceu.yaml', config / 'gtceu.yaml')
@@ -130,7 +135,7 @@ def main():
     shutil.copy2(HERE / 'pack/config/sunlitindustry-server-performance.toml', config)
     (RUN / 'server.properties').write_text(
         'server-ip=127.0.0.1\nserver-port=25584\nonline-mode=false\nenable-rcon=false\n'
-        'level-name=sunlit_perf_test\nlevel-type=minecraft:flat\ngenerate-structures=false\n'
+        'level-name=sunlit_perf_clean\nlevel-type=minecraft:flat\ngenerate-structures=false\n'
         'view-distance=3\nsimulation-distance=3\nspawn-protection=0\nmax-tick-time=-1\n'
         'allow-flight=true\nmax-players=2\n', encoding='ascii')
     (RUN / 'evidence').mkdir(exist_ok=True)

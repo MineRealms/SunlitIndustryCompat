@@ -1,0 +1,8 @@
+var file=java.nio.file.Path.of("G:/emoney-void-suit-test/kubejs/config/sunlit_perf_probe.json");
+if(!java.nio.file.Files.isRegularFile(file.getParent().getParent().getParent().resolve("VOID_SUIT_TEST.json")))throw new IllegalStateException("Missing isolated test marker");
+var previous=java.nio.file.Files.isRegularFile(file)?com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(file)).getAsJsonObject().get("variant").getAsString():"base";
+var next=previous.equals("base")?"alternate":previous.equals("alternate")?"removed":"base";
+var settings=new com.google.gson.JsonObject();settings.addProperty("variant",next);
+java.nio.file.Files.createDirectories(file.getParent());
+java.nio.file.Files.writeString(file,settings.toString());
+return "PASS nextReloadVariant="+next;
