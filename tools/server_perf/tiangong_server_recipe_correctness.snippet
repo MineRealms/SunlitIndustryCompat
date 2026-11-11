@@ -1,0 +1,90 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var manager=server.m_129894_();
+if(!(manager instanceof com.society.sunlitindustry.performance.tiangong.server.TianGongRecipeCacheOwner))throw new IllegalStateException("TianGong RecipeManager mixin missing");
+var cachedValue=net.minecraftforge.common.ForgeConfigSpec.ConfigValue.class.getDeclaredField("cachedValue");cachedValue.setAccessible(true);
+var options=new java.util.LinkedHashMap<String,net.minecraftforge.common.ForgeConfigSpec.ConfigValue<?>>();
+var previous=new java.util.LinkedHashMap<String,Object>();
+for(String name:new String[]{"ENABLED","RECIPE_LISTS","MATERIAL_GROUPS","MAX_TYPES","MAX_HOLDERS","MAX_GROUPS"}){
+ var field=com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig.class.getDeclaredField(name);field.setAccessible(true);
+ var option=(net.minecraftforge.common.ForgeConfigSpec.ConfigValue<?>)field.get(null);options.put(name,option);previous.put(name,option.get());
+}
+var masterField=com.society.sunlitindustry.ServerPerformanceConfig.class.getDeclaredField("ENABLED");masterField.setAccessible(true);
+var master=(net.minecraftforge.common.ForgeConfigSpec.ConfigValue<?>)masterField.get(null);Object previousMaster=master.get();
+var saved=new java.util.ArrayList<net.minecraft.world.item.crafting.Recipe<?>>(manager.m_44051_());
+java.lang.reflect.Method replace=null;
+for(var method:net.minecraft.world.item.crafting.RecipeManager.class.getDeclaredMethods())if(method.getParameterCount()==1&&method.getParameterTypes()[0]==Iterable.class&&method.getReturnType()==void.class){replace=method;break;}
+if(replace==null)throw new IllegalStateException("Native replaceRecipes entrypoint missing");replace.setAccessible(true);
+boolean managerChanged=false;int wrapperTypes=0,groupsChecked=0,automationChecks=0;
+try{
+ cachedValue.set(master,true);cachedValue.set(options.get("ENABLED"),true);
+ cachedValue.set(options.get("RECIPE_LISTS"),false);cachedValue.set(options.get("MATERIAL_GROUPS"),false);
+ cachedValue.set(options.get("MAX_TYPES"),64);cachedValue.set(options.get("MAX_HOLDERS"),262144);cachedValue.set(options.get("MAX_GROUPS"),16);
+ com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig.refresh();
+ var stone=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:stone"));
+ var dirt=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:dirt"));
+ java.lang.reflect.Method ingredientOf=null;
+ for(var method:net.minecraft.world.item.crafting.Ingredient.class.getDeclaredMethods())if(java.lang.reflect.Modifier.isStatic(method.getModifiers())&&method.getReturnType()==net.minecraft.world.item.crafting.Ingredient.class&&method.getParameterCount()==1&&method.getParameterTypes()[0]==net.minecraft.world.item.ItemStack[].class){ingredientOf=method;break;}
+ if(ingredientOf==null)throw new IllegalStateException("Ingredient.of stacks entrypoint missing");ingredientOf.setAccessible(true);
+ var inputStone=(net.minecraft.world.item.crafting.Ingredient)ingredientOf.invoke(null,(Object)new net.minecraft.world.item.ItemStack[]{new net.minecraft.world.item.ItemStack(stone)});
+ var inputDirt=(net.minecraft.world.item.crafting.Ingredient)ingredientOf.invoke(null,(Object)new net.minecraft.world.item.ItemStack[]{new net.minecraft.world.item.ItemStack(dirt)});
+ var augmented=new java.util.ArrayList<net.minecraft.world.item.crafting.Recipe<?>>(saved);
+ var probeA=new zmod.machine.materialprocessing.MaterialProcessingRecipe("warped_polymerizer",java.util.List.of(new zmod.machine.materialprocessing.MaterialProcessingRecipe.ItemInput(inputStone,1)),java.util.List.of(),java.util.List.of(),java.util.List.of(new net.minecraft.world.item.ItemStack(dirt)),java.util.List.of(),20,1).withId(new net.minecraft.resources.ResourceLocation("sunlitindustry","tiangong_group_probe_a"));
+ var probeB=new zmod.machine.materialprocessing.MaterialProcessingRecipe("matter_reconstructor",java.util.List.of(new zmod.machine.materialprocessing.MaterialProcessingRecipe.ItemInput(inputDirt,1)),java.util.List.of(),java.util.List.of(),java.util.List.of(new net.minecraft.world.item.ItemStack(stone)),java.util.List.of(),20,1).withId(new net.minecraft.resources.ResourceLocation("sunlitindustry","tiangong_group_probe_b"));
+ for(var recipe:saved)if(recipe.m_6423_().equals(probeA.m_6423_())||recipe.m_6423_().equals(probeB.m_6423_()))throw new IllegalStateException("Diagnostic recipe id already present");
+ augmented.add(probeA);augmented.add(probeB);managerChanged=true;replace.invoke(manager,augmented);
+ var type=zmod.machine.materialprocessing.MaterialProcessingRecipes.TYPE.get();
+ var nativeList=zmod.compat.Recipes.all(manager,type);
+ var nativeAgain=zmod.compat.Recipes.all(manager,type);
+ if(nativeList==nativeAgain||!nativeList.equals(nativeAgain))throw new IllegalStateException("Disabled wrapper path did not stay native");
+ java.lang.reflect.Method setLevel=null;
+ for(var method:net.minecraft.world.level.block.entity.BlockEntity.class.getDeclaredMethods())if(method.getParameterCount()==1&&method.getParameterTypes()[0]==net.minecraft.world.level.Level.class&&method.getReturnType()==void.class){setLevel=method;break;}
+ if(setLevel==null)throw new IllegalStateException("BlockEntity.setLevel entrypoint missing");setLevel.setAccessible(true);
+ var workRecipes=zmod.machine.materialprocessing.MaterialProcessingWork.class.getDeclaredMethod("recipes");workRecipes.setAccessible(true);
+ var nativeWork=new java.util.HashMap<String,Object>();var nativeAccepts=new java.util.HashMap<String,Boolean>();
+ for(int mode=0;mode<4;mode++){
+  cachedValue.set(options.get("RECIPE_LISTS"),(mode&1)!=0);cachedValue.set(options.get("MATERIAL_GROUPS"),(mode&2)!=0);com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig.refresh();
+  for(var kind:new zmod.machine.industrial.IndustrialKind[]{zmod.machine.industrial.IndustrialKind.POLYMERIZER,zmod.machine.industrial.IndustrialKind.RECONSTRUCTOR}){
+   var controller=new zmod.machine.industrial.IndustrialController(new net.minecraft.core.BlockPos(0,100,0),zmod.machine.industrial.IndustrialRegistry.controller(kind).m_49966_());setLevel.invoke(controller,server.m_129783_());
+   var work=new zmod.machine.materialprocessing.MaterialProcessingWork(controller,controller.process().storage(),()->{});
+   Object selected=workRecipes.invoke(work);
+   if(mode==0)nativeWork.put(kind.id(),selected);else if(!nativeWork.get(kind.id()).equals(selected))throw new IllegalStateException("Native work recipe list changed: "+kind.id()+" mode="+mode);
+   for(var item:new net.minecraft.world.item.Item[]{stone,dirt}){
+    var stack=new net.minecraft.world.item.ItemStack(item);boolean accepts=zmod.machine.industrial.IndustrialAutomation.acceptsItem(controller,stack);String key=kind.id()+"/"+net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(item);
+    if(mode==0)nativeAccepts.put(key,accepts);else if(nativeAccepts.get(key)!=accepts)throw new IllegalStateException("Native ingredient acceptance changed: "+key+" mode="+mode);automationChecks++;
+   }
+   if((mode&2)!=0){
+    var group=com.society.sunlitindustry.performance.tiangong.server.TianGongServerRecipeCache.materialRecipes(manager,type,kind.id());
+    if(group!=com.society.sunlitindustry.performance.tiangong.server.TianGongServerRecipeCache.materialRecipes(manager,type,kind.id()))throw new IllegalStateException("Machine group not reused");
+    var expected=new java.util.ArrayList<zmod.compat.RecipeHolder<zmod.machine.materialprocessing.MaterialProcessingRecipe>>();for(var holder:nativeList)if(holder.value().machine().equals(kind.id()))expected.add(holder);
+    if(!expected.equals(group))throw new IllegalStateException("Machine group contents/order changed");groupsChecked++;
+   }
+  }
+ }
+ var seen=java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<net.minecraft.world.item.crafting.RecipeType<?>,Boolean>());
+ for(var recipe:manager.m_44051_()){
+  var recipeType=recipe.m_6671_();if(!seen.add(recipeType)||wrapperTypes>=8)continue;
+  var first=zmod.compat.Recipes.all(manager,(net.minecraft.world.item.crafting.RecipeType)recipeType);
+  if(first!=zmod.compat.Recipes.all(manager,(net.minecraft.world.item.crafting.RecipeType)recipeType))throw new IllegalStateException("Wrapper list not reused: "+recipeType);wrapperTypes++;
+ }
+ var beforeReplace=zmod.compat.Recipes.all(manager,type);long epoch=com.society.sunlitindustry.performance.tiangong.server.TianGongServerRecipeCache.epoch();replace.invoke(manager,augmented);
+ var afterReplace=zmod.compat.Recipes.all(manager,type);
+ if(epoch==com.society.sunlitindustry.performance.tiangong.server.TianGongServerRecipeCache.epoch()||beforeReplace==afterReplace||!beforeReplace.equals(afterReplace))throw new IllegalStateException("Native replaceRecipes did not invalidate wrapper cache");
+ var foreign=new net.minecraft.world.item.crafting.RecipeManager();replace.invoke(foreign,augmented);
+ if(zmod.compat.Recipes.all(foreign,type)==zmod.compat.Recipes.all(foreign,type))throw new IllegalStateException("Foreign manager was cached");
+ cachedValue.set(options.get("MAX_HOLDERS"),1);com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig.refresh();
+ if(zmod.compat.Recipes.all(manager,type)==zmod.compat.Recipes.all(manager,type))throw new IllegalStateException("Oversize wrapper list should bypass cache");
+ var full=com.society.sunlitindustry.performance.tiangong.server.TianGongServerRecipeCache.materialRecipes(manager,type,"warped_polymerizer");
+ if(!full.equals(zmod.compat.Recipes.all(manager,type)))throw new IllegalStateException("Oversize machine grouping should bypass to native full list");
+ cachedValue.set(options.get("MAX_HOLDERS"),262144);cachedValue.set(options.get("ENABLED"),false);com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig.refresh();
+ if(zmod.compat.Recipes.all(manager,type)==zmod.compat.Recipes.all(manager,type))throw new IllegalStateException("TianGong master off did not restore native wrapper path");
+ if(!com.society.sunlitindustry.performance.tiangong.server.TianGongServerRecipeCache.materialRecipes(manager,type,"warped_polymerizer").equals(zmod.compat.Recipes.all(manager,type)))throw new IllegalStateException("TianGong master off did not restore native group path");
+ cachedValue.set(options.get("ENABLED"),true);cachedValue.set(master,false);com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig.refresh();
+ if(zmod.compat.Recipes.all(manager,type)==zmod.compat.Recipes.all(manager,type))throw new IllegalStateException("Server master off did not restore native wrapper path");
+ var result=new com.google.gson.JsonObject();result.addProperty("status","PASS");result.addProperty("wrapperTypes",wrapperTypes);result.addProperty("materialGroups",groupsChecked);result.addProperty("automationChecks",automationChecks);result.addProperty("originalRecipeCount",saved.size());result.addProperty("checks","disabled native path, wrapper/group reuse, actual work and automation redirects, native replacement epoch, foreign manager and capacity bypass; fixtures and config restored");return result;
+}finally{
+ try{if(managerChanged)replace.invoke(manager,saved);}finally{
+  for(var entry:options.entrySet())cachedValue.set(entry.getValue(),previous.get(entry.getKey()));cachedValue.set(master,previousMaster);
+  com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig.refresh();
+ }
+}
