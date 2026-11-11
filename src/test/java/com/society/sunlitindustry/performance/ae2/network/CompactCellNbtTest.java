@@ -30,12 +30,14 @@ class CompactCellNbtTest {
     }
 
     @Test
-    void corruptedPayloadFailsBeforeModifyingCell() {
+    void corruptedPayloadReturnsFalseBeforeModifyingCell() {
         CompoundTag cell = cell(63);
         assertTrue(CompactCellNbt.compact(cell));
         cell.getCompound(CompactCellNbt.PAYLOAD).putLong("crc32", -1);
         CompoundTag before = cell.copy();
-        assertThrows(IllegalStateException.class, () -> CompactCellNbt.expand(cell));
+        assertFalse(CompactCellNbt.expand(cell));
+        assertEquals(before, cell);
+        assertFalse(CompactCellNbt.compact(cell));
         assertEquals(before, cell);
     }
 
@@ -44,10 +46,14 @@ class CompactCellNbtTest {
         CompoundTag cell = cell(63);
         assertTrue(CompactCellNbt.compact(cell));
         cell.getCompound(CompactCellNbt.PAYLOAD).putInt("version", 2);
-        assertThrows(IllegalStateException.class, () -> CompactCellNbt.expand(cell));
+        CompoundTag unknown = cell.copy();
+        assertFalse(CompactCellNbt.expand(cell));
+        assertEquals(unknown, cell);
         cell.getCompound(CompactCellNbt.PAYLOAD).putInt("version", 1);
         cell.getCompound(CompactCellNbt.PAYLOAD).putInt("rawSize", Integer.MAX_VALUE);
-        assertThrows(IllegalStateException.class, () -> CompactCellNbt.expand(cell));
+        CompoundTag oversized = cell.copy();
+        assertFalse(CompactCellNbt.expand(cell));
+        assertEquals(oversized, cell);
     }
 
     @Test
@@ -56,7 +62,7 @@ class CompactCellNbtTest {
         assertTrue(CompactCellNbt.compact(cell));
         cell.putLongArray("amts", new long[] { 1 });
         CompoundTag before = cell.copy();
-        assertThrows(IllegalStateException.class, () -> CompactCellNbt.expand(cell));
+        assertFalse(CompactCellNbt.expand(cell));
         assertEquals(before, cell);
     }
 
@@ -66,8 +72,43 @@ class CompactCellNbtTest {
         assertTrue(CompactCellNbt.compact(cell));
         cell.put("keys", new ListTag());
         CompoundTag before = cell.copy();
-        assertThrows(IllegalStateException.class, () -> CompactCellNbt.expand(cell));
+        assertFalse(CompactCellNbt.expand(cell));
         assertEquals(before, cell);
+    }
+
+    @Test
+    void malformedMetadataAndCompressedBytesRemainUntouched() {
+        CompoundTag compact = cell(63);
+        assertTrue(CompactCellNbt.compact(compact));
+        for (String field : new String[] { "version", "rawSize", "keyCount", "crc32", "data" }) {
+            CompoundTag invalid = compact.copy();
+            invalid.getCompound(CompactCellNbt.PAYLOAD).remove(field);
+            CompoundTag before = invalid.copy();
+            assertFalse(CompactCellNbt.expand(invalid), field);
+            assertEquals(before, invalid, field);
+        }
+        CompoundTag invalid = compact.copy();
+        invalid.getCompound(CompactCellNbt.PAYLOAD).putByteArray("data", new byte[] { 1, 2, 3 });
+        CompoundTag before = invalid.copy();
+        assertFalse(CompactCellNbt.expand(invalid));
+        assertEquals(before, invalid);
+    }
+
+    @Test
+    void wrongPayloadOrAmountTagTypesRemainUntouched() {
+        CompoundTag compact = cell(63);
+        assertTrue(CompactCellNbt.compact(compact));
+        compact.putString(CompactCellNbt.PAYLOAD, "unrecognized payload");
+        CompoundTag before = compact.copy();
+        assertFalse(CompactCellNbt.expand(compact));
+        assertEquals(before, compact);
+
+        compact = cell(63);
+        assertTrue(CompactCellNbt.compact(compact));
+        compact.put("amts", new ListTag());
+        before = compact.copy();
+        assertFalse(CompactCellNbt.expand(compact));
+        assertEquals(before, compact);
     }
 
     @Test

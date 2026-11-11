@@ -1,18 +1,22 @@
 package com.society.sunlitindustry.mixin;
 
+import com.mojang.logging.LogUtils;
 import net.minecraftforge.fml.loading.FMLLoader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
+import org.slf4j.Logger;
 import java.util.List;
 import java.util.Set;
 
 public final class IndustryMixinPlugin implements IMixinConfigPlugin {
+    private static final Logger LOGGER = LogUtils.getLogger();
     public void onLoad(String pkg) {}
     public String getRefMapperConfig() { return null; }
     public boolean shouldApplyMixin(String target, String mixin) {
@@ -60,7 +64,9 @@ public final class IndustryMixinPlugin implements IMixinConfigPlugin {
     }
 
     private static void patchAliTooltipCache(ClassNode node) {
-        int patched = 0;
+        int matches = 0;
+        MethodNode targetMethod = null;
+        MethodInsnNode targetCall = null;
         for (var method : node.methods) {
             if (!method.name.equals("empty") || !method.desc.equals("()Lcom/yanny/aci/tooltip/TooltipNode;")) continue;
             for (var instruction = method.instructions.getFirst(); instruction != null; instruction = instruction.getNext()) {
@@ -75,21 +81,25 @@ public final class IndustryMixinPlugin implements IMixinConfigPlugin {
                         || !invoke.owner.equals("com/yanny/aci/manager/CoreServerRegistry")
                         || !invoke.name.equals("getTooltipCache")
                         || !invoke.desc.equals("()Lcom/yanny/aci/tooltip/TooltipNodePalette;")) continue;
-                var replacement = new InsnList();
-                replacement.add(new FieldInsnNode(Opcodes.GETSTATIC, "com/yanny/aci/manager/CorePluginManager",
-                        "INSTANCE", "Lcom/yanny/aci/manager/CorePluginManager;"));
-                replacement.add(new FieldInsnNode(Opcodes.GETFIELD, "com/yanny/aci/manager/CorePluginManager",
-                        "clientRegistry", "Lcom/yanny/aci/manager/CoreClientRegistry;"));
-                replacement.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/society/sunlitindustry/AliTooltipCache",
-                        "palette", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", false));
-                replacement.add(new TypeInsnNode(Opcodes.CHECKCAST, "com/yanny/aci/tooltip/TooltipNodePalette"));
-                method.instructions.insertBefore(call, replacement);
-                method.instructions.remove(call);
-                patched++;
+                matches++;
+                targetMethod = method;
+                targetCall = invoke;
             }
         }
-        if (patched != 1) {
-            throw new IllegalStateException("Unsupported ALI TooltipNode.empty: expected one server cache lookup");
+        if (matches != 1) {
+            LOGGER.warn("Sunlit ALI tooltip cache patch skipped for {}: expected one lookup, found {}; keeping native bytecode",
+                    node.name, matches);
+            return;
         }
+        var replacement = new InsnList();
+        replacement.add(new FieldInsnNode(Opcodes.GETSTATIC, "com/yanny/aci/manager/CorePluginManager",
+                "INSTANCE", "Lcom/yanny/aci/manager/CorePluginManager;"));
+        replacement.add(new FieldInsnNode(Opcodes.GETFIELD, "com/yanny/aci/manager/CorePluginManager",
+                "clientRegistry", "Lcom/yanny/aci/manager/CoreClientRegistry;"));
+        replacement.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/society/sunlitindustry/AliTooltipCache",
+                "palette", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", false));
+        replacement.add(new TypeInsnNode(Opcodes.CHECKCAST, "com/yanny/aci/tooltip/TooltipNodePalette"));
+        targetMethod.instructions.insertBefore(targetCall, replacement);
+        targetMethod.instructions.remove(targetCall);
     }
 }

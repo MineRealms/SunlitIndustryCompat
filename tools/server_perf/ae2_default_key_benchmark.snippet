@@ -21,6 +21,7 @@ for(int i=0;i<50000;i++){
 }
 com.society.sunlitindustry.ServerPerformanceStats.reset();
 com.society.sunlitindustry.ServerPerformanceStats.setRecording(true);
+try {
 for(var spec:new Object[][]{
  {"itemSamples",(java.util.function.Supplier<Object>)()->appeng.api.stacks.AEItemKey.of(item)},
  {"fluidSamples",(java.util.function.Supplier<Object>)()->appeng.api.stacks.AEFluidKey.of(fluid)},
@@ -37,7 +38,9 @@ for(var spec:new Object[][]{
  }
  result.add((String)spec[0],samples);
 }
-com.society.sunlitindustry.ServerPerformanceStats.setRecording(false);
+} finally {
+ com.society.sunlitindustry.ServerPerformanceStats.setRecording(false);
+}
 result.add("optimizationCounters",new com.google.gson.Gson().toJsonTree(com.society.sunlitindustry.ServerPerformanceStats.snapshot()));
 System.out.println("SUNLIT_AE2_KEY_BENCHMARK="+result);
 return "PASS "+result;

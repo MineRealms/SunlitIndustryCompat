@@ -51,7 +51,9 @@ public final class GtParallelScratch implements AutoCloseable {
 
     @Override
     public void close() {
-        if (ACTIVE.get().pop() != this) throw new IllegalStateException("Parallel scratch lease order");
+        var active = ACTIVE.get();
+        if (active.peek() != this) throw new IllegalStateException("Parallel scratch lease order");
+        active.pop();
         boolean bounded = plain.size() <= 64 && custom.size() <= 32;
         for (var map : plain) {
             bounded &= map.size() <= 512;

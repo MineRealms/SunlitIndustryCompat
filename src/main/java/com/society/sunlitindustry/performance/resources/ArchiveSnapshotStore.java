@@ -23,8 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.concurrent.atomic.LongAdder;
@@ -41,9 +39,9 @@ public final class ArchiveSnapshotStore {
     private final Path directory;
     private final long memoryLimit;
     private final boolean clientSources;
-    private final LinkedHashMap<Path, String> digests = new LinkedHashMap<>();
+    private final LinkedHashMap<Path, String> digests = new LinkedHashMap<>(16, .75f, true);
     private final LinkedHashMap<String, Snapshot> snapshots = new LinkedHashMap<>(16, .75f, true);
-    private final Set<String> bypassed = new HashSet<>();
+    private final LinkedHashMap<String, Boolean> oversized = new LinkedHashMap<>(16, .75f, true);
     private long retained;
     private final LongAdder hits = new LongAdder();
     private final LongAdder diskHits = new LongAdder();
@@ -68,13 +66,13 @@ public final class ArchiveSnapshotStore {
         try (InputStream input = Files.newInputStream(canonical)) {
             digest = hash(input);
         }
-        if (digests.size() >= 2048) digests.clear();
+        if (digests.size() >= 2048) digests.remove(digests.keySet().iterator().next());
         digests.put(canonical, digest);
         return digest;
     }
 
     public synchronized Snapshot get(Path archive, String digest) throws IOException {
-        if (bypassed.contains(digest)) return null;
+        if (oversized.get(digest) != null) return null;
         Snapshot existing = snapshots.get(digest);
         if (existing != null) {
             hits.increment();
@@ -95,27 +93,34 @@ public final class ArchiveSnapshotStore {
             }
         }
         long weight = snapshot.weight();
-        if (retained + weight <= memoryLimit) {
-            snapshots.put(digest, snapshot);
-            retained += weight;
-        } else {
-            // Admission control avoids repeatedly reloading evicted packs during parallel tag scans.
-            bypassed.add(digest);
+        if (weight > memoryLimit) {
+            // Only intrinsically oversized snapshots stay native; a full cache must not blacklist a pack.
+            if (oversized.size() >= 2048) oversized.remove(oversized.keySet().iterator().next());
+            oversized.put(digest, Boolean.TRUE);
             return null;
         }
+        var entries = snapshots.entrySet().iterator();
+        while (retained + weight > memoryLimit && entries.hasNext()) {
+            retained -= entries.next().getValue().weight();
+            entries.remove();
+        }
+        snapshots.put(digest, snapshot);
+        retained += weight;
         return snapshot;
     }
 
+    long memoryLimit() { return memoryLimit; }
+
     public synchronized void clearMemory() {
         snapshots.clear();
-        bypassed.clear();
+        oversized.clear();
         retained = 0;
     }
 
     public synchronized Map<String, Long> statistics() {
         return Map.of("memoryHits", hits.sum(), "diskHits", diskHits.sum(), "builds", builds.sum(),
                 "writeFailures", failures.sum(), "retainedBytes", retained, "snapshots", (long) snapshots.size(),
-                "bypassed", (long) bypassed.size());
+                "bypassed", (long) oversized.size());
     }
 
     private Snapshot build(Path archive) throws IOException {

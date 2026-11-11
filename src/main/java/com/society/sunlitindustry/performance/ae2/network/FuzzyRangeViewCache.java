@@ -27,6 +27,12 @@ public final class FuzzyRangeViewCache<V> {
 
     public void put(Object map, int low, int high, V view) {
         if (owner != map) get(map, low, high);
+        for (int slot = 0; slot < CAPACITY; slot++) {
+            if (views[slot] != null && lower[slot] == low && upper[slot] == high) {
+                views[slot] = view;
+                return;
+            }
+        }
         lower[next] = low;
         upper[next] = high;
         views[next] = view;

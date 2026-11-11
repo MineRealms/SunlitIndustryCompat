@@ -31,6 +31,24 @@ class GtParallelScratchTest {
     }
 
     @Test
+    void rejectedOutOfOrderCloseDoesNotCorruptActiveLeases() {
+        try (var outer = GtParallelScratch.open()) {
+            var outerMap = GtParallelScratch.<String>plainMap();
+            outerMap.put("outer", 5L);
+            try (var inner = GtParallelScratch.open()) {
+                var innerMap = GtParallelScratch.<String>plainMap();
+                innerMap.put("inner", 7L);
+                assertThrows(IllegalStateException.class, outer::close);
+                assertEquals(7L, innerMap.getLong("inner"));
+            }
+            assertEquals(5L, outerMap.getLong("outer"));
+        }
+        try (var ignored = GtParallelScratch.open()) {
+            assertTrue(GtParallelScratch.plainMap().isEmpty());
+        }
+    }
+
+    @Test
     void strategyReplacementDoesNotReuseThePreviousEqualityRules() {
         Hash.Strategy<String> identity = new Hash.Strategy<>() {
             public int hashCode(String key) { return System.identityHashCode(key); }

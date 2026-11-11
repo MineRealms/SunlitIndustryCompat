@@ -30,7 +30,10 @@ but borrows a native RecipeRunner with a bounded working set. A `finally` block 
 holder, handler, chance-cache and ingredient references even when a mod handler throws.
 Borrowed objects leave the pool; reentrant calls cannot obtain the outer invocation's runner.
 Each thread retains at most four runners. Runners processing more than 256 entries in one capability
-or more than 16 capabilities are discarded instead of retained.
+or more than 16 capabilities are discarded instead of retained. Release also checks the resulting
+working lists against a 512-entry bound before pooling, as a defensive check after handler execution.
+Release clears world/machine references on any calling thread. Lifecycle cleanup removes the current
+server thread's pool; other long-lived threads may retain bounded empty workspace arrays until they exit.
 
 The runner retains its native handler dispatch and uses the existing validated topology cache.
 Only content-list preparation changes. Lists/maps are reused; probability input preparation uses
@@ -72,7 +75,9 @@ that every workload benefits; this scheduling experiment defaults off.
 ## Experimental Preview Shapes
 
 Each machine definition can retain a bounded snapshot of its native preview pages. Returned shapes
-receive fresh arrays, BlockInfo objects, NBT and ItemStacks. Runtime `lastEntity` fields, callbacks,
+receive fresh arrays, BlockInfo objects, NBT and ItemStacks on each request. Repeated cells preserve
+only the BlockInfo identity sharing already present in the native shape; separate requests do not
+share mutable copies. Runtime `lastEntity` fields, callbacks,
 custom BlockInfo subclasses and worlds are never cached. Suppliers replaced through native setters,
 resource reload and server shutdown invalidate snapshots. Callback-bearing shapes use the native
 path. ItemStack templates stay private and use the native copy operation rather than repeated

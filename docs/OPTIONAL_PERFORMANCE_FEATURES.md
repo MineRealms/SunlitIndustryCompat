@@ -80,7 +80,8 @@ OpenGL backend, CTM or global baked-model cache is replaced by these hooks.
 
 ## Validation and Delivery
 
-- `gradle --offline test build` passes, including restored helper tests.
+- `gradle --offline test build` passes: 65 tests, including restored helpers and
+  the [code-quality review fixes](CODE_QUALITY_REVIEW_20261111.md).
 - The isolated 18-mod dedicated server starts normally with all new options off
   and registers 42,493 recipes. Seven new/restored target classes load successfully.
 - Runtime probes verify default-off flags, 18 dimension-policy checks and the
@@ -88,6 +89,8 @@ OpenGL backend, CTM or global baked-model cache is replaced by these hooks.
   16 native automation comparisons, recipe replacement, capacity and foreign
   manager fallback. Restored AE2 checks cover native/experimental/native routing,
   queued unmount/reentrancy, cell reopen/save callbacks and capability replacement.
+- The final review build also passes 8 unreadable-cell quarantine scenarios and
+  resource-index checks over 4 trees and 305 source-byte comparisons.
 - No benchmark or client rendering session was run in this change. Client FPS,
   visual correctness and shader compatibility are not established by a server
   startup check. All client additions remain disabled.

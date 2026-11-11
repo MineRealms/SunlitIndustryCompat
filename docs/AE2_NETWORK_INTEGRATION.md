@@ -37,7 +37,14 @@ Enabling writing requires matching SunlitIndustryCompat versions on both sides.
 - No UUID database, shared-cell alias or world-external storage is introduced.
   ItemStack copies still own independent contents.
 - Checks version, declared size (maximum 16 MiB), CRC32 and key/amount counts
-  before modifying a cell. Invalid payloads fail explicitly and stay untouched.
+  before modifying a cell. Invalid, unsupported and ambiguous native/compact
+  payloads return `false`, log a warning and keep the entire original tag.
+- Cells with an unreadable payload are quarantined for that live inventory:
+  insertion/extraction both return zero, including simulation, and native
+  persistence cannot overwrite `keys`, `amts`, `ic` or the compact payload.
+  This protection remains active when compact writing is disabled. Repair the
+  original NBT from a backup or supported reader, then reopen the cell; it is
+  not treated as an empty reusable cell. No automatic data recovery is claimed.
 - Empty, small or poorly compressible cells keep their complete native format.
 - Opening a compact cell always expands it to native keys first. Disabling
   compact writing and reopening/saving affected cells migrates them back.
@@ -67,5 +74,6 @@ native AE2 priority, simulation, reentrancy and queue semantics.
 
 Live probes cover native priority-routing semantics, fuzzy damage buckets and
 mutable live views, cell accounting, arbitrary-key codec round trips, real AE2
-cell reopen/extract, and compact/decompress cost. These microbenchmarks do not
+cell reopen/extract, corrupt/unknown/ambiguous compact-cell quarantine with
+immediate and deferred save providers, and compact/decompress cost. These microbenchmarks do not
 represent a populated player network or region-file size.

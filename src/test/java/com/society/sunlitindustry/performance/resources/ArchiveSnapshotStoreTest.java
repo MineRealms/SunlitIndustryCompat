@@ -130,6 +130,32 @@ class ArchiveSnapshotStoreTest {
     }
 
     @Test
+    void fullCacheEvictsLeastRecentSnapshotAndAllowsItToReturn() throws IOException {
+        Path first = archive("first.jar", Map.of("data/test/recipes/a.json", "{\"x\":1}"));
+        Path second = archive("second.jar", Map.of("data/test/recipes/a.json", "{\"x\":2}"));
+        Path third = archive("third.jar", Map.of("data/test/recipes/a.json", "{\"x\":3}"));
+        var sizing = store();
+        long weight = sizing.get(first, sizing.identify(first)).weight();
+        var store = new ArchiveSnapshotStore(temporary.resolve("lru-cache"), weight * 2);
+        String firstDigest = store.identify(first);
+        String secondDigest = store.identify(second);
+        String thirdDigest = store.identify(third);
+        var firstSnapshot = store.get(first, firstDigest);
+        var secondSnapshot = store.get(second, secondDigest);
+        assertSame(firstSnapshot, store.get(first, firstDigest));
+        assertNotNull(store.get(third, thirdDigest));
+        assertSame(firstSnapshot, store.get(first, firstDigest));
+        assertNotSame(secondSnapshot, store.get(second, secondDigest));
+        assertEquals(1L, store.statistics().get("diskHits"));
+        assertEquals(2L, store.statistics().get("snapshots"));
+        assertEquals(weight * 2, store.statistics().get("retainedBytes"));
+        assertEquals(0L, store.statistics().get("bypassed"));
+        store.clearMemory();
+        assertEquals(0L, store.statistics().get("retainedBytes"));
+        assertNotNull(store.get(first, firstDigest));
+    }
+
+    @Test
     void serverSnapshotIndexesModelSourcesButDoesNotRetainTheirBytes() throws IOException {
         Path archive = archive(Map.of("data/test/recipes/a.json", "{}", "assets/test/models/a.json", "{}",
                 "assets/test/lang/en_us.json", "{}"));
@@ -144,7 +170,11 @@ class ArchiveSnapshotStoreTest {
     private ArchiveSnapshotStore store() { return new ArchiveSnapshotStore(temporary.resolve("cache"), 4 << 20); }
 
     private Path archive(Map<String, String> entries) throws IOException {
-        Path path = temporary.resolve("mod.jar");
+        return archive("mod.jar", entries);
+    }
+
+    private Path archive(String name, Map<String, String> entries) throws IOException {
+        Path path = temporary.resolve(name);
         try (var zip = new ZipOutputStream(Files.newOutputStream(path))) {
             for (var entry : entries.entrySet()) {
                 zip.putNextEntry(new ZipEntry(entry.getKey()));

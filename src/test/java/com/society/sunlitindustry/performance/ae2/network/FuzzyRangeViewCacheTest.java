@@ -49,4 +49,24 @@ class FuzzyRangeViewCacheTest {
         assertNotNull(cache.get(map, 19, 29));
         assertEquals(10L, map.get(5));
     }
+
+    @Test
+    void duplicateKeyReplacesItsViewWithoutConsumingRingSlots() {
+        var owner = new Object();
+        var cache = new FuzzyRangeViewCache<String>();
+        cache.put(owner, 0, 10, "first");
+        cache.put(owner, 10, 20, "second");
+        for (int update = 0; update < 20; update++) cache.put(owner, 10, 20, "updated-" + update);
+        cache.put(owner, 20, 30, "third");
+        cache.put(owner, 30, 40, "fourth");
+
+        assertEquals("first", cache.get(owner, 0, 10));
+        assertEquals("updated-19", cache.get(owner, 10, 20));
+        assertEquals("third", cache.get(owner, 20, 30));
+        assertEquals("fourth", cache.get(owner, 30, 40));
+
+        cache.put(owner, 40, 50, "fifth");
+        assertNull(cache.get(owner, 0, 10));
+        assertEquals("updated-19", cache.get(owner, 10, 20));
+    }
 }

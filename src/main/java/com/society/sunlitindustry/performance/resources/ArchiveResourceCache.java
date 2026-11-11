@@ -32,6 +32,7 @@ public final class ArchiveResourceCache {
             if (!archive.getFileSystem().provider().getScheme().equals("file")
                     || !archive.toString().endsWith(".jar") || !Files.isRegularFile(archive)) continue;
             Path root = file.findResource("");
+            if (root == null) continue;
             // Forge's ResourcePackLoader stores the physical jar as source and overrides resolve.
             // Subdirectory packs need a separate index; do not answer absence from the root index.
             if (!ArchiveSourceIdentity.isRoot(source, archive, root)) continue;
@@ -50,11 +51,6 @@ public final class ArchiveResourceCache {
         if (binding == null || FAILED.contains(binding.archive())) return null;
         try {
             var result = getStore().get(binding.archive(), binding.digest());
-            if (result == null) return null;
-            if (result.weight() > (long) ResourceCacheConfig.memoryMiB() << 20) {
-                FAILED.add(binding.archive());
-                return null;
-            }
             return result;
         } catch (IOException | RuntimeException failure) {
             fail(binding.archive(), failure);
@@ -65,14 +61,15 @@ public final class ArchiveResourceCache {
     public static Map<String, Long> statistics() { return getStore().statistics(); }
 
     private static ArchiveSnapshotStore getStore() {
+        long limit = (long) ResourceCacheConfig.memoryMiB() << 20;
         var current = store;
-        if (current == null) {
+        if (current == null || current.memoryLimit() != limit) {
             synchronized (ArchiveResourceCache.class) {
                 current = store;
-                if (current == null) store = current = new ArchiveSnapshotStore(
+                if (current == null || current.memoryLimit() != limit) store = current = new ArchiveSnapshotStore(
                         FMLPaths.GAMEDIR.get().resolve(FMLLoader.getDist().isClient()
                                 ? "cache/sunlitindustry/archives-v2-client" : "cache/sunlitindustry/archives-v2-server"),
-                        (long) ResourceCacheConfig.memoryMiB() << 20, FMLLoader.getDist().isClient());
+                        limit, FMLLoader.getDist().isClient());
             }
         }
         return current;

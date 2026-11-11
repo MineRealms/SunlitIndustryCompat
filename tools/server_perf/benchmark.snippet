@@ -76,8 +76,11 @@ try {
  }
  com.society.sunlitindustry.ServerPerformanceStats.reset();
  com.society.sunlitindustry.ServerPerformanceStats.setRecording(true);
- for(int i=0;i<5000;i++){emptyAction.getAsInt();simulationAction.getAsInt();}
- com.society.sunlitindustry.ServerPerformanceStats.setRecording(false);
+ try {
+  for(int i=0;i<5000;i++){emptyAction.getAsInt();simulationAction.getAsInt();}
+ } finally {
+  com.society.sunlitindustry.ServerPerformanceStats.setRecording(false);
+ }
  result.add("groupSamples",groups);result.add("recipeSamples",paths);
  result.add("optimizationCounters",new com.google.gson.Gson().toJsonTree(com.society.sunlitindustry.ServerPerformanceStats.snapshot()));
  System.out.println("SUNLIT_PERF_BENCHMARK="+result);

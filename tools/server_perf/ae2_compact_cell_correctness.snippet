@@ -17,10 +17,44 @@ for(int i=0;i<24;i++){
  if(inventory.insert(appeng.api.stacks.AEItemKey.of(stack),1000,appeng.api.config.Actionable.MODULATE,source)!=1000)throw new IllegalStateException("cell input failed");
 }
 inventory.persist();var expected=inventory.getAvailableStacks();
+var getItemTag=net.minecraft.world.item.ItemStack.class.getMethod("m_41783_");
+var liveTag=(net.minecraft.nbt.CompoundTag)getItemTag.invoke(item);
+com.society.sunlitindustry.performance.ae2.network.CompactCellNbt.expand(liveTag);
+if(!com.society.sunlitindustry.performance.ae2.network.CompactCellNbt.compact(liveTag))throw new IllegalStateException("live cell did not compact");
 var reopened=appeng.me.cells.BasicCellInventory.createInventory(item,null);var actual=reopened.getAvailableStacks();
 if(actual.size()!=expected.size())throw new IllegalStateException("cell reopening changed type count");
 for(var entry:expected)if(actual.get(entry.getKey())!=entry.getLongValue())throw new IllegalStateException("cell reopening changed amount");
 for(var entry:expected)if(reopened.extract(entry.getKey(),1000,appeng.api.config.Actionable.MODULATE,source)!=1000)throw new IllegalStateException("cell reopening changed extraction");
 if(!reopened.getAvailableStacks().isEmpty())throw new IllegalStateException("cell did not empty");
-var result=new com.google.gson.JsonObject();result.addProperty("syntheticNbtBytesBefore",rawSize);result.addProperty("syntheticNbtBytesAfter",compactSize);result.addProperty("compactWritingEnabled",com.society.sunlitindustry.ServerPerformanceConfig.ae2CompactCellNbt());result.addProperty("liveCellVariants",24);result.addProperty("liveCellRoundTrip",true);
+var validTag=net.minecraft.nbt.TagParser.m_129359_(text);if(!com.society.sunlitindustry.performance.ae2.network.CompactCellNbt.compact(validTag))throw new IllegalStateException("quarantine fixture did not compact");
+var copyTag=java.util.Arrays.stream(net.minecraft.nbt.CompoundTag.class.getDeclaredMethods()).filter(m->m.getReturnType()==net.minecraft.nbt.CompoundTag.class&&m.getParameterCount()==0).filter(m->m.getName().equals("m_6426_")||m.getName().equals("copy")).findFirst().orElseThrow();
+var getPayload=net.minecraft.nbt.CompoundTag.class.getMethod("m_128469_",String.class);
+var setInt=net.minecraft.nbt.CompoundTag.class.getMethod("m_128405_",String.class,int.class);
+var setLong=net.minecraft.nbt.CompoundTag.class.getMethod("m_128356_",String.class,long.class);
+var quarantineField=appeng.me.cells.BasicCellInventory.class.getDeclaredField("sunlitindustry$unreadableCompactCell");quarantineField.setAccessible(true);
+var nativeKey=appeng.api.stacks.AEItemKey.of(new net.minecraft.world.item.ItemStack(diamond));
+int quarantined=0;
+for(String fault:new String[]{"checksum","version","oversized","ambiguous"}){
+ var invalid=(net.minecraft.nbt.CompoundTag)copyTag.invoke(validTag);var payload=(net.minecraft.nbt.CompoundTag)getPayload.invoke(invalid,com.society.sunlitindustry.performance.ae2.network.CompactCellNbt.PAYLOAD);
+ if(fault.equals("checksum"))setLong.invoke(payload,"crc32",-1L);
+ else if(fault.equals("version"))setInt.invoke(payload,"version",2);
+ else if(fault.equals("oversized"))setInt.invoke(payload,"rawSize",Integer.MAX_VALUE);
+ else{var nativeData=net.minecraft.nbt.TagParser.m_129359_("{keys:[{'#type':'ae2:i',id:'minecraft:diamond'}]}");var keysTag=net.minecraft.nbt.CompoundTag.class.getMethod("m_128423_",String.class).invoke(nativeData,"keys");net.minecraft.nbt.CompoundTag.class.getMethod("m_128365_",String.class,net.minecraft.nbt.Tag.class).invoke(invalid,"keys",keysTag);}
+ var before=(net.minecraft.nbt.CompoundTag)copyTag.invoke(invalid);
+ if(com.society.sunlitindustry.performance.ae2.network.CompactCellNbt.expand(invalid)||!before.equals(invalid))throw new IllegalStateException(fault+" payload changed on failed expansion");
+ for(boolean deferred:new boolean[]{false,true}){
+  var damaged=appeng.core.definitions.AEItems.ITEM_CELL_256K.stack();damaged.m_41751_((net.minecraft.nbt.CompoundTag)copyTag.invoke(invalid));
+  var saves=new java.util.concurrent.atomic.AtomicInteger();var damagedInventory=appeng.me.cells.BasicCellInventory.createInventory(damaged,deferred?()->saves.incrementAndGet():null);
+  if(damagedInventory==null||!quarantineField.getBoolean(damagedInventory))throw new IllegalStateException(fault+" cell did not enter quarantine");
+  for(var mode:appeng.api.config.Actionable.values()){
+   if(damagedInventory.insert(nativeKey,1,mode,source)!=0||damagedInventory.extract(nativeKey,1,mode,source)!=0)throw new IllegalStateException(fault+" cell accepted mutation");
+  }
+  damagedInventory.getAvailableStacks();damagedInventory.persist();damagedInventory.persist();
+  if(!before.equals(getItemTag.invoke(damaged)))throw new IllegalStateException(fault+" cell NBT changed during native load/persist");
+  var openedAgain=appeng.me.cells.BasicCellInventory.createInventory(damaged,null);openedAgain.getAvailableStacks();openedAgain.persist();
+  if(!quarantineField.getBoolean(openedAgain)||!before.equals(getItemTag.invoke(damaged)))throw new IllegalStateException(fault+" quarantine did not survive reopen");
+  quarantined++;
+ }
+}
+var result=new com.google.gson.JsonObject();result.addProperty("syntheticNbtBytesBefore",rawSize);result.addProperty("syntheticNbtBytesAfter",compactSize);result.addProperty("compactWritingEnabled",com.society.sunlitindustry.ServerPerformanceConfig.ae2CompactCellNbt());result.addProperty("liveCellVariants",24);result.addProperty("liveCellRoundTrip",true);result.addProperty("quarantineScenarios",quarantined);result.addProperty("quarantinePreservesNbt",true);
 return "PASS "+result;
