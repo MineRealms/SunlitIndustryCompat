@@ -6,4 +6,7 @@ cacheHandlerGroups = true
 fastAndConditions = true
 ae2DefaultItemKeyCache = true
 ae2DefaultFluidKeyCache = true
+ae2FuzzyBounds = true
+# Experimental compact-cell writer stays disabled; the recovery reader remains available.
+ae2CompactCellNbt = false
 maxCachedHandlers = 64

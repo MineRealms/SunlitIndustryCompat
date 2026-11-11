@@ -1,0 +1,3 @@
+immutableArchiveCache = true
+clientModelSourceCache = false
+memoryMiB = 32

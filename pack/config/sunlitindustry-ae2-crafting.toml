@@ -1,0 +1,4 @@
+enabled = true
+decodedPatternCache = true
+craftingProviderSortCache = true
+maxDecodedPatternsPerLevel = 2048

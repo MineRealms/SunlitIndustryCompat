@@ -1,0 +1,5 @@
+reuseRecipeRunner = true
+reuseParallelScratch = true
+experimentalDormantPartTick = false
+experimentalShapeCache = false
+experimentalDeferredMeFlush = false

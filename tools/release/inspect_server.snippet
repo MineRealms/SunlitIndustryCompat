@@ -1,0 +1,46 @@
+var out = new com.google.gson.JsonObject();
+out.addProperty("root", java.nio.file.Paths.get("").toAbsolutePath().normalize().toString());
+var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+out.addProperty("players", server.m_6846_().m_11314_().size());
+var mods = new com.google.gson.JsonArray();
+for (var mod : net.minecraftforge.fml.ModList.get().getMods()) {
+    if (java.util.Set.of("sunlitindustry", "gtceu", "ae2", "zmod", "thaumcraft", "mekanism", "gcyr", "modernfix", "ferritecore", "warpload", "kubejs").contains(mod.getModId())) {
+        var row = new com.google.gson.JsonObject();
+        row.addProperty("id", mod.getModId());
+        row.addProperty("version", mod.getVersion().toString());
+        mods.add(row);
+    }
+}
+out.add("mods", mods);
+var names = new java.util.TreeSet<String>();
+for (String root : new String[]{"kubejs/server_scripts/industry", "kubejs/data/zmod", "kubejs/data/society/recipes/industry", "kubejs/data/society/thaumcraft", "config/ftbquests/tools"}) {
+    var base = java.nio.file.Paths.get(root);
+    if (java.nio.file.Files.isDirectory(base)) {
+        try (var paths = java.nio.file.Files.walk(base)) {
+            paths.filter(java.nio.file.Files::isRegularFile).filter(p -> !p.toString().contains("__pycache__")).forEach(p -> names.add(p.toString().replace('\\', '/')));
+        }
+    }
+}
+names.addAll(java.util.List.of("config/ftbquests/quests/chapters/mekanism.snbt", "config/ftbquests/quests/chapters/huixuan_tiangong.snbt", "config/ftbquests/quests/chapters/gt_nuclear_industry.snbt", "config/ftbquests/quests/chapters/cataclysmancy.snbt", "config/Mekanism/generators.toml", "kubejs/assets/society/lang/zh_cn.json", "kubejs/assets/society/lang/en_us.json", "kubejs/server_scripts/mek/lockMekBehindGT.js", "kubejs/server_scripts/tc/tcBossAndIndustrial.js", "kubejs/server_scripts/tc/tcCataclysm.js", "kubejs/startup_scripts/registration/registerIndustryCores.js", "kubejs/startup_scripts/registration/registerJadeData.js", "kubejs/config/sunlit-boss-awakening.json", "kubejs/config/sunlit-industrial-infusion.json"));
+for (String root : new String[]{"config", "mods"}) {
+    try (var paths = java.nio.file.Files.list(java.nio.file.Paths.get(root))) {
+        paths.filter(java.nio.file.Files::isRegularFile).filter(p -> p.getFileName().toString().startsWith("sunlitindustry") || p.getFileName().toString().startsWith("sunlit-industry-compat")).forEach(p -> names.add(p.toString().replace('\\', '/')));
+    }
+}
+var files = new com.google.gson.JsonArray();
+for (String name : names) {
+    var path = java.nio.file.Paths.get(name);
+    var row = new com.google.gson.JsonObject();
+    row.addProperty("path", name);
+    boolean exists = java.nio.file.Files.isRegularFile(path);
+    row.addProperty("exists", exists);
+    if (exists) {
+        byte[] bytes = java.nio.file.Files.readAllBytes(path);
+        row.addProperty("bytes", bytes.length);
+        row.addProperty("sha256", java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)));
+        if (name.startsWith("config/sunlitindustry") && bytes.length < 100000) row.addProperty("text", new String(bytes, java.nio.charset.StandardCharsets.UTF_8));
+    }
+    files.add(row);
+}
+out.add("files", files);
+return out.toString();
