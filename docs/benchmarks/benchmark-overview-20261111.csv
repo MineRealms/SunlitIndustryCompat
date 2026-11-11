@@ -1,0 +1,56 @@
+series,group,label,defaultIn080,beforeName,afterName,beforeNs,afterNs,beforeBytes,afterBytes,speedup,beforeRounds,afterRounds,beforeIterationsPerRound,afterIterationsPerRound
+runtime,default,GT empty recipe I/O,on,native,optimized,447.41,52.02,800.0,0.0,8.60073048827374,3,3,20000,20000
+runtime,default,GT simulated recipe match,on,native,optimized,12229.09,11804.94,10864.0,9488.0,1.0359298734258708,3,3,20000,20000
+runtime,default,GT handler-group cache,on,native grouping,cached lookup,1649.9541666666667,467.0083333333333,1224.0,0.0,3.533029389197195,3,3,24000,24000
+runtime,default,GT executing recipe workspace,on,unpooled,pooled,2435.20625,1737.3520833333332,3920.0,1360.0,1.4016768813652003,4,4,24000,24000
+runtime,default,GT simulated recipe workspace,on,unpooled,pooled,1520.7875,1173.5354166666666,2880.0,888.0,1.2959025167895444,4,4,24000,24000
+runtime,default,AE2 processing-pattern decode,on,native,optimized,1526.06,109.69,1608.0,40.0,13.912480627222171,3,3,20000,20000
+runtime,default,AE2 provider-pattern selection,on,native,optimized,11786.73,39.49,4832.0,0.0,298.4737908331223,3,3,20000,20000
+runtime,default,AE2 fuzzy lookup,on,native,optimized,1067.118,1046.75,96.0,0.0,1.0194583233818963,3,3,50000,50000
+runtime,default,AE2 primitive craft-count merge,on,native,optimized,36.50475,20.791249999999998,24.0,0.0,1.7557746648229426,4,4,200000,200000
+runtime,default,AE2 planner graph metadata,on,native,optimized,11850.154999999999,52.03,104.0,56.0,227.75619834710741,4,4,20000,20000
+runtime,default,Archive source lookup (earlier run),on,native source,snapshot cache,38433.98,401.0,22608.96,854.56,95.84533665835413,3,3,10000,10000
+default-keys,default,AE2 default key: ItemLike,on,native factory,cached default key,97.1955,22.6145,80.0,0.0,4.297928320325455,3,3,200000,200000
+default-keys,default,AE2 default key: Fluid,on,native factory,cached default key,53.5515,78.333,56.0,0.0,0.6836390793152312,3,3,200000,200000
+default-keys,default,AE2 default key: FluidStack,on,native factory,cached default key,56.7155,19.22,56.0,0.0,2.9508584807492197,3,3,200000,200000
+resource-world-preview,default,Source open vs native,on,native-source,indexed-supplier,35563.7975,592.5975,22608.96,854.56,60.013411295187716,4,4,20000,20000
+resource-world-preview,default,Source open vs previous cache,on,previous-supplier,indexed-supplier,999.985,592.5975,878.56,854.56,1.6874607132159687,4,4,20000,20000
+resource-world-preview,default,Recipe tree list vs native,on,native-list,indexed-list,956756.0016666667,75673.50166666666,570632.0,85752.0,12.643210378727685,4,4,300,300
+resource-world-preview,default,Recipe tree list vs previous cache,on,previous-list-copy,indexed-list,180280.16499999998,75673.50166666666,90344.0,85752.0,2.3823420487942264,4,4,300,300
+resource-world-preview,muffler,"LV, 0 recovery entries",off,native,optimized,45.370000000000005,23.1025,104.0,24.0,1.9638567254626125,4,4,20000,20000
+resource-world-preview,muffler,"LV, 1 recovery entries",off,native,optimized,226.642525,188.247475,224.5958,122.3682,1.2039605046495312,4,4,20000,20000
+resource-world-preview,muffler,"LV, 4 recovery entries",off,native,optimized,726.27,713.6299750000001,516.5632,419.6928,1.0177122955072058,4,4,20000,20000
+resource-world-preview,muffler,"MV, 0 recovery entries",off,native,optimized,57.144975,21.34,104.0,24.0,2.6778338800374883,4,4,20000,20000
+resource-world-preview,muffler,"MV, 1 recovery entries",off,native,optimized,405.022525,376.485,308.08979999999997,207.3942,1.0757998990663638,4,4,20000,20000
+resource-world-preview,muffler,"MV, 4 recovery entries",off,native,optimized,1599.81245,1492.19,864.4694,773.9826,1.0721238247140108,4,4,20000,20000
+resource-world-preview,muffler,"HV, 0 recovery entries",off,native,optimized,71.165025,43.605000000000004,104.0,24.0,1.6320381836945304,4,4,20000,20000
+resource-world-preview,muffler,"HV, 1 recovery entries",off,native,optimized,739.7349999999999,680.8324749999999,396.467,297.39300000000003,1.0865154456681874,4,4,20000,20000
+resource-world-preview,muffler,"HV, 4 recovery entries",off,native,optimized,2718.8325,2576.992475,1208.5606,1124.3874,1.05504091547648,4,4,20000,20000
+resource-world-preview,muffler,"EV, 0 recovery entries",off,native,optimized,73.39002500000001,43.845,104.0,24.0,1.6738516364465734,4,4,20000,20000
+resource-world-preview,muffler,"EV, 1 recovery entries",off,native,optimized,1117.450025,1081.595025,484.1466,386.6814,1.033150115497249,4,4,20000,20000
+resource-world-preview,muffler,"EV, 4 recovery entries",off,native,optimized,4239.4125,4084.5275,1559.7586000000001,1482.0294,1.0379199307631055,4,4,20000,20000
+resource-world-preview,muffler,"IV, 0 recovery entries",off,native,optimized,39.449975,19.03,104.0,24.0,2.0730412506568574,4,4,20000,20000
+resource-world-preview,muffler,"IV, 1 recovery entries",off,native,optimized,1642.475,1533.270025,572.8072,476.9688,1.0712235765516904,4,4,20000,20000
+resource-world-preview,muffler,"IV, 4 recovery entries",off,native,optimized,6138.5175,6441.407499999999,1910.5642,1839.2718,0.9529776683123992,4,4,20000,20000
+resource-world-preview,muffler,"LUV, 0 recovery entries",off,native,optimized,41.92,20.12,104.0,24.0,2.0834990059642147,4,4,20000,20000
+resource-world-preview,muffler,"LUV, 1 recovery entries",off,native,optimized,2256.66005,2249.3100249999998,661.882,567.678,1.0032676798299516,4,4,20000,20000
+resource-world-preview,muffler,"LUV, 4 recovery entries",off,native,optimized,8868.562475,8758.775000000001,2254.7426,2189.7654,1.0125345696173265,4,4,20000,20000
+resource-world-preview,muffler,"ZPM, 0 recovery entries",off,native,optimized,41.554975,19.2175,104.0,24.0,2.1623507219981786,4,4,20000,20000
+resource-world-preview,muffler,"ZPM, 1 recovery entries",off,native,optimized,3161.66,3062.23495,748.755,656.145,1.0324681324664522,4,4,20000,20000
+resource-world-preview,muffler,"ZPM, 4 recovery entries",off,native,optimized,12366.1725,12372.675025,2606.987,2548.473,0.9994744446947115,4,4,20000,20000
+resource-world-preview,muffler,"UV, 0 recovery entries",off,native,optimized,55.730025,22.1325,104.0,24.0,2.518017621145374,4,4,20000,20000
+resource-world-preview,muffler,"UV, 1 recovery entries",off,native,optimized,4319.812524999999,4162.7175,834.4726,743.4354000000001,1.0377385746210257,4,4,20000,20000
+resource-world-preview,muffler,"UV, 4 recovery entries",off,native,optimized,16930.389975,16691.297475,2955.9832,2903.8728,1.0143243807354168,4,4,20000,20000
+resource-world-preview,optional,Sunlight: clear day,off,native,optimized,806.1953125,390.115625,120.015,48.015,2.066554787442825,4,4,32000,32000
+resource-world-preview,optional,Sunlight: clear night,off,native,optimized,627.728109375,42.125015625,72.015,24.015,14.901551965299715,4,4,32000,32000
+resource-world-preview,optional,Sunlight: rainy day,off,native,optimized,357.7671875,376.749984375,72.015,24.015,0.9496143393171176,4,4,32000,32000
+resource-world-preview,optional,Sunlight: thunder day,off,native,optimized,365.63123437499996,43.146874999999994,72.015,24.015,8.474106974722966,4,4,32000,32000
+resource-world-preview,optional,Preview: assembly line,off,native,snapshot palette,6367590.0,44645.0,5563552.0,87032.0,142.627169895845,3,3,100,100
+resource-world-preview,optional,Preview: large chemical reactor,off,native,snapshot palette,108212.01,2701.0,33024.0,2736.0,40.06368382080711,3,3,100,100
+resource-world-preview,optional,Preview: zpm fusion reactor,off,native,snapshot palette,320147.0,12916.99,49456.0,9176.0,24.784953770189496,3,3,100,100
+resource-world-preview,optional,Preview: research station,off,native,snapshot palette,65697.01,2037.99,20064.0,1760.0,32.23617878399796,3,3,100,100
+runtime,optional,AE2 route override: insert (256 stores),off,native,snapshot override,3462.33,7894.496,0.0,0.0,0.43857517946680824,3,3,50000,50000
+runtime,optional,AE2 route override: extract (256 stores),off,native,snapshot override,1031.548,3640.524,40.0,0.0,0.28335151752879534,3,3,50000,50000
+runtime,optional,AE2 BlockApiCache wrapper,off,native,custom wrapper,42.567,75.312,0.00352,18.45424,0.5652087316762269,3,3,100000,100000
+runtime,optional,AE2 hot-primary simulation shortcut,off,native,shortcut,51.37425,78.736,24.0,24.0,0.6524874263361106,4,4,200000,200000
+runtime,optional,AE2 cell-accounting override,off,native,primitive override,922.872,903.812,392.0,392.0,1.0210884564489076,3,3,50000,50000
