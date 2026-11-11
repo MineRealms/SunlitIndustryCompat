@@ -15,6 +15,12 @@ public final class TiangongClientConfig {
     private static final ForgeConfigSpec.BooleanValue EFFECT_BEZIER = BUILDER
             .comment("Compute effect Bezier points with one result vector instead of three vectors.")
             .define("effectBezierAllocation", false);
+    private static final ForgeConfigSpec.BooleanValue DISTANT_EFFECTS = BUILDER
+            .comment("Hide optional Tokamak/Industrial/FluidWorks plasma and bubbles beyond the effect distance.")
+            .define("distantMachineEffectCulling", false);
+    private static final ForgeConfigSpec.IntValue EFFECT_DISTANCE = BUILDER
+            .comment("Distance from controller render bounds, in blocks. Machine shells stay visible.")
+            .defineInRange("machineEffectDistance", 64, 16, 256);
     private static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean dysonPrimitives() {
@@ -27,6 +33,14 @@ public final class TiangongClientConfig {
 
     public static boolean effectBezier() {
         return SPEC.isLoaded() && EFFECT_BEZIER.get();
+    }
+
+    public static boolean distantEffects() {
+        return SPEC.isLoaded() && DISTANT_EFFECTS.get();
+    }
+
+    public static int effectDistance() {
+        return SPEC.isLoaded() ? EFFECT_DISTANCE.get() : 64;
     }
 
     public static void register() {
