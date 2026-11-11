@@ -11,8 +11,14 @@ public final class TiangongEffectDistance {
         if (!TiangongClientConfig.distantEffects() || !(controller instanceof BlockEntity blockEntity)) {
             return true;
         }
+        double squared = nearestDistanceSquared(blockEntity);
+        double distance = TiangongClientConfig.effectDistance();
+        return !Double.isFinite(squared) || squared <= distance * distance;
+    }
+
+    public static double nearestDistanceSquared(BlockEntity blockEntity) {
         AABB bounds = blockEntity.getRenderBoundingBox();
-        if (bounds == null || !finite(bounds)) return true;
+        if (bounds == null || !finite(bounds)) return Double.NaN;
         Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         // Native rectangular bounds do not rotate with every industrial machine's facing.
         double horizontalHalf = Math.max(bounds.maxX - bounds.minX, bounds.maxZ - bounds.minZ) * 0.5;
@@ -21,8 +27,7 @@ public final class TiangongEffectDistance {
         double dx = distanceToRange(camera.x, centerX - horizontalHalf, centerX + horizontalHalf);
         double dy = distanceToRange(camera.y, bounds.minY, bounds.maxY);
         double dz = distanceToRange(camera.z, centerZ - horizontalHalf, centerZ + horizontalHalf);
-        double distance = TiangongClientConfig.effectDistance();
-        return dx * dx + dy * dy + dz * dz <= distance * distance;
+        return dx * dx + dy * dy + dz * dz;
     }
 
     private static double distanceToRange(double coordinate, double min, double max) {
