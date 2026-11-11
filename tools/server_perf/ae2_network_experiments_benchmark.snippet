@@ -1,0 +1,47 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var config=com.society.sunlitindustry.performance.ae2.network.AE2NetworkConfig.class;
+var specField=config.getDeclaredField("SPEC");specField.setAccessible(true);
+if(!((net.minecraftforge.common.ForgeConfigSpec)specField.get(null)).isLoaded())throw new IllegalStateException("Register AE2NetworkConfig before benchmarking");
+var options=new java.util.ArrayList<net.minecraftforge.common.ForgeConfigSpec.BooleanValue>();var previous=new java.util.ArrayList<Boolean>();
+for(String name:new String[]{"ROUTING","ADJACENCY","CELL_ACCOUNTING"}){var field=config.getDeclaredField(name);field.setAccessible(true);var value=(net.minecraftforge.common.ForgeConfigSpec.BooleanValue)field.get(null);options.add(value);previous.add(value.get());}
+var key=appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond")));
+var source=appeng.api.networking.security.IActionSource.empty();
+class FullStorage implements appeng.api.storage.MEStorage{
+ boolean preferred;FullStorage(boolean preferred){this.preferred=preferred;}
+ public boolean isPreferredStorageFor(appeng.api.stacks.AEKey k,appeng.api.networking.security.IActionSource s){return preferred;}
+ public long insert(appeng.api.stacks.AEKey k,long amount,appeng.api.config.Actionable mode,appeng.api.networking.security.IActionSource s){return 0;}
+ public long extract(appeng.api.stacks.AEKey k,long amount,appeng.api.config.Actionable mode,appeng.api.networking.security.IActionSource s){return 0;}
+ public net.minecraft.network.chat.Component getDescription(){return net.minecraft.network.chat.Component.m_237113_("experiment");}
+}
+var network=new appeng.me.storage.NetworkStorage();
+for(int priority=0;priority<32;priority++)for(int slot=0;slot<8;slot++)network.mount(priority,new FullStorage(slot%3==0));
+var cellItem=appeng.core.definitions.AEItems.ITEM_CELL_256K.stack();var cell=appeng.me.cells.BasicCellInventory.createInventory(cellItem,()->{});appeng.api.stacks.AEItemKey firstKey=null;
+for(int variant=0;variant<63;variant++){var stack=new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond")));stack.m_41751_(net.minecraft.nbt.TagParser.m_129359_("{variant:"+variant+"}"));var itemKey=appeng.api.stacks.AEItemKey.of(stack);if(cell.insert(itemKey,1000,appeng.api.config.Actionable.MODULATE,source)!=1000)throw new IllegalStateException("Cell fixture failed");if(variant==0)firstKey=itemKey;}
+final var accountingKey=firstKey;
+var level=server.m_129783_();var pos=new net.minecraft.core.BlockPos(99,100,99);var original=level.m_8055_(pos);
+try{
+ level.m_46597_(pos,net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:chest")).m_49966_());
+ var adjacent=appeng.util.BlockApiCache.create(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER,level,pos);
+ if(adjacent.find(net.minecraft.core.Direction.NORTH)==null)throw new IllegalStateException("No capability fixture");
+ var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
+ var samples=new com.google.gson.JsonArray();
+ for(boolean enabled:new boolean[]{false,true}){
+  for(var option:options)option.set(enabled);
+  if(com.society.sunlitindustry.performance.ae2.network.AE2NetworkConfig.routing()!=enabled)throw new IllegalStateException("Global optimization flag disabled experiment");
+  for(var spec:new Object[][]{
+   {"routingInsert",(java.util.function.LongSupplier)()->network.insert(key,1,appeng.api.config.Actionable.SIMULATE,source),50000},
+   {"routingExtract",(java.util.function.LongSupplier)()->network.extract(key,1,appeng.api.config.Actionable.SIMULATE,source),50000},
+   {"cellAccounting",(java.util.function.LongSupplier)()->cell.insert(accountingKey,1,appeng.api.config.Actionable.MODULATE,source)+cell.extract(accountingKey,1,appeng.api.config.Actionable.MODULATE,source),50000},
+   {"adjacentCapability",(java.util.function.LongSupplier)()->System.identityHashCode(adjacent.find(net.minecraft.core.Direction.NORTH)),100000}}){
+   var operation=(java.util.function.LongSupplier)spec[1];int iterations=(Integer)spec[2];
+   for(int round=-5;round<4;round++){
+    long allocatedBefore=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;
+    for(int i=0;i<iterations;i++)checksum+=operation.getAsLong();
+    long nanos=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-allocatedBefore;
+    var row=new com.google.gson.JsonObject();row.addProperty("candidate",(String)spec[0]);row.addProperty("enabled",enabled);row.addProperty("round",round);row.addProperty("iterations",iterations);row.addProperty("nanosPerOp",nanos/(double)iterations);row.addProperty("bytesPerOp",allocated/(double)iterations);row.addProperty("checksum",checksum);samples.add(row);
+   }
+  }
+ }
+ var result=new com.google.gson.JsonObject();result.addProperty("storageCount",256);result.addProperty("cellTypes",63);result.addProperty("defaultEnabled",false);result.add("samples",samples);return "PASS "+result;
+}finally{for(int i=0;i<options.size();i++)options.get(i).set(previous.get(i));level.m_46597_(pos,original);}

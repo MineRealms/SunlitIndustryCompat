@@ -1,0 +1,57 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var config=com.society.sunlitindustry.performance.ae2.network.AE2NetworkConfig.class;
+var specField=config.getDeclaredField("SPEC");specField.setAccessible(true);
+if(!((net.minecraftforge.common.ForgeConfigSpec)specField.get(null)).isLoaded())throw new IllegalStateException("Register AE2NetworkConfig before running experiments");
+var options=new java.util.ArrayList<net.minecraftforge.common.ForgeConfigSpec.BooleanValue>();var previous=new java.util.ArrayList<Boolean>();
+for(String name:new String[]{"ROUTING","ADJACENCY","CELL_ACCOUNTING"}){var field=config.getDeclaredField(name);field.setAccessible(true);var value=(net.minecraftforge.common.ForgeConfigSpec.BooleanValue)field.get(null);options.add(value);previous.add(value.get());}
+var source=appeng.api.networking.security.IActionSource.empty();
+var key=appeng.api.stacks.AEItemKey.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond")));
+class Store implements appeng.api.storage.MEStorage{
+ long stock,capacity;boolean preferred;Runnable callback;
+ Store(long capacity,boolean preferred){this.capacity=capacity;this.preferred=preferred;}
+ public boolean isPreferredStorageFor(appeng.api.stacks.AEKey k,appeng.api.networking.security.IActionSource s){return preferred;}
+ public long insert(appeng.api.stacks.AEKey k,long amount,appeng.api.config.Actionable mode,appeng.api.networking.security.IActionSource s){if(s!=source||k!=key)throw new IllegalStateException("Lost context");long n=Math.min(amount,capacity-stock);if(mode==appeng.api.config.Actionable.MODULATE)stock+=n;if(callback!=null){var run=callback;callback=null;run.run();}return n;}
+ public long extract(appeng.api.stacks.AEKey k,long amount,appeng.api.config.Actionable mode,appeng.api.networking.security.IActionSource s){long n=Math.min(amount,stock);if(mode==appeng.api.config.Actionable.MODULATE)stock-=n;return n;}
+ public void getAvailableStacks(appeng.api.stacks.KeyCounter counter){if(callback!=null){var run=callback;callback=null;run.run();}counter.add(key,stock);}
+ public net.minecraft.network.chat.Component getDescription(){return net.minecraft.network.chat.Component.m_237113_("experiment");}
+}
+var routesField=appeng.me.storage.NetworkStorage.class.getDeclaredField("sunlitindustry$routes");routesField.setAccessible(true);
+var level=server.m_129783_();var pos=new net.minecraft.core.BlockPos(99,100,99);var original=level.m_8055_(pos);
+var chest=net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:chest")).m_49966_();
+var barrel=net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:barrel")).m_49966_();
+var air=net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:air")).m_49966_();
+int passes=0;
+try{
+ for(boolean enabled:new boolean[]{false,true,false}){
+  for(var option:options)option.set(enabled);
+  if(com.society.sunlitindustry.performance.ae2.network.AE2NetworkConfig.routing()!=enabled||com.society.sunlitindustry.performance.ae2.network.AE2NetworkConfig.adjacency()!=enabled||com.society.sunlitindustry.performance.ae2.network.AE2NetworkConfig.cellAccounting()!=enabled)throw new IllegalStateException("Experiment gated off by global config");
+  var network=new appeng.me.storage.NetworkStorage();var a=new Store(64,false);var preferred=new Store(64,true);var low=new Store(64,false);
+  network.mount(10,a);network.mount(10,preferred);network.mount(0,low);
+  if(network.insert(key,100,appeng.api.config.Actionable.MODULATE,source)!=100||preferred.stock!=64||a.stock!=36||low.stock!=0)throw new IllegalStateException("Priority or preferred routing changed");
+  if((routesField.get(network)!=null)!=enabled)throw new IllegalStateException("Routing switch did not select native/snapshot path");
+  if(network.extract(key,40,appeng.api.config.Actionable.MODULATE,source)!=40||a.stock!=0||preferred.stock!=60)throw new IllegalStateException("Extraction order changed");
+  if(network.insert(key,50,appeng.api.config.Actionable.SIMULATE,source)!=50||a.stock!=0||preferred.stock!=60)throw new IllegalStateException("Simulation mutated storage");
+  if(enabled){options.get(0).set(false);network.insert(key,1,appeng.api.config.Actionable.SIMULATE,source);if(routesField.get(network)!=null)throw new IllegalStateException("Disabled routing retained snapshot");options.get(0).set(true);}
+  var queued=new appeng.me.storage.NetworkStorage();var actor=new Store(8,true);var removed=new Store(100,false);var remaining=new Store(100,false);queued.mount(10,actor);queued.mount(10,removed);queued.mount(0,remaining);
+  actor.callback=()->{if(queued.extract(key,1,appeng.api.config.Actionable.MODULATE,source)!=0)throw new IllegalStateException("Reentrancy guard lost");queued.unmount(removed);};
+  if(queued.insert(key,20,appeng.api.config.Actionable.MODULATE,source)!=20||actor.stock!=8||removed.stock!=0||remaining.stock!=12)throw new IllegalStateException("Pending removal changed");
+  var enumeration=new appeng.me.storage.NetworkStorage();var enumerator=new Store(8,true);var stale=new Store(100,false);var keep=new Store(100,false);enumeration.mount(10,enumerator);enumeration.mount(10,stale);enumeration.mount(0,keep);
+  enumerator.callback=()->enumeration.unmount(stale);enumeration.getAvailableStacks(new appeng.api.stacks.KeyCounter());
+  if(enumeration.insert(key,20,appeng.api.config.Actionable.MODULATE,source)!=20||stale.stock!=0||keep.stock!=12)throw new IllegalStateException("Older enumeration queue ignored");
+  var saves=new java.util.concurrent.atomic.AtomicInteger();var cellItem=appeng.core.definitions.AEItems.ITEM_CELL_256K.stack();var cell=appeng.me.cells.BasicCellInventory.createInventory(cellItem,()->saves.incrementAndGet());
+  saves.set(0);var expected=new appeng.api.stacks.KeyCounter();
+  for(int variant=0;variant<24;variant++){var stack=new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:diamond")));stack.m_41751_(net.minecraft.nbt.TagParser.m_129359_("{variant:"+variant+"}"));var itemKey=appeng.api.stacks.AEItemKey.of(stack);if(cell.insert(itemKey,1000+variant,appeng.api.config.Actionable.MODULATE,source)!=1000+variant)throw new IllegalStateException("Cell insert failed");expected.add(itemKey,1000+variant);}
+  if(saves.get()!=24)throw new IllegalStateException("Save callbacks changed");cell.persist();var reopened=appeng.me.cells.BasicCellInventory.createInventory(cellItem,null);
+  for(var entry:expected)if(reopened.extract(entry.getKey(),entry.getLongValue(),appeng.api.config.Actionable.MODULATE,source)!=entry.getLongValue())throw new IllegalStateException("Cell quantities changed");
+  if(!reopened.getAvailableStacks().isEmpty())throw new IllegalStateException("Cell did not empty");
+  level.m_46597_(pos,chest);var cache=appeng.util.BlockApiCache.create(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER,level,pos);
+  var first=cache.find(net.minecraft.core.Direction.NORTH);if(first==null)throw new IllegalStateException("No chest capability");
+  for(int i=0;i<30;i++)if(cache.find(net.minecraft.core.Direction.NORTH)!=first)throw new IllegalStateException("Capability identity changed");
+  if(enabled){options.get(1).set(false);if(cache.find(net.minecraft.core.Direction.NORTH)!=first)throw new IllegalStateException("Disabled capability path changed handler");var cacheField=appeng.util.BlockApiCache.class.getDeclaredField("sunlitindustry$capabilities");cacheField.setAccessible(true);if(cacheField.get(cache)!=null)throw new IllegalStateException("Disabled capability cache retained entries");options.get(1).set(true);}
+  level.m_46597_(pos,barrel);var changed=cache.find(net.minecraft.core.Direction.NORTH);if(changed==null||changed==first)throw new IllegalStateException("Replaced block kept capability");
+  level.m_46597_(pos,air);if(cache.find(net.minecraft.core.Direction.NORTH)!=null)throw new IllegalStateException("Removed block retained capability");
+  passes++;
+ }
+ return "PASS optionPasses="+passes+" routing=native/snapshot/native queueBeforeOperation=true reentrancy=true cellReopen=true capabilityReplacement=true";
+}finally{for(int i=0;i<options.size();i++)options.get(i).set(previous.get(i));level.m_46597_(pos,original);}
