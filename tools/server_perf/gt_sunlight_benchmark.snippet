@@ -2,7 +2,10 @@ var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
 if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
 var flagField=com.society.sunlitindustry.performance.world.WorldPerformanceConfig.class.getDeclaredField("SUNLIGHT");flagField.setAccessible(true);
 var flag=(net.minecraftforge.common.ForgeConfigSpec.BooleanValue)flagField.get(null);boolean oldFlag=flag.get();
-var level=server.m_129783_();long oldTime=level.m_46468_();float oldRain=level.f_46438_,oldORain=level.f_46437_,oldThunder=level.f_46440_,oldOThunder=level.f_46439_;
+var configCache=net.minecraftforge.common.ForgeConfigSpec.ConfigValue.class.getDeclaredField("cachedValue");configCache.setAccessible(true);
+var weatherFields=new java.lang.reflect.Field[4];String[] weatherNames={"f_46437_","f_46438_","f_46439_","f_46440_"};
+for(int i=0;i<weatherFields.length;i++){weatherFields[i]=net.minecraft.world.level.Level.class.getDeclaredField(weatherNames[i]);weatherFields[i].setAccessible(true);}
+var level=server.m_129783_();long oldTime=level.m_46468_();float[] oldWeather=new float[weatherFields.length];for(int i=0;i<weatherFields.length;i++)oldWeather[i]=weatherFields[i].getFloat(level);
 var positions=new net.minecraft.core.BlockPos[32];for(int i=0;i<positions.length;i++)positions[i]=new net.minecraft.core.BlockPos(i&15,i<16?250:0,(i>>2)&3);
 var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
 var rows=new com.google.gson.JsonArray();var result=new com.google.gson.JsonObject();
@@ -11,12 +14,12 @@ try{
   level.m_8615_(mode==1?18000L:6000L);level.m_46734_(mode>=2?1F:0F);level.m_46707_(mode==3?1F:0F);level.m_46465_();
   String name=new String[]{"clear_day","clear_night","rainy_day","thunder_day"}[mode];
   for(int round=-5;round<5;round++)for(boolean optimized:new boolean[]{false,true}){
-   flag.set(optimized);long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime();int checksum=0,iterations=32000;
+   configCache.set(flag,optimized);long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime();int checksum=0,iterations=32000;
    for(int i=0;i<iterations;i++)if(com.gregtechceu.gtceu.utils.GTUtil.canSeeSunClearly(level,positions[i&31]))checksum++;
    var row=new com.google.gson.JsonObject();row.addProperty("scenario",name);row.addProperty("optimized",optimized);row.addProperty("round",round);row.addProperty("iterations",iterations);row.addProperty("nanosPerOp",(System.nanoTime()-start)/(double)iterations);row.addProperty("bytesPerOp",(bean.getThreadAllocatedBytes(tid)-before)/(double)iterations);row.addProperty("checksum",checksum);rows.add(row);
   }
  }
  result.addProperty("javdLoaded",com.gregtechceu.gtceu.GTCEu.Mods.isJAVDLoaded());result.add("samples",rows);return result;
 }finally{
- flag.set(oldFlag);level.m_8615_(oldTime);level.f_46437_=oldORain;level.f_46438_=oldRain;level.f_46439_=oldOThunder;level.f_46440_=oldThunder;level.m_46465_();
+ configCache.set(flag,oldFlag);level.m_8615_(oldTime);for(int i=0;i<weatherFields.length;i++)weatherFields[i].setFloat(level,oldWeather[i]);level.m_46465_();
 }

@@ -3,18 +3,21 @@ if(server==null||!server.m_18695_())throw new IllegalStateException("Server thre
 if(java.util.Arrays.stream(com.gregtechceu.gtceu.utils.GTUtil.class.getDeclaredMethods()).noneMatch(method->method.getName().contains("sunlitindustry$sunlight")))throw new IllegalStateException("Sunlight mixin not applied");
 var flagField=com.society.sunlitindustry.performance.world.WorldPerformanceConfig.class.getDeclaredField("SUNLIGHT");flagField.setAccessible(true);
 var flag=(net.minecraftforge.common.ForgeConfigSpec.BooleanValue)flagField.get(null);boolean oldFlag=flag.get();
+var configCache=net.minecraftforge.common.ForgeConfigSpec.ConfigValue.class.getDeclaredField("cachedValue");configCache.setAccessible(true);
+var weatherFields=new java.lang.reflect.Field[4];String[] weatherNames={"f_46437_","f_46438_","f_46439_","f_46440_"};
+for(int i=0;i<weatherFields.length;i++){weatherFields[i]=net.minecraft.world.level.Level.class.getDeclaredField(weatherNames[i]);weatherFields[i].setAccessible(true);}
 int comparisons=0,visible=0,blocked=0;
 var dimensions=new com.google.gson.JsonArray();
 try{
  for(var level:server.m_129785_()){
-  long oldTime=level.m_46468_();float oldRain=level.f_46438_,oldORain=level.f_46437_,oldThunder=level.f_46440_,oldOThunder=level.f_46439_;
+  long oldTime=level.m_46468_();float[] oldWeather=new float[weatherFields.length];for(int i=0;i<weatherFields.length;i++)oldWeather[i]=weatherFields[i].getFloat(level);
   try{
    for(int mode=0;mode<4;mode++){
     level.m_8615_(mode==1?18000L:6000L);level.m_46734_(mode>=2?1F:0F);level.m_46707_(mode==3?1F:0F);level.m_46465_();
     for(int y:new int[]{-64,0,64,128,250,319})for(int x=0;x<4;x++)for(int z=0;z<4;z++){
      var pos=new net.minecraft.core.BlockPos(x,y,z);
-     flag.set(false);boolean expected=com.gregtechceu.gtceu.utils.GTUtil.canSeeSunClearly(level,pos);
-     flag.set(true);boolean actual=com.gregtechceu.gtceu.utils.GTUtil.canSeeSunClearly(level,pos);
+     configCache.set(flag,false);boolean expected=com.gregtechceu.gtceu.utils.GTUtil.canSeeSunClearly(level,pos);
+     configCache.set(flag,true);boolean actual=com.gregtechceu.gtceu.utils.GTUtil.canSeeSunClearly(level,pos);
      boolean direct=com.society.sunlitindustry.performance.world.GtSunlightQuery.canSeeSunClearly(level,pos);
      if(expected!=actual||expected!=direct)throw new IllegalStateException("Sunlight mismatch dimension="+level.m_46472_().m_135782_()+" mode="+mode+" pos="+pos+" native="+expected+" patched="+actual+" direct="+direct);
      comparisons++;if(expected)visible++;else blocked++;
@@ -22,8 +25,8 @@ try{
    }
    dimensions.add(level.m_46472_().m_135782_().toString());
   }finally{
-   level.m_8615_(oldTime);level.f_46437_=oldORain;level.f_46438_=oldRain;level.f_46439_=oldOThunder;level.f_46440_=oldThunder;level.m_46465_();
+   level.m_8615_(oldTime);for(int i=0;i<weatherFields.length;i++)weatherFields[i].setFloat(level,oldWeather[i]);level.m_46465_();
   }
  }
  var result=new com.google.gson.JsonObject();result.addProperty("status","PASS");result.addProperty("comparisons",comparisons);result.addProperty("visible",visible);result.addProperty("blocked",blocked);result.addProperty("javdLoaded",com.gregtechceu.gtceu.GTCEu.Mods.isJAVDLoaded());result.add("dimensions",dimensions);return result;
-}finally{flag.set(oldFlag);}
+}finally{configCache.set(flag,oldFlag);}
