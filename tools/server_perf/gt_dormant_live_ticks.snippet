@@ -1,0 +1,47 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var level=server.m_129783_();
+var partPos=new net.minecraft.core.BlockPos(3200,120,3200);var controllerPos=partPos.m_7918_(1,0,0);
+if(level.m_7702_(partPos)!=null||level.m_7702_(controllerPos)!=null)throw new IllegalStateException("Fixture contains block entities");
+var oldPart=level.m_8055_(partPos);var oldController=level.m_8055_(controllerPos);
+var field=com.society.sunlitindustry.performance.gt.GtAdvancedConfig.class.getDeclaredField("TICK");field.setAccessible(true);
+var toggle=(net.minecraftforge.common.ForgeConfigSpec.BooleanValue)field.get(null);boolean original=toggle.get();
+boolean forced=level.m_8602_(200,200,true);toggle.set(true);
+var output=java.nio.file.Path.of("G:/emoney-void-suit-test/evidence/gto-dormant-live-result.json");
+java.nio.file.Files.writeString(output,"{\"pending\":true}");
+try{
+ level.m_46597_(controllerPos,com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation("gtceu:assembly_line")).getBlock().m_49966_());
+ level.m_46597_(partPos,com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation("gtceu:iv_parallel_hatch")).getBlock().m_49966_());
+ var machine=com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,partPos);
+ var part=(com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart)machine;
+ var controller=(com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,controllerPos);
+ part.addedToController(controller);
+ class LiveProbe implements java.util.function.Consumer<net.minecraftforge.event.TickEvent.LevelTickEvent>{
+  int ticks,count;boolean done;com.gregtechceu.gtceu.api.machine.TickableSubscription subscription;
+  void finish(Throwable error){
+   if(done)return;done=true;net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(this);
+   try{
+    if(subscription!=null)subscription.unsubscribe();
+    level.m_46597_(partPos,oldPart);level.m_46597_(controllerPos,oldController);
+    toggle.set(original);com.society.sunlitindustry.performance.gt.GtAdvancedLifecycle.resourcesReloaded();
+    if(forced)level.m_8602_(200,200,false);
+    var result=new com.google.gson.JsonObject();result.addProperty("ok",error==null);result.addProperty("actualLevelTicks",ticks);result.addProperty("subscriptionCalls",count);result.addProperty("checks","sleep,wake,exact-once subscription,unsubscribe,unformation,reformation,removal");
+    if(error!=null)result.addProperty("error",error.toString());java.nio.file.Files.writeString(output,result.toString());
+   }catch(Throwable cleanup){throw new RuntimeException(cleanup);}
+  }
+  public void accept(net.minecraftforge.event.TickEvent.LevelTickEvent event){
+   if(done||event.level!=level||event.phase!=net.minecraftforge.event.TickEvent.Phase.END)return;
+   try{
+    ticks++;var dormant=(com.society.sunlitindustry.performance.gt.GtDormantPart)machine;
+    if(ticks==30){if(!dormant.sunlitindustry$isDormant())throw new IllegalStateException("Actual chunk ticker failed to sleep");subscription=machine.subscribeServerTick(()->count++);if(dormant.sunlitindustry$isDormant())throw new IllegalStateException("Subscribe failed to wake");}
+    if(ticks==40){if(count!=10)throw new IllegalStateException("Expected ten actual ticks, got "+count);subscription.unsubscribe();}
+    if(ticks==41){if(!dormant.sunlitindustry$isDormant())throw new IllegalStateException("Unsubscribe failed to sleep");part.removedFromController(controller);if(dormant.sunlitindustry$isDormant())throw new IllegalStateException("Unform failed to wake");subscription=machine.subscribeServerTick(()->count++);}
+    if(ticks==42){if(count!=11)throw new IllegalStateException("Unformed ticker dispatch changed");part.addedToController(controller);}
+    if(ticks==43){if(count!=12||dormant.sunlitindustry$isDormant())throw new IllegalStateException("Active formed part lost subscription");level.m_46597_(partPos,oldPart);}
+    if(ticks==46){if(count!=12||dormant.sunlitindustry$isDormant())throw new IllegalStateException("Removed part kept ticking or remained registered");finish(null);}
+   }catch(Throwable error){finish(error);}
+  }
+ }
+ var probe=new LiveProbe();net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.LOWEST,false,net.minecraftforge.event.TickEvent.LevelTickEvent.class,probe);
+ return "SCHEDULED actual level-tick lifecycle probe; read "+output;
+}catch(Throwable error){toggle.set(original);level.m_46597_(partPos,oldPart);level.m_46597_(controllerPos,oldController);if(forced)level.m_8602_(200,200,false);throw error;}

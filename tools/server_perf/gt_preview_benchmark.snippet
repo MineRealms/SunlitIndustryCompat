@@ -1,0 +1,37 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var field=com.society.sunlitindustry.performance.gt.GtAdvancedConfig.class.getDeclaredField("SHAPES");field.setAccessible(true);
+var toggle=(net.minecraftforge.common.ForgeConfigSpec.BooleanValue)field.get(null);boolean original=toggle.get();
+var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
+var result=new com.google.gson.JsonObject();var rows=new com.google.gson.JsonArray();
+try{
+ for(String id:new String[]{"assembly_line","large_chemical_reactor","zpm_fusion_reactor","research_station"}){
+  var definition=(com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition)com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation("gtceu",id));
+  if(definition==null)throw new IllegalStateException("Missing definition "+id);
+  toggle.set(false);com.society.sunlitindustry.performance.gt.GtShapeCaches.invalidate();
+  var nativeShapes=definition.getMatchingShapes();
+  long cells=0,nativeHash=0;for(var shape:nativeShapes)for(var plane:shape.getBlocks())for(var line:plane)for(var block:line){cells++;if(block!=null)nativeHash=nativeHash*31+block.getBlockState().hashCode();}
+  boolean eligible=com.society.sunlitindustry.performance.gt.GtShapeSnapshot.capture(nativeShapes)!=null;
+  int iterations=Math.max(8,Math.min(100,200000/(int)Math.max(1,cells)));
+  for(boolean cached:new boolean[]{false,true}){
+   toggle.set(cached);com.society.sunlitindustry.performance.gt.GtShapeCaches.invalidate();
+   var shapes=definition.getMatchingShapes();long hash=0;for(var shape:shapes)for(var plane:shape.getBlocks())for(var line:plane)for(var block:line)if(block!=null)hash=hash*31+block.getBlockState().hashCode();
+   if(hash!=nativeHash||shapes.size()!=nativeShapes.size())throw new IllegalStateException("Changed preview "+id);
+   for(int round=-3;round<4;round++){
+    long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;
+    for(int i=0;i<iterations;i++){var value=definition.getMatchingShapes();checksum+=value.size();for(var shape:value)checksum+=shape.getBlocks().length;}
+    long elapsed=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-before;
+    var row=new com.google.gson.JsonObject();row.addProperty("machine",id);row.addProperty("cached",cached);row.addProperty("eligible",eligible);row.addProperty("cells",cells);row.addProperty("round",round);row.addProperty("iterations",iterations);row.addProperty("nanosPerOp",elapsed/(double)iterations);row.addProperty("bytesPerOp",allocated/(double)iterations);row.addProperty("checksum",checksum);rows.add(row);
+   }
+  }
+ }
+ var synthetic=new com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition(new net.minecraft.resources.ResourceLocation("sunlitindustry","preview_invalidation_probe"));
+ var stoneBlock=net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:stone"));
+ var stone=new com.lowdragmc.lowdraglib.utils.BlockInfo(stoneBlock.m_49966_(),false);
+ var supplied=new com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo(new com.lowdragmc.lowdraglib.utils.BlockInfo[][][]{{{stone}}});
+ toggle.set(true);synthetic.setShapes(()->java.util.List.of(supplied));
+ if(synthetic.getMatchingShapes().size()!=1)throw new IllegalStateException("Synthetic preview absent");
+ synthetic.setShapes(()->java.util.List.of(supplied,supplied));
+ if(synthetic.getMatchingShapes().size()!=2)throw new IllegalStateException("Stale preview after supplier replacement");
+ result.add("preview",rows);result.addProperty("supplierInvalidation",true);return "PASS "+result;
+}finally{toggle.set(original);com.society.sunlitindustry.performance.gt.GtShapeCaches.invalidate();}

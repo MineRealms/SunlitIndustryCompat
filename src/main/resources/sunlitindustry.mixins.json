@@ -36,6 +36,8 @@
     "performance.gt.GtDeferredMeHatchMixin",
     "performance.gt.GtPreviewBlockInfoAccess",
     "performance.gt.GtMatchingShapesMixin",
+    "performance.gt.GtMufflerRecoveryMixin",
+    "performance.world.GtSunlightMixin",
     "performance.ae2.network.AE2FuzzyBoundsMixin",
     "performance.ae2.network.AE2FuzzyRangeViewMixin",
     "performance.ae2.network.AE2CompactCellNbtMixin",

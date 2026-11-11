@@ -15,8 +15,13 @@ and Assembly Line and Research Station subclasses override several of these hook
 
 Likewise, stock GT parts are driven by their tick subscriptions; there is no GTO-style controller
 loop that can take over every multiblock member. The full `LevelChunk` membership bypass and chunk
-unload/save rewrites are excluded. The optional dormant-part path below only skips a formed native
+unload rewrite are excluded. The optional dormant-part path below only skips a formed native
 part's empty ticker after it has no active or pending subscriptions.
+
+The GTO redirect of `Class.getName()` inside `getBlockEntityNbtForSaving` changes only the name in
+the save-exception log. Stock Minecraft calls it in the catch block after `saveWithFullMetadata`
+fails; it does not serialize a Java class or change the normal NBT format. It has no normal-path
+performance benefit and is not included.
 
 ## Recipe Execution
 
@@ -70,7 +75,9 @@ Each machine definition can retain a bounded snapshot of its native preview page
 receive fresh arrays, BlockInfo objects, NBT and ItemStacks. Runtime `lastEntity` fields, callbacks,
 custom BlockInfo subclasses and worlds are never cached. Suppliers replaced through native setters,
 resource reload and server shutdown invalidate snapshots. Callback-bearing shapes use the native
-path. The current bounds are 16 retained definitions, 32 pages and 65,536 cells per definition. This experiment defaults off;
+path. ItemStack templates stay private and use the native copy operation rather than repeated
+NBT encode/decode. Incompatible pages are bypassed until invalidation, avoiding repeated failed
+capture attempts. The current bounds are 16 retained definitions, 32 pages and 65,536 cells per definition. This experiment defaults off;
 dynamic suppliers require additional pack-specific validation.
 
 ## Central Wiring

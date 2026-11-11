@@ -7,17 +7,23 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 
 /** Captures data, never BlockInfo.lastEntity or callbacks which could own a world. */
 public final class GtShapeSnapshot {
     private final List<Cell[][][]> shapes;
+    private final int cellKinds;
 
-    private GtShapeSnapshot(List<Cell[][][]> shapes) { this.shapes = shapes; }
+    private GtShapeSnapshot(List<Cell[][][]> shapes, int cellKinds) {
+        this.shapes = shapes;
+        this.cellKinds = cellKinds;
+    }
 
     public static GtShapeSnapshot capture(List<MultiblockShapeInfo> source) {
         if (source.size() > 32) return null;
         var snapshots = new ArrayList<Cell[][][]>(source.size());
+        var palette = new IdentityHashMap<BlockInfo, Cell>();
         int count = 0;
         for (var shape : source) {
             var blocks = shape.getBlocks();
@@ -30,24 +36,32 @@ public final class GtShapeSnapshot {
                     for (int x = 0; x < blocks[z][y].length; x++) {
                         var info = blocks[z][y][x];
                         if (info == null) continue;
+                        var cached = palette.get(info);
+                        if (cached != null) {
+                            cells[z][y][x] = cached;
+                            continue;
+                        }
                         if (info.getClass() != BlockInfo.class) return null;
                         var access = (GtPreviewBlockInfoAccess) info;
                         if (access.sunlitindustry$postCreate() != null) return null;
                         var tag = access.sunlitindustry$tag();
                         var stack = access.sunlitindustry$itemStack();
-                        cells[z][y][x] = new Cell(info.getBlockState(), info.hasBlockEntity(),
+                        var cell = new Cell(palette.size(), info.getBlockState(), info.hasBlockEntity(),
                                 tag == null ? null : tag.copy(),
-                                stack == null ? null : stack.save(new CompoundTag()));
+                                stack == null ? null : stack.copy());
+                        cells[z][y][x] = cell;
+                        palette.put(info, cell);
                     }
                 }
             }
             snapshots.add(cells);
         }
-        return new GtShapeSnapshot(snapshots);
+        return new GtShapeSnapshot(snapshots, palette.size());
     }
 
     public List<MultiblockShapeInfo> copy() {
         var result = new ArrayList<MultiblockShapeInfo>(shapes.size());
+        var copies = new BlockInfo[cellKinds];
         for (var cells : shapes) {
             var blocks = new BlockInfo[cells.length][][];
             for (int z = 0; z < cells.length; z++) {
@@ -57,9 +71,13 @@ public final class GtShapeSnapshot {
                     for (int x = 0; x < cells[z][y].length; x++) {
                         var cell = cells[z][y][x];
                         if (cell == null) continue;
-                        var info = new BlockInfo(cell.state, cell.hasBlockEntity,
-                                cell.stack == null ? null : ItemStack.of(cell.stack.copy()), null);
-                        if (cell.tag != null) info.setTag(cell.tag.copy());
+                        var info = copies[cell.index];
+                        if (info == null) {
+                            info = new BlockInfo(cell.state, cell.hasBlockEntity,
+                                    cell.stack == null ? null : cell.stack.copy(), null);
+                            if (cell.tag != null) info.setTag(cell.tag.copy());
+                            copies[cell.index] = info;
+                        }
                         blocks[z][y][x] = info;
                     }
                 }
@@ -69,5 +87,5 @@ public final class GtShapeSnapshot {
         return result;
     }
 
-    private record Cell(BlockState state, boolean hasBlockEntity, CompoundTag tag, CompoundTag stack) {}
+    private record Cell(int index, BlockState state, boolean hasBlockEntity, CompoundTag tag, ItemStack stack) {}
 }

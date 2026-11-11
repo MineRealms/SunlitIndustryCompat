@@ -92,7 +92,7 @@ def main():
     runmods = RUN / 'mods'
     runmods.mkdir(parents=True, exist_ok=True)
     chosen.add(Path('G:/emoney-full-phase4-20261104/mods/rosetta_remote_debug_bridge-1.0.0.jar'))
-    chosen.add(HERE / 'build/libs/sunlit-industry-compat-1.20.1-0.6.0.jar')
+    chosen.add(HERE / 'build/libs/sunlit-industry-compat-1.20.1-0.7.0.jar')
     expected = {path.name for path in chosen} | {'test-mixinextras-core-0.5.3.jar'}
     extras = [path.name for path in runmods.glob('*.jar')
               if path.name not in expected and not path.name.startswith('sunlit-industry-compat-')]

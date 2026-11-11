@@ -6,7 +6,9 @@ import com.society.sunlitindustry.performance.ae2.crafting.PatternDecodeCache;
 import com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig;
 import com.society.sunlitindustry.performance.gt.GtAdvancedConfig;
 import com.society.sunlitindustry.performance.gt.GtAdvancedLifecycle;
+import com.society.sunlitindustry.performance.gt.GtMufflerRecoveryConfig;
 import com.society.sunlitindustry.performance.resources.ResourceCacheConfig;
+import com.society.sunlitindustry.performance.world.WorldPerformanceConfig;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.fml.ModList;
@@ -20,9 +22,11 @@ public final class PerformanceBootstrap {
     public static void register() {
         ServerPerformanceConfig.register();
         GtAdvancedConfig.register();
+        GtMufflerRecoveryConfig.register();
         Ae2CraftingConfig.register();
         Ae2PlannerConfig.register();
         ResourceCacheConfig.register();
+        WorldPerformanceConfig.register();
         if (FMLLoader.getDist().isDedicatedServer() && ModList.get().isLoaded("ae2")) {
             PatternDecodeCache.registerEvents();
         }

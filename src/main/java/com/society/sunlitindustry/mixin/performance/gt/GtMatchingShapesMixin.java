@@ -19,6 +19,7 @@ import java.util.function.Supplier;
 @Mixin(value = MultiblockMachineDefinition.class, remap = false)
 public abstract class GtMatchingShapesMixin implements GtShapeCacheOwner {
     @Unique private volatile GtShapeSnapshot sunlitindustry$shapes;
+    @Unique private boolean sunlitindustry$uncacheable;
 
     @Inject(method = "getMatchingShapes", at = @At("HEAD"), cancellable = true)
     private void sunlitindustry$cached(CallbackInfoReturnable<List<MultiblockShapeInfo>> cir) {
@@ -28,10 +29,13 @@ public abstract class GtMatchingShapesMixin implements GtShapeCacheOwner {
 
     @Inject(method = "getMatchingShapes", at = @At("RETURN"))
     private void sunlitindustry$capture(CallbackInfoReturnable<List<MultiblockShapeInfo>> cir) {
-        if (!GtAdvancedConfig.shapes() || sunlitindustry$shapes != null) return;
+        if (!GtAdvancedConfig.shapes() || sunlitindustry$shapes != null || sunlitindustry$uncacheable) return;
         var snapshot = GtShapeSnapshot.capture(cir.getReturnValue());
         if (snapshot != null) {
             sunlitindustry$shapes = snapshot;
+            GtShapeCaches.track(this);
+        } else {
+            sunlitindustry$uncacheable = true;
             GtShapeCaches.track(this);
         }
     }
@@ -47,5 +51,8 @@ public abstract class GtMatchingShapesMixin implements GtShapeCacheOwner {
     }
 
     @Override
-    public void sunlitindustry$clearShapes() { sunlitindustry$shapes = null; }
+    public void sunlitindustry$clearShapes() {
+        sunlitindustry$shapes = null;
+        sunlitindustry$uncacheable = false;
+    }
 }

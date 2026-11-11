@@ -31,6 +31,9 @@ final class PerformanceMixinRules {
                     && !version("ae2", "15.4.10")) return false;
             return runtime() && version("gtceu", "7.5.3");
         }
+        if (mixin.contains(".mixin.performance.world.")) {
+            return runtime() && version("gtceu", "7.5.3");
+        }
         return null;
     }
 

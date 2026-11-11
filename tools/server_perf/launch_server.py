@@ -1,6 +1,7 @@
 """Launch one A/B phase of the isolated GT/KubeJS benchmark server."""
 from pathlib import Path
 import json
+import re
 import subprocess
 import sys
 import time
@@ -8,12 +9,8 @@ import time
 RUN = Path('G:/emoney-void-suit-test')
 JAVA = Path('C:/Program Files/Eclipse Adoptium/jdk-17.0.18.8-hotspot/bin/java.exe')
 mode = sys.argv[1] if len(sys.argv) == 2 else ''
-if mode not in {'baseline', 'optimized', 'ae2-baseline', 'ae2-optimized',
-                 'ae2-final-baseline', 'ae2-final-optimized',
-                 'ae2-fluid-baseline', 'ae2-fluid-optimized', 'clean-baseline', 'clean-optimized',
-                 'clean-warm-baseline', 'expanded-baseline', 'expanded-optimized',
-                 'expanded-warm', 'expanded-experimental', 'expanded-rollback'}:
-    raise SystemExit('Usage: launch_server.py <baseline|optimized|clean-baseline|clean-optimized|ae2[-final|-fluid]-baseline|ae2[-final|-fluid]-optimized>')
+if not re.fullmatch(r'[a-z][a-z0-9-]{0,63}', mode):
+    raise SystemExit('Usage: launch_server.py <phase-name>; a -baseline suffix disables optimization mixins')
 if not (RUN / 'VOID_SUIT_TEST.json').is_file():
     raise SystemExit('Missing isolated test marker')
 if (RUN / 'server.pid').exists():
