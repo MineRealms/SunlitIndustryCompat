@@ -1,0 +1,499 @@
+{
+  "date": "2026-11-11",
+  "environment": {
+    "minecraft": "1.20.1",
+    "forge": "47.4.23",
+    "java": "17.0.18",
+    "gtceu": "7.5.3",
+    "ae2": "15.4.10",
+    "modJarCount": 18,
+    "heap": "2G initial / 6G max",
+    "recipeCount": 42493,
+    "kubejsProbeCount": 1,
+    "inputHandlers": 14
+  },
+  "method": "Same isolated 18-mod set, same workloads, fresh JVM baseline vs final; per-run comparisons use five warmups and four measured rounds. Reported values are medians; not whole-pack TPS.",
+  "accepted": [
+    {
+      "label": "GT empty recipe I/O",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 447.41,
+        "medianBytesPerOp": 800.0,
+        "rounds": 3,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          20000,
+          20000,
+          20000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 52.02,
+        "medianBytesPerOp": 0.0,
+        "rounds": 3,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          20000,
+          20000,
+          20000
+        ]
+      },
+      "latencyReductionPercent": 88.37308061956594,
+      "allocationReductionPercent": 100.0
+    },
+    {
+      "label": "GT simulated recipe match",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 12229.09,
+        "medianBytesPerOp": 10864.0,
+        "rounds": 3,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          20000,
+          20000,
+          20000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 11804.94,
+        "medianBytesPerOp": 9488.0,
+        "rounds": 3,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          20000,
+          20000,
+          20000
+        ]
+      },
+      "latencyReductionPercent": 3.4683692735927196,
+      "allocationReductionPercent": 12.665684830633284
+    },
+    {
+      "label": "GT handler-group cache",
+      "beforeName": "native grouping",
+      "afterName": "cached lookup",
+      "before": {
+        "medianNanosPerOp": 1649.9541666666667,
+        "medianBytesPerOp": 1224.0,
+        "rounds": 3,
+        "iterationsPerRound": 24000,
+        "checksums": [
+          120000,
+          120000,
+          120000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 467.0083333333333,
+        "medianBytesPerOp": 0.0,
+        "rounds": 3,
+        "iterationsPerRound": 24000,
+        "checksums": [
+          120000,
+          120000,
+          120000
+        ]
+      },
+      "latencyReductionPercent": 71.69567841530952,
+      "allocationReductionPercent": 100.0
+    },
+    {
+      "label": "GT executing recipe workspace",
+      "beforeName": "unpooled",
+      "afterName": "pooled",
+      "before": {
+        "medianNanosPerOp": 2435.20625,
+        "medianBytesPerOp": 3920.0,
+        "rounds": 4,
+        "iterationsPerRound": 24000,
+        "checksums": [
+          24000,
+          24000,
+          24000,
+          24000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 1737.3520833333332,
+        "medianBytesPerOp": 1360.0,
+        "rounds": 4,
+        "iterationsPerRound": 24000,
+        "checksums": [
+          24000,
+          24000,
+          24000,
+          24000
+        ]
+      },
+      "latencyReductionPercent": 28.656881390094448,
+      "allocationReductionPercent": 65.3061224489796
+    },
+    {
+      "label": "GT simulated recipe workspace",
+      "beforeName": "unpooled",
+      "afterName": "pooled",
+      "before": {
+        "medianNanosPerOp": 1520.7875,
+        "medianBytesPerOp": 2880.0,
+        "rounds": 4,
+        "iterationsPerRound": 24000,
+        "checksums": [
+          24000,
+          24000,
+          24000,
+          24000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 1173.5354166666666,
+        "medianBytesPerOp": 888.0,
+        "rounds": 4,
+        "iterationsPerRound": 24000,
+        "checksums": [
+          24000,
+          24000,
+          24000,
+          24000
+        ]
+      },
+      "latencyReductionPercent": 22.833701837589626,
+      "allocationReductionPercent": 69.16666666666667
+    },
+    {
+      "label": "AE2 processing-pattern decode",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 1526.06,
+        "medianBytesPerOp": 1608.0,
+        "rounds": 3,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          21569872701922,
+          21412394789601,
+          21528030846148
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 109.69,
+        "medianBytesPerOp": 40.0,
+        "rounds": 3,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          20188366120000,
+          20188366120000,
+          20188366120000
+        ]
+      },
+      "latencyReductionPercent": 92.81220921851042,
+      "allocationReductionPercent": 97.51243781094527
+    },
+    {
+      "label": "AE2 provider-pattern selection",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 11786.73,
+        "medianBytesPerOp": 4832.0,
+        "rounds": 3,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          21547450234702,
+          21441820451418,
+          21367447772091
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 39.49,
+        "medianBytesPerOp": 0.0,
+        "rounds": 3,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          36725229880000,
+          36725229880000,
+          36725229880000
+        ]
+      },
+      "latencyReductionPercent": 99.66496220749946,
+      "allocationReductionPercent": 100.0
+    },
+    {
+      "label": "AE2 fuzzy lookup",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 1067.118,
+        "medianBytesPerOp": 96.0,
+        "rounds": 3,
+        "iterationsPerRound": 50000,
+        "checksums": [
+          6300000,
+          6300000,
+          6300000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 1046.75,
+        "medianBytesPerOp": 0.0,
+        "rounds": 3,
+        "iterationsPerRound": 50000,
+        "checksums": [
+          6300000,
+          6300000,
+          6300000
+        ]
+      },
+      "latencyReductionPercent": 1.9086923845347825,
+      "allocationReductionPercent": 100.0
+    },
+    {
+      "label": "AE2 primitive craft-count merge",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 36.50475,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 200000,
+        "checksums": [
+          200000,
+          200000,
+          200000,
+          200000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 20.791249999999998,
+        "medianBytesPerOp": 0.0,
+        "rounds": 4,
+        "iterationsPerRound": 200000,
+        "checksums": [
+          200000,
+          200000,
+          200000,
+          200000
+        ]
+      },
+      "latencyReductionPercent": 43.04508317410749,
+      "allocationReductionPercent": 100.0
+    },
+    {
+      "label": "AE2 planner graph metadata",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 11850.154999999999,
+        "medianBytesPerOp": 104.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          2580000,
+          2580000,
+          2580000,
+          2580000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 52.03,
+        "medianBytesPerOp": 56.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          2580000,
+          2580000,
+          2580000,
+          2580000
+        ]
+      },
+      "latencyReductionPercent": 99.56093401309941,
+      "allocationReductionPercent": 46.15384615384615
+    },
+    {
+      "label": "Immutable archive resource lookup",
+      "beforeName": "native source",
+      "afterName": "snapshot cache",
+      "before": {
+        "medianNanosPerOp": 38433.98,
+        "medianBytesPerOp": 22608.96,
+        "rounds": 3,
+        "iterationsPerRound": 10000,
+        "checksums": [
+          8034200,
+          8034200,
+          8034200
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 401.0,
+        "medianBytesPerOp": 854.56,
+        "rounds": 3,
+        "iterationsPerRound": 10000,
+        "checksums": [
+          8034200,
+          8034200,
+          8034200
+        ]
+      },
+      "latencyReductionPercent": 98.9566524205924,
+      "allocationReductionPercent": 96.22025957850339
+    }
+  ],
+  "rejected": [
+    {
+      "label": "AE2 route override: insert (256 stores)",
+      "beforeName": "native",
+      "afterName": "snapshot override",
+      "before": {
+        "medianNanosPerOp": 3462.33,
+        "medianBytesPerOp": 0.0,
+        "rounds": 3,
+        "iterationsPerRound": 50000,
+        "checksums": [
+          0,
+          0,
+          0
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 7894.496,
+        "medianBytesPerOp": 0.0,
+        "rounds": 3,
+        "iterationsPerRound": 50000,
+        "checksums": [
+          0,
+          0,
+          0
+        ]
+      },
+      "latencyReductionPercent": -128.01107924432392,
+      "allocationReductionPercent": null
+    },
+    {
+      "label": "AE2 route override: extract (256 stores)",
+      "beforeName": "native",
+      "afterName": "snapshot override",
+      "before": {
+        "medianNanosPerOp": 1031.548,
+        "medianBytesPerOp": 40.0,
+        "rounds": 3,
+        "iterationsPerRound": 50000,
+        "checksums": [
+          0,
+          0,
+          0
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 3640.524,
+        "medianBytesPerOp": 0.0,
+        "rounds": 3,
+        "iterationsPerRound": 50000,
+        "checksums": [
+          0,
+          0,
+          0
+        ]
+      },
+      "latencyReductionPercent": -252.91852633130011,
+      "allocationReductionPercent": 100.0
+    },
+    {
+      "label": "AE2 BlockApiCache wrapper",
+      "beforeName": "native",
+      "afterName": "custom wrapper",
+      "before": {
+        "medianNanosPerOp": 42.567,
+        "medianBytesPerOp": 0.00352,
+        "rounds": 3,
+        "iterationsPerRound": 100000,
+        "checksums": [
+          156744263300000,
+          156744263300000,
+          156744263300000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 75.312,
+        "medianBytesPerOp": 18.45424,
+        "rounds": 3,
+        "iterationsPerRound": 100000,
+        "checksums": [
+          203333754900000,
+          203333754900000,
+          203333754900000
+        ]
+      },
+      "latencyReductionPercent": -76.92578758192965,
+      "allocationReductionPercent": -524168.1818181818
+    },
+    {
+      "label": "AE2 hot-primary simulation shortcut",
+      "beforeName": "native",
+      "afterName": "shortcut",
+      "before": {
+        "medianNanosPerOp": 51.37425,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 200000,
+        "checksums": [
+          200000,
+          200000,
+          200000,
+          200000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 78.736,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 200000,
+        "checksums": [
+          200000,
+          200000,
+          200000,
+          200000
+        ]
+      },
+      "latencyReductionPercent": -53.25965829184853,
+      "allocationReductionPercent": 0.0
+    },
+    {
+      "label": "AE2 cell-accounting override",
+      "beforeName": "native",
+      "afterName": "primitive override",
+      "before": {
+        "medianNanosPerOp": 922.872,
+        "medianBytesPerOp": 392.0,
+        "rounds": 3,
+        "iterationsPerRound": 50000,
+        "checksums": [
+          100000,
+          100000,
+          100000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 903.812,
+        "medianBytesPerOp": 392.0,
+        "rounds": 3,
+        "iterationsPerRound": 50000,
+        "checksums": [
+          100000,
+          100000,
+          100000
+        ]
+      },
+      "latencyReductionPercent": 2.0652918281191646,
+      "allocationReductionPercent": 0.0
+    }
+  ],
+  "compactCellFixture": {
+    "beforeBytes": 25212,
+    "afterBytes": 1068,
+    "reductionPercent": 95.76392194193242
+  }
+}

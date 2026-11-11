@@ -21,9 +21,9 @@ their original inclusive/exclusive breakpoints.
 ## Measured And Rejected: Cell Accounting
 
 A primitive `saveChanges` counter was measured with 63 distinct item keys. It did
-not reduce allocation and was slightly slower than AE2 native accounting, so its
-Mixin and helper were removed. The native mutation benchmark remains available
-for later AE2-version comparisons.
+not reduce allocation, and timing differences were within run-to-run noise, so
+its Mixin and helper were removed. The native mutation benchmark remains
+available for later AE2-version comparisons.
 
 ## Optional Compact Cell Format
 

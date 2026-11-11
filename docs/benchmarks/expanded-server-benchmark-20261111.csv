@@ -1,0 +1,17 @@
+group,label,beforeName,afterName,beforeMedianNs,afterMedianNs,latencyReductionPercent,beforeMedianBytes,afterMedianBytes,allocationReductionPercent
+retained,GT empty recipe I/O,native,optimized,447.41,52.02,88.37308061956594,800.0,0.0,100.0
+retained,GT simulated recipe match,native,optimized,12229.09,11804.94,3.4683692735927196,10864.0,9488.0,12.665684830633284
+retained,GT handler-group cache,native grouping,cached lookup,1649.9541666666667,467.0083333333333,71.69567841530952,1224.0,0.0,100.0
+retained,GT executing recipe workspace,unpooled,pooled,2435.20625,1737.3520833333332,28.656881390094448,3920.0,1360.0,65.3061224489796
+retained,GT simulated recipe workspace,unpooled,pooled,1520.7875,1173.5354166666666,22.833701837589626,2880.0,888.0,69.16666666666667
+retained,AE2 processing-pattern decode,native,optimized,1526.06,109.69,92.81220921851042,1608.0,40.0,97.51243781094527
+retained,AE2 provider-pattern selection,native,optimized,11786.73,39.49,99.66496220749946,4832.0,0.0,100.0
+retained,AE2 fuzzy lookup,native,optimized,1067.118,1046.75,1.9086923845347825,96.0,0.0,100.0
+retained,AE2 primitive craft-count merge,native,optimized,36.50475,20.791249999999998,43.04508317410749,24.0,0.0,100.0
+retained,AE2 planner graph metadata,native,optimized,11850.154999999999,52.03,99.56093401309941,104.0,56.0,46.15384615384615
+retained,Immutable archive resource lookup,native source,snapshot cache,38433.98,401.0,98.9566524205924,22608.96,854.56,96.22025957850339
+rejected,AE2 route override: insert (256 stores),native,snapshot override,3462.33,7894.496,-128.01107924432392,0.0,0.0,
+rejected,AE2 route override: extract (256 stores),native,snapshot override,1031.548,3640.524,-252.91852633130011,40.0,0.0,100.0
+rejected,AE2 BlockApiCache wrapper,native,custom wrapper,42.567,75.312,-76.92578758192965,0.00352,18.45424,-524168.1818181818
+rejected,AE2 hot-primary simulation shortcut,native,shortcut,51.37425,78.736,-53.25965829184853,24.0,24.0,0.0
+rejected,AE2 cell-accounting override,native,primitive override,922.872,903.812,2.0652918281191646,392.0,392.0,0.0
