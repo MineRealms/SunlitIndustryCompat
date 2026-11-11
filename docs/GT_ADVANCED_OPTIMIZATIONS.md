@@ -6,6 +6,18 @@ The installed 7.5.3 jar was decompiled for exact method bodies; the local 7.5.2 
 readable cross-reference. GTOCore's RecipeLogic and GTOLib's RecipeRunner/ParallelCache/LevelChunk
 implementations target a custom API and cannot replace the installed GT classes directly.
 
+The incompatibility is behavioral as well as structural. In stock 7.5.3, `matchRecipe`,
+`handleRecipeIO` and `handleTickRecipe` return `ActionResult`; GTO's overwrites use `boolean` and
+cast to its custom `Recipe` type. Stock `RecipeLogic` also owns cached-recipe/failure bookkeeping,
+and Assembly Line and Research Station subclasses override several of these hooks. The stock
+`GTRecipe` has no precomputed `tier` field. Therefore this mod reuses the native runner only at the
+`RecipeHelper.handleRecipe` boundary and does not replace the stock recipe state machine.
+
+Likewise, stock GT parts are driven by their tick subscriptions; there is no GTO-style controller
+loop that can take over every multiblock member. The full `LevelChunk` membership bypass and chunk
+unload/save rewrites are excluded. The optional dormant-part path below only skips a formed native
+part's empty ticker after it has no active or pending subscriptions.
+
 ## Recipe Execution
 
 `GtRecipePipelineMixin` preserves native RecipeHelper result formatting and group-color updates,
