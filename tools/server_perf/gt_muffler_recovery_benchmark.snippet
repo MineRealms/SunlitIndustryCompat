@@ -2,28 +2,36 @@ var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
 if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
 var optionField=com.society.sunlitindustry.performance.gt.GtMufflerRecoveryConfig.class.getDeclaredField("RECOVERY");optionField.setAccessible(true);
 var option=(net.minecraftforge.common.ForgeConfigSpec.BooleanValue)optionField.get(null);boolean original=option.get();
+var configCache=net.minecraftforge.common.ForgeConfigSpec.ConfigValue.class.getDeclaredField("cachedValue");configCache.setAccessible(true);
 var level=server.m_129783_();var pos=new net.minecraft.core.BlockPos(112,100,80);var oldState=level.m_8055_(pos);
 if(level.m_7702_(pos)!=null)throw new IllegalStateException("Muffler benchmark fixture already contains a block entity");
 var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
 var samples=new com.google.gson.JsonArray();
+var definitions=new java.util.TreeMap<net.minecraft.resources.ResourceLocation,com.gregtechceu.gtceu.api.machine.MachineDefinition>();
+for(var entry:com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.entries())if(entry.getKey().m_135827_().equals("gtceu")&&entry.getKey().m_135815_().endsWith("_muffler_hatch"))definitions.put(entry.getKey(),entry.getValue());
+if(definitions.size()<2)throw new IllegalStateException("Muffler benchmark needs at least two registered tiers, found "+definitions.keySet());
+var coverage=new com.google.gson.JsonArray();
+com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler activeInventory=null;
 try{
- for(String tier:new String[]{"lv","uev"}){
-  level.m_46597_(pos,com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation("gtceu:"+tier+"_muffler_hatch")).getBlock().m_49966_());
+ for(var entry:definitions.entrySet()){
+  level.m_46597_(pos,entry.getValue().getBlock().m_49966_());
   var machine=(com.gregtechceu.gtceu.common.machine.multiblock.part.MufflerPartMachine)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,pos);
-  var inventory=machine.getInventory();var stone=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:cobblestone"));
+  var inventory=machine.getInventory();activeInventory=inventory;var stone=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:cobblestone"));
+  var covered=new com.google.gson.JsonObject();covered.addProperty("machineId",entry.getKey().toString());covered.addProperty("tier",machine.getTier());covered.addProperty("recoveryChance",machine.getRecoveryChance());covered.addProperty("slots",inventory.getSlots());coverage.add(covered);
   for(int i=0;i<inventory.getSlots();i++)inventory.setStackInSlot(i,new net.minecraft.world.item.ItemStack(stone,64));
   for(int length:new int[]{0,1,4}){
    var items=new net.minecraft.world.item.ItemStack[length];for(int i=0;i<length;i++)items[i]=new net.minecraft.world.item.ItemStack(stone,1);
    for(boolean optimized:new boolean[]{false,true}){
-    option.set(optimized);com.gregtechceu.gtceu.api.GTValues.RNG.m_188584_(20261111L);
+    configCache.set(option,optimized);com.gregtechceu.gtceu.api.GTValues.RNG.m_188584_(20261111L);
     for(int round=-5;round<5;round++){
      int iterations=20000;long before=bean.getThreadAllocatedBytes(tid),start=System.nanoTime();
      for(int i=0;i<iterations;i++)machine.recoverItemsTable(items);
      long nanos=System.nanoTime()-start,bytes=bean.getThreadAllocatedBytes(tid)-before;
-     var row=new com.google.gson.JsonObject();row.addProperty("scenario",tier+"_full_inventory_"+length+"_entries");row.addProperty("optimized",optimized);row.addProperty("round",round);row.addProperty("iterations",iterations);row.addProperty("nanosPerOp",nanos/(double)iterations);row.addProperty("bytesPerOp",bytes/(double)iterations);row.addProperty("checksum",inventory.getStackInSlot(0).m_41613_());samples.add(row);
+     var row=new com.google.gson.JsonObject();row.addProperty("scenario",entry.getKey().toString()+"_full_inventory_"+length+"_entries");row.addProperty("optimized",optimized);row.addProperty("round",round);row.addProperty("iterations",iterations);row.addProperty("nanosPerOp",nanos/(double)iterations);row.addProperty("bytesPerOp",bytes/(double)iterations);row.addProperty("checksum",inventory.getStackInSlot(0).m_41613_());samples.add(row);
     }
    }
   }
+  inventory.clear();activeInventory=null;
  }
- var result=new com.google.gson.JsonObject();result.add("samples",samples);result.addProperty("note","Actual native vs transformed MufflerPartMachine recovery; full inventory fixture; not whole-base TPS");return result;
-}finally{option.set(original);level.m_46597_(pos,oldState);}
+ var result=new com.google.gson.JsonObject();result.add("samples",samples);result.add("coverage",coverage);result.addProperty("note","Actual native vs transformed MufflerPartMachine recovery; all registered native muffler tiers; full inventory fixture; not whole-base TPS");return result;
+}finally{configCache.set(option,original);if(activeInventory!=null)activeInventory.clear();level.m_46597_(pos,oldState);}

@@ -55,15 +55,19 @@ JVM; no TPS or allocation improvement is claimed merely from removing a stream.
 ## Runtime Verification
 
 `gt_muffler_recovery_correctness.snippet` compares the actual native and injected
-methods, not a copied reference implementation. It tests five tiers including
-the guaranteed-recovery threshold, empty/small/oversized input arrays,
+methods, not a copied reference implementation. It discovers the native muffler
+definitions actually registered by the pack and requires at least two tiers.
+It tests empty/small/oversized input arrays,
 empty/full/partially filled inventories, empty stacks, template counts and RNG
-tail state over 1,920 fixture/seed combinations. The probe restores the config
-and fixture block and refuses to replace a preexisting block entity.
+tail state over 384 fixture/seed combinations per registered tier. Output reports
+actual IDs, tiers, chance thresholds, slot counts and comparison count; disabled
+high tiers are not counted as coverage. The probe restores the config and fixture
+block, clears fixture inventory and refuses to replace a preexisting block entity.
 
 `gt_muffler_recovery_benchmark.snippet` measures the same actual methods with
 ThreadMXBean allocation counters, five warmups and four retained measured
-rounds (`round > 0`). It uses LV/UEV full-inventory fixtures and 0/1/4 entries to
+rounds (`round > 0`). It uses the registered native muffler tiers with
+full-inventory fixtures and 0/1/4 entries to
 separate stream overhead from native RNG and insertion cost. Output carries all
 rounds so the root report can include regressions. Both snippets require the
 loopback-only isolated Rosetta test server and execute on its server thread.
