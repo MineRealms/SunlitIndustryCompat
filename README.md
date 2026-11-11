@@ -26,11 +26,7 @@
 
 定义耗时加速比与分配削减率：
 
-$$
-S=\frac{\operatorname{median}(t_{\mathrm{before}})}{\operatorname{median}(t_{\mathrm{after}})},\qquad
-R_A=1-\frac{\operatorname{median}(a_{\mathrm{after}})}{\operatorname{median}(a_{\mathrm{before}})}
-\quad(a_{\mathrm{before}}>0)
-$$
+![S = median(t_before) / median(t_after); R_A = 1 - median(a_after) / median(a_before), a_before > 0](docs/formulas/benchmark-ratios.png)
 
 `S > 1` 表示该路径更快，`S < 1` 表示更慢。`B/op` 来自当前线程分配计数器，表示临时分配量，不是存活堆或进程内存。图中灰色的 ±5% 仅用于视觉分类，不是统计置信区间。样板选择与图元数据属于热缓存读取，数百倍的方法级差异不能外推为服务器 TPS。
 
@@ -46,11 +42,9 @@ $$
 
 高频对象分配的近似流量为：
 
-$$
-\dot A=\sum_i f_i a_i
-$$
+![Allocation rate A_dot = sum_i(f_i * a_i)](docs/formulas/allocation-rate.png)
 
-其中 $f_i$ 为路径每秒调用次数，$a_i$ 为单次临时分配。工作区复用主要降低 $a_i$；派生缓存主要减少重复构造。缓存自身仍占驻留内存，因此同时约束容量、所有权和失效，不以单个分配指标代替总体内存结论。
+其中 `f_i` 为路径每秒调用次数，`a_i` 为单次临时分配。工作区复用主要降低 `a_i`；派生缓存主要减少重复构造。缓存自身仍占驻留内存，因此同时约束容量、所有权和失效，不以单个分配指标代替总体内存结论。
 
 ### 1. GT 配方管线：结构复用与语义保留
 
@@ -58,11 +52,9 @@ $$
 
 **拓扑验证式分组缓存。** `GTHandlerGroups` 在 owner 内保存分组结果。每次命中前仍逐项验证 handler 身份、顺序、group、distinct bypass 和 capability filter：
 
-$$
-\Sigma(H)=\big[(\mathrm{id}(h_i),g_i,b_i,f_i)\big]_{i=1}^{|H|}
-$$
+![Topology signature Sigma(H) = [(id(h_i), g_i, b_i, f_i)] for i = 1..size(H)](docs/formulas/handler-signature.png)
 
-只有当前签名与缓存签名一致时复用分组。热路径仍为 $O(|H|)$，收益是省去 HashMap/List 分组构造，不是把库存匹配改为常数时间。未知 group 实现、容量超限及拓扑变化走原生路径。
+只有当前签名与缓存签名一致时复用分组。热路径仍为 `O(|H|)`，收益是省去 HashMap/List 分组构造，不是把库存匹配改为常数时间。未知 group 实现、容量超限及拓扑变化走原生路径。
 
 **有界 RecipeRunner 工作区。** 每线程最多保留四个空闲 runner；借出后从池中移除，递归调用取得独立工作区。`finally` 清除 recipe、holder、handler、chance cache 等引用。超过源 capability 256 条、16 个工作列表或结果列表 512 条等阈值时弃池，避免偶发大配方永久抬高工作集。
 
@@ -72,15 +64,13 @@ $$
 
 ### 2. AE2：代际缓存、原始类型计数与图记忆化
 
-**默认 key 规范化。** 对注册 `Item` 的默认 `AEItemKey`、无 tag 的默认 `AEFluidKey` 懒初始化并复用。数量受注册表规模限制；带 NBT 的流体和 ItemStack 转换保留原生语义。该路径本来就是 $O(1)$，优化目标是减少重复分配。历史 Fluid 工厂测试也出现过延迟回退，图中保留了这一结果。
+**默认 key 规范化。** 对注册 `Item` 的默认 `AEItemKey`、无 tag 的默认 `AEFluidKey` 懒初始化并复用。数量受注册表规模限制；带 NBT 的流体和 ItemStack 转换保留原生语义。该路径本来就是 `O(1)`，优化目标是减少重复分配。历史 Fluid 工厂测试也出现过延迟回退，图中保留了这一结果。
 
 **样板解码缓存。** 正结果缓存在 `ServerLevel` 所有的有界 LRU 内，默认容量 2,048。有效性同时检查 recipe manager 身份和 recipe/tag epoch：
 
-$$
-\mathrm{valid}(e)=(e.M\equiv M_{\mathrm{current}})\land(e.\varepsilon=\varepsilon_{\mathrm{current}})
-$$
+![Cache validity requires identical current manager and matching epoch](docs/formulas/cache-validity.png)
 
-空结果和异常不缓存。合成样板只接纳原版精确类型的 shaped/shapeless recipe 与普通 Ingredient；自定义上下文敏感配方保留原生解码。缓存哈希查询期望 $O(1)$，但资格检查与 key 构造仍有成本。共享样板的可变 scratch-grid 操作受同步保护，临时槽位修改在 `finally` 恢复。
+空结果和异常不缓存。合成样板只接纳原版精确类型的 shaped/shapeless recipe 与普通 Ingredient；自定义上下文敏感配方保留原生解码。缓存哈希查询期望 `O(1)`，但资格检查与 key 构造仍有成本。共享样板的可变 scratch-grid 操作受同步保护，临时槽位修改在 `finally` 恢复。
 
 **provider 排序失效位。** 原生排序成功后标记排序已完成，provider 挂载/卸载继续使用原生失效逻辑。稳定 provider 集合避免每次查询重新排序、去重；root 合成节点复用不可变输入模板，非 root 的库存替代搜索仍实时执行。
 
@@ -94,13 +84,11 @@ $$
 
 archive 身份使用完整文件 SHA-256，在不可变 archive 的进程生命周期内记忆化。快照保存路径和选定原始字节，不保存 Recipe、解析后的 JSON/Tag、registry、manager 或世界引用。同一进程内替换 jar 不属于该身份模型，更新模组后需要重启。
 
-有序路径索引的精确查询为 $O(\log N)$，子树枚举为 $O(\log N+K)$，其中 $K$ 为返回文件数。每份缓存字节只有一个不可变 supplier，每次打开返回独立 `ByteArrayInputStream` 游标；未缓存字节的已索引文件继续用原生 I/O。
+有序路径索引的精确查询为 `O(log N)`，子树枚举为 `O(log N + K)`，其中 `K` 为返回文件数。每份缓存字节只有一个不可变 supplier，每次打开返回独立 `ByteArrayInputStream` 游标；未缓存字节的已索引文件继续用原生 I/O。
 
 快照准入采用估算权重：
 
-$$
-W=\sum_{p\in P}(96+2|p|)+\sum_{p\in B}(24+|\mathrm{bytes}_p|)
-$$
+![Snapshot weight W = sum over paths of (96 + 2 * path length) + sum over cached bytes of (24 + byte length)](docs/formulas/snapshot-weight.png)
 
 这是缓存记账公式，不是 JVM 对象布局的精确测量。默认 32 MiB 总预算；每 archive 最多 500,000 项、每文件 1 MiB、选定字节最多 16 MiB，磁盘快照约束为 512 MiB。达到总预算时 LRU 淘汰，单份超大快照旁路；配置额度变化会重建 store。磁盘校验失败从 archive 重建，其他不可恢复情况回退原生资源路径。
 
@@ -113,11 +101,9 @@ $$
 - `recipeHolderLists`：复用同一 recipe epoch 内的不可变 RecipeHolder 列表，去掉重复包装与列表构造。
 - `materialMachineGroups`：按不可变的机器类别预筛选材料配方，供自动输入和工作查询使用。
 
-若完整配方数为 $N$，某机器类别候选数为 $K$，同一 epoch 查询 $Q$ 次，则机器类别过滤的成本从：
+若完整配方数为 `N`，某机器类别候选数为 `K`，同一 epoch 查询 `Q` 次，则机器类别过滤的成本从：
 
-$$
-O(QN)\quad\longrightarrow\quad O(N+QK)
-$$
+![Machine-category filtering cost changes from O(QN) to O(N + QK)](docs/formulas/recipe-complexity.png)
 
 该式不包含仍需执行的 Ingredient/NBT 匹配、研究条件、完整性检查和工作排序。缓存不记录输入接受结果、事务、产物或加工进度，也不改变机器速率。
 
@@ -146,20 +132,15 @@ $$
 
 辅助特效裁剪和托卡马克 LOD 使用相机到渲染包围盒的最近距离，避免用控制器点距离误判大型机器：
 
-$$
-\delta_i=\max(l_i-p_i,\,0,\,p_i-u_i),\qquad
-d^2=\delta_x^2+\delta_y^2+\delta_z^2
-$$
+![Axis distance delta_i = max(l_i - p_i, 0, p_i - u_i); squared distance = sum of squared axis distances](docs/formulas/bounds-distance.png)
 
-其中 $p$ 为相机位置，$[l,u]$ 为包围盒。水平方向保守扩成正方形以降低朝向变化引起的过早裁剪。距离非有限值或 bounds 无效时保留原生渲染。默认 64 blocks 外隐藏辅助等离子/气泡，外壳、端口和玻璃继续显示。
+其中 `p` 为相机位置，`[l,u]` 为包围盒。水平方向保守扩成正方形以降低朝向变化引起的过早裁剪。距离非有限值或 bounds 无效时保留原生渲染。默认 64 blocks 外隐藏辅助等离子/气泡，外壳、端口和玻璃继续显示。
 
 ### 2. 托卡马克等离子分级网格
 
 只切换 CORE / PLASMA / HALO 三层网格，保留原生参数方程、半径比例、材质及绘制路径。规则环面三角网格满足：
 
-$$
-N_{\triangle}=2N_{\theta}N_{\phi}
-$$
+![Triangle count N_triangle = 2 * N_theta * N_phi](docs/formulas/triangle-budget.png)
 
 | 到渲染包围盒的距离 | 三层采样 | 三层合计三角形 | 相对原生减少 |
 |---|---|---:|---:|
@@ -173,20 +154,15 @@ $$
 
 96 段圆环保留原来的 384 顶点与顶点顺序，沿环复用前一段终点：
 
-$$
-\theta_i=\varphi+\frac{2\pi i}{96},\qquad
-v_i^{\pm}=(r\pm w)(\cos\theta_i,\,0,\,\sin\theta_i)
-$$
+![Ring angle theta_i = phase + 2*pi*i/96; endpoints v_i = (r +/- w) * (cos(theta_i), 0, sin(theta_i))](docs/formulas/ring-endpoints.png)
 
-源码中的 sin/cos 求值从逐段重复的 768 次降为 $2(96+1)=194$ 次，不降低细分精度。该计数不等于实际 CPU 时间比例，JIT 仍可能对原代码进行公共表达式优化。
+源码中的 sin/cos 求值从逐段重复的 768 次降为 `2(96+1)=194` 次，不降低细分精度。该计数不等于实际 CPU 时间比例，JIT 仍可能对原代码进行公共表达式优化。
 
 ### 4. Bezier 与 Dyson 顶点发射
 
 二次 Bezier 以标量展开：
 
-$$
-B(t)=(1-t)^2P_0+2(1-t)tP_1+t^2P_2
-$$
+![Quadratic Bezier B(t) = (1-t)^2*P0 + 2*(1-t)*t*P1 + t^2*P2](docs/formulas/quadratic-bezier.png)
 
 输入向量不变，源码显式 `Vector3f` 构造从三个降为一个结果对象。实际分配收益取决于逃逸分析，暂不填推测的 B/frame。
 
@@ -269,5 +245,7 @@ python -I tools/server_perf/plot_benchmark_overview.py
 ```
 
 制图依赖 Matplotlib。脚本从已提交的 JSON 汇总数值并校验共同环境字段，输出 PNG、JSON 和 CSV；不生成新的性能样本。
+
+公式图片由 `python -I tools/docs/render_readme_formulas.py` 重新生成，使用仓库内静态 PNG，避免 Markdown 渲染器的 LaTeX 宏限制。
 
 [代码质量复核与修复记录](docs/CODE_QUALITY_REVIEW_20261111.md) · [天工服务端缓存契约](docs/TIANGONG_SERVER_RECIPE_CACHES.md)
