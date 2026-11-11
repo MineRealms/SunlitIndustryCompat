@@ -28,8 +28,10 @@ evidence.mkdir(exist_ok=True)
 args = [str(JAVA), '-Xms2G', '-Xmx6G', '-Dfile.encoding=UTF-8',
         '-Dminecraft.gameDir=' + RUN.as_posix(),
         '-Drosetta.remote.bind=127.0.0.1', '-Drosetta.remote.port=48793',
-        '-Xlog:gc*,safepoint:file=evidence/gc-' + mode + '.log:time,uptime,level,tags:filecount=2,filesize=16m',
-        '-XX:StartFlightRecording=filename=evidence/' + mode + '.jfr,settings=profile,duration=900s,dumponexit=true']
+        '-Xlog:gc*,safepoint:file=evidence/gc-' + mode + '.log:time,uptime,level,tags:filecount=2,filesize=16m']
+if not mode.endswith('smoke'):
+    args.append('-XX:StartFlightRecording=filename=evidence/' + mode
+                + '.jfr,settings=profile,duration=900s,dumponexit=true')
 if mode.endswith('baseline'):
     args.append('-Dsunlitindustry.disableServerOptimizations=true')
 args += ['@forge-test-args.txt', 'nogui']

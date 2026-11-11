@@ -1,0 +1,4 @@
+# Retained for workload experiments; previous local benchmarks regressed.
+experimentalPriorityRouting = false
+experimentalAdjacentCapabilityCache = false
+experimentalPrimitiveCellAccounting = false

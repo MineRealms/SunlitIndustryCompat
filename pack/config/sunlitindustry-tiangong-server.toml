@@ -1,0 +1,7 @@
+# New TianGong experiments are opt-in. Ingredient matching and resource reload stay native.
+enabled = false
+recipeHolderLists = false
+materialMachineGroups = false
+maxCachedRecipeTypes = 64
+maxCachedRecipeHolders = 32768
+maxMaterialMachineGroups = 16

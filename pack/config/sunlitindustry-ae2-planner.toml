@@ -1,0 +1,5 @@
+enabled = true
+primitiveCraftCounts = true
+graphMetadataCache = true
+# Restored experiment, slower than native in the previous local probe.
+hotSimulationPrimaries = false

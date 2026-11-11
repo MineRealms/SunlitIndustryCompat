@@ -1,0 +1,51 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+if(com.society.sunlitindustry.performance.ae2.network.AE2NetworkConfig.routing()
+ ||com.society.sunlitindustry.performance.ae2.network.AE2NetworkConfig.adjacency()
+ ||com.society.sunlitindustry.performance.ae2.network.AE2NetworkConfig.cellAccounting()
+ ||com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.hotPrimaries()
+ ||com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig.recipeLists()
+ ||com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig.materialGroups()
+ ||com.society.sunlitindustry.performance.gt.GtMufflerRecoveryConfig.enabled()
+ ||com.society.sunlitindustry.performance.world.WorldPerformanceConfig.sunlight())throw new IllegalStateException("New or restored feature was enabled by default");
+for(String name:new String[]{"zmod.compat.Recipes","zmod.machine.industrial.IndustrialAutomation",
+ "zmod.machine.materialprocessing.MaterialProcessingWork","appeng.me.storage.NetworkStorage",
+ "appeng.me.cells.BasicCellInventory","appeng.util.BlockApiCache","appeng.crafting.inv.CraftingSimulationState"})Class.forName(name);
+var cached=net.minecraftforge.common.ForgeConfigSpec.ConfigValue.class.getDeclaredField("cachedValue");cached.setAccessible(true);
+var config=com.society.sunlitindustry.performance.world.WorldPerformanceConfig.class;
+var options=new java.util.LinkedHashMap<String,net.minecraftforge.common.ForgeConfigSpec.ConfigValue<?>>();
+var saved=new java.util.LinkedHashMap<String,Object>();
+for(String name:new String[]{"SUNLIGHT","DIMENSIONS","EXCLUDED"}){
+ var field=config.getDeclaredField(name);field.setAccessible(true);var option=(net.minecraftforge.common.ForgeConfigSpec.ConfigValue<?>)field.get(null);options.put(name,option);saved.put(name,option.get());
+}
+var masterField=com.society.sunlitindustry.ServerPerformanceConfig.class.getDeclaredField("ENABLED");masterField.setAccessible(true);
+var master=(net.minecraftforge.common.ForgeConfigSpec.ConfigValue<?>)masterField.get(null);Object oldMaster=master.get();
+int checks=0;
+try{
+ cached.set(master,true);cached.set(options.get("SUNLIGHT"),true);
+ cached.set(options.get("DIMENSIONS"),java.util.List.of("minecraft:overworld"));cached.set(options.get("EXCLUDED"),java.util.List.of());
+ com.society.sunlitindustry.performance.world.WorldPerformanceConfig.refresh();
+ for(var level:server.m_129785_()){
+  boolean expected=level.m_46472_().m_135782_().toString().equals("minecraft:overworld");
+  if(com.society.sunlitindustry.performance.world.WorldPerformanceConfig.sunlight(level)!=expected)throw new IllegalStateException("Dimension allowlist failed");checks++;
+ }
+ cached.set(options.get("DIMENSIONS"),java.util.List.of("*"));cached.set(options.get("EXCLUDED"),java.util.List.of("minecraft:the_end"));
+ com.society.sunlitindustry.performance.world.WorldPerformanceConfig.refresh();
+ for(var level:server.m_129785_()){
+  boolean expected=!level.m_46472_().m_135782_().toString().equals("minecraft:the_end");
+  if(com.society.sunlitindustry.performance.world.WorldPerformanceConfig.sunlight(level)!=expected)throw new IllegalStateException("Dimension exclusion precedence failed");checks++;
+ }
+ cached.set(options.get("DIMENSIONS"),java.util.List.of());com.society.sunlitindustry.performance.world.WorldPerformanceConfig.refresh();
+ for(var level:server.m_129785_()){if(com.society.sunlitindustry.performance.world.WorldPerformanceConfig.sunlight(level))throw new IllegalStateException("Empty allowlist must match none");checks++;}
+ cached.set(master,false);
+ if(com.society.sunlitindustry.performance.ae2.crafting.Ae2CraftingConfig.patterns()
+  ||com.society.sunlitindustry.performance.ae2.crafting.Ae2CraftingConfig.sorting()
+  ||com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.primitiveCounts()
+  ||com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig.graphMetadata()
+  ||com.society.sunlitindustry.performance.resources.ResourceCacheConfig.enabled()
+  ||com.society.sunlitindustry.performance.LegacyPerformanceConfig.kubejs())throw new IllegalStateException("Common master did not disable existing modules");
+ return "PASS defaultsOff=true transformedClasses=7 dimensionPolicyChecks="+checks+" sharedMasterFallback=true recipes="+server.m_129894_().m_44051_().size();
+}finally{
+ for(var entry:options.entrySet())cached.set(entry.getValue(),saved.get(entry.getKey()));cached.set(master,oldMaster);
+ com.society.sunlitindustry.performance.world.WorldPerformanceConfig.refresh();
+}

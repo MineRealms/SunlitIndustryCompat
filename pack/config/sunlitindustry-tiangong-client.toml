@@ -1,0 +1,9 @@
+# Client visuals only; no machine simulation or shader replacement.
+dysonPrimitiveAllocation = false
+arcaneRingTrigReuse = false
+effectBezierAllocation = false
+distantMachineEffectCulling = false
+machineEffectDistance = 64
+tokamakPlasmaLod = false
+tokamakPlasmaMidDistance = 48
+tokamakPlasmaFarDistance = 96

@@ -15,6 +15,6 @@ public abstract class GtSunlightMixin {
     @Inject(method = "canSeeSunClearly", at = @At("HEAD"), cancellable = true)
     private static void sunlitindustry$sunlight(Level level, BlockPos pos,
             CallbackInfoReturnable<Boolean> cir) {
-        if (WorldPerformanceConfig.sunlight()) cir.setReturnValue(GtSunlightQuery.canSeeSunClearly(level, pos));
+        if (WorldPerformanceConfig.sunlight(level)) cir.setReturnValue(GtSunlightQuery.canSeeSunClearly(level, pos));
     }
 }

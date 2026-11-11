@@ -15,7 +15,7 @@ The second cache does **not** cache ingredient acceptance, `isIncomplete()`, res
 
 ## Configuration
 
-Register `TianGongServerConfig.register()` during the compatibility mod's normal configuration bootstrap, only when `zmod` is loaded. File: `config/sunlitindustry-tiangong-server.toml`.
+The compatibility mod registers this configuration only on the dedicated server when `zmod` is loaded. File: `config/sunlitindustry-tiangong-server.toml`.
 
 ```toml
 enabled = false
@@ -39,13 +39,13 @@ Each feature also respects `ServerPerformanceConfig.enabled()` and its existing 
 
 ## Integration
 
-The owner agent must add the following compile-only dependency using the actual installed jar, preferably staged under the build's existing local dependency convention:
+The build uses the actual installed jar as a compile-only custom-API dependency. It is not bundled:
 
 ```groovy
-compileOnly(fg.deobf(files('G:/MinecraftGames/Sunlit Valley(BaopuEdition)/.minecraft/versions/Society Sunlit Valley/mods/zmod-forge-1.20.1-1.40.03-all.jar')))
+compileOnly files('G:/MinecraftGames/Sunlit Valley(BaopuEdition)/.minecraft/versions/Society Sunlit Valley/mods/zmod-forge-1.20.1-1.40.03-all.jar')
 ```
 
-Add these entries to the common mixin list:
+The common mixin list includes:
 
 ```text
 performance.tiangong.server.TianGongRecipeManagerMixin
@@ -65,7 +65,7 @@ zmod.machine.materialprocessing.MaterialProcessingWork.recipes(): List
 MaterialProcessingWork.owner: IndustrialController
 ```
 
-No bootstrap, plugin, build file, or mixin JSON was edited in this change.
+All four mixins are gated to the dedicated server and exact `zmod` 1.40.03.
 
 ## Correctness Probe
 
@@ -73,4 +73,4 @@ No bootstrap, plugin, build file, or mixin JSON was edited in this change.
 
 Also execute a normal datapack `/reload` with a KubeJS recipe addition/removal and verify its count and the new lookup result, using the repository's existing reload probes. This verifies the actual pack's reload integration beyond the direct RecipeManager replacement probe.
 
-These sources were not built or started by the subtask. Build, optional-mod gates, and isolated-server execution belong to integration validation. No benchmark result is claimed.
+The integrated build and isolated-server correctness probe passed. No benchmark result is claimed.

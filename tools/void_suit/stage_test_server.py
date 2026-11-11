@@ -92,7 +92,7 @@ def main():
     runmods = RUN / 'mods'
     runmods.mkdir(parents=True, exist_ok=True)
     chosen.add(Path('G:/emoney-full-phase4-20261104/mods/rosetta_remote_debug_bridge-1.0.0.jar'))
-    chosen.add(HERE / 'build/libs/sunlit-industry-compat-1.20.1-0.7.0.jar')
+    chosen.add(HERE / 'build/libs/sunlit-industry-compat-1.20.1-0.8.0.jar')
     expected = {path.name for path in chosen} | {'test-mixinextras-core-0.5.3.jar'}
     extras = [path.name for path in runmods.glob('*.jar')
               if path.name not in expected and not path.name.startswith('sunlit-industry-compat-')]
@@ -133,6 +133,11 @@ def main():
     shutil.copy2(PACK / 'config/gtceu.yaml', config / 'gtceu.yaml')
     shutil.copy2(PACK / 'config/sunlitindustry-common.toml', config)
     shutil.copy2(HERE / 'pack/config/sunlitindustry-server-performance.toml', config)
+    for name in ('sunlitindustry-tiangong-server.toml', 'sunlitindustry-tiangong-client.toml',
+                 'sunlitindustry-ae2-network-experiments.toml', 'sunlitindustry-ae2-planner.toml',
+                 'sunlitindustry-world-performance.toml', 'sunlitindustry-gt-muffler.toml',
+                 'sunlitindustry-legacy-performance.toml'):
+        shutil.copy2(HERE / 'pack/config' / name, config)
     (RUN / 'server.properties').write_text(
         'server-ip=127.0.0.1\nserver-port=25584\nonline-mode=false\nenable-rcon=false\n'
         'level-name=sunlit_perf_clean\nlevel-type=minecraft:flat\ngenerate-structures=false\n'

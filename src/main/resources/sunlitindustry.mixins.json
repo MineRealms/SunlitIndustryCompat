@@ -38,9 +38,16 @@
     "performance.gt.GtMatchingShapesMixin",
     "performance.gt.GtMufflerRecoveryMixin",
     "performance.world.GtSunlightMixin",
+    "performance.tiangong.server.TianGongRecipeManagerMixin",
+    "performance.tiangong.server.TianGongRecipeListsMixin",
+    "performance.tiangong.server.TianGongIndustrialAutomationMixin",
+    "performance.tiangong.server.TianGongMaterialWorkMixin",
     "performance.ae2.network.AE2FuzzyBoundsMixin",
     "performance.ae2.network.AE2FuzzyRangeViewMixin",
     "performance.ae2.network.AE2CompactCellNbtMixin",
+    "performance.ae2.network.AE2NetworkRoutingMixin",
+    "performance.ae2.network.AE2AdjacentCapabilityMixin",
+    "performance.ae2.network.AE2CellAccountingMixin",
     "performance.ae2.AE2PatternCacheLevelMixin",
     "performance.ae2.AE2CraftingPatternDecodeMixin",
     "performance.ae2.AE2ProcessingPatternDecodeMixin",
@@ -57,6 +64,15 @@
     "AliClientTooltipCacheMixin",
     "MekanismFusionBalanceMixin",
     "MekanismFissionBalanceMixin"
+  ],
+  "client": [
+    "performance.tiangong.client.ArcaneRingMixin",
+    "performance.tiangong.client.DysonSkyPrimitiveMixin",
+    "performance.tiangong.client.MachineEffectBezierMixin",
+    "performance.tiangong.client.TokamakEffectDistanceMixin",
+    "performance.tiangong.client.TokamakPlasmaLodMixin",
+    "performance.tiangong.client.IndustrialEffectDistanceMixin",
+    "performance.tiangong.client.FluidWorksEffectDistanceMixin"
   ],
   "injectors": {"defaultRequire": 1}
 }

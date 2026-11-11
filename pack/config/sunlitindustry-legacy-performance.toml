@@ -1,0 +1,3 @@
+# Existing WorldEdit objects keep their representation; change this only with a restart.
+worldEditStateIndex = false
+kubejsOriginalRecipeFastPath = true

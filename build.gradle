@@ -4,7 +4,7 @@ buildscript {
 }
 plugins { id 'java'; id 'net.minecraftforge.gradle' version '6.0.54' }
 apply plugin: 'org.spongepowered.mixin'
-version = '0.7.0'
+version = '0.8.0'
 group = 'com.society.sunlitindustry'
 base { archivesName = 'sunlit-industry-compat-1.20.1' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -24,6 +24,7 @@ dependencies {
     compileOnly(fg.deobf('com.gregtechceu.gtceu:gtceu-1.20.1:7.5.3')) { transitive = false }
     compileOnly(fg.deobf('appeng:appliedenergistics2-forge:15.4.10')) { transitive = false }
     compileOnly(fg.deobf('mekanism:Mekanism:1.20.1-10.4.16.80')) { transitive = false }
+    compileOnly files('G:/MinecraftGames/Sunlit Valley(BaopuEdition)/.minecraft/versions/Society Sunlit Valley/mods/zmod-forge-1.20.1-1.40.03-all.jar')
     testImplementation(fg.deobf('com.gregtechceu.gtceu:gtceu-1.20.1:7.5.3')) { transitive = false }
     testImplementation(fg.deobf('mekanism:Mekanism:1.20.1-10.4.16.80')) { transitive = false }
     testRuntimeOnly('com.lowdragmc.ldlib:ldlib-forge-1.20.1:1.0.40.b') { transitive = false }

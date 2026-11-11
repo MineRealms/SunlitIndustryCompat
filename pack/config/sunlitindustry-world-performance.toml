@@ -1,0 +1,4 @@
+gtSunlightQuery = false
+# Empty = none, ["*"] = all; exclusions take precedence. This selects the optimization, not world rules.
+sunlightDimensions = ["minecraft:overworld"]
+sunlightExcludedDimensions = []

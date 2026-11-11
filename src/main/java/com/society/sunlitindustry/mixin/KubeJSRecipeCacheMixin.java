@@ -1,5 +1,6 @@
 package com.society.sunlitindustry.mixin;
 
+import com.society.sunlitindustry.performance.LegacyPerformanceConfig;
 import net.minecraft.world.item.crafting.Recipe;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,6 +19,6 @@ public abstract class KubeJSRecipeCacheMixin {
     @Inject(method = "getOriginalRecipe()Lnet/minecraft/world/item/crafting/Recipe;",
             at = @At("HEAD"), cancellable = true, remap = false)
     private void sunlitindustry$cachedOriginal(CallbackInfoReturnable<Recipe<?>> cir) {
-        if (originalRecipe != null) cir.setReturnValue(originalRecipe.getValue());
+        if (LegacyPerformanceConfig.kubejs() && originalRecipe != null) cir.setReturnValue(originalRecipe.getValue());
     }
 }

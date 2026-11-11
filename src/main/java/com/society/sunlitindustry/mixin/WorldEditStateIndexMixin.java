@@ -1,6 +1,7 @@
 package com.society.sunlitindustry.mixin;
 
 import com.society.sunlitindustry.OrderedStateIndex;
+import com.society.sunlitindustry.performance.LegacyPerformanceConfig;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -27,7 +28,7 @@ public abstract class WorldEditStateIndexMixin implements OrderedStateIndex.Valu
     @Inject(method = "populate(Ljava/util/Map;)V", at = @At("HEAD"), cancellable = true, remap = false)
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void sunlitindustry$shareStateIndex(Map states, CallbackInfo ci) {
-        if (states.size() < 64) return;
+        if (!LegacyPerformanceConfig.worldEdit() || states.size() < 64) return;
         var index = sunlitindustry$index.get();
         if (sunlitindustry$source.get() != states || index == null) {
             index = new OrderedStateIndex<>(states);

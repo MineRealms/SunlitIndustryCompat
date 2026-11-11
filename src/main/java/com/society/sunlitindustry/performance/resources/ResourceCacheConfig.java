@@ -1,5 +1,6 @@
 package com.society.sunlitindustry.performance.resources;
 
+import com.society.sunlitindustry.ServerPerformanceConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -18,7 +19,7 @@ public final class ResourceCacheConfig {
     private static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean enabled() {
-        return !Boolean.getBoolean("sunlitindustry.disableServerOptimizations")
+        return ServerPerformanceConfig.enabled()
                 && (!SPEC.isLoaded() || ENABLED.get());
     }
 

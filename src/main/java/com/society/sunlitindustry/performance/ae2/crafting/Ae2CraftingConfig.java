@@ -1,5 +1,6 @@
 package com.society.sunlitindustry.performance.ae2.crafting;
 
+import com.society.sunlitindustry.ServerPerformanceConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -24,7 +25,7 @@ public final class Ae2CraftingConfig {
     }
 
     private static boolean enabled() {
-        return !Boolean.getBoolean("sunlitindustry.disableServerOptimizations") && read(ENABLED);
+        return ServerPerformanceConfig.enabled() && read(ENABLED);
     }
 
     public static boolean patterns() { return enabled() && read(PATTERNS); }

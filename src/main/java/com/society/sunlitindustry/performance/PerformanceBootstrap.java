@@ -3,12 +3,15 @@ package com.society.sunlitindustry.performance;
 import com.society.sunlitindustry.ServerPerformanceConfig;
 import com.society.sunlitindustry.performance.ae2.crafting.Ae2CraftingConfig;
 import com.society.sunlitindustry.performance.ae2.crafting.PatternDecodeCache;
+import com.society.sunlitindustry.performance.ae2.network.AE2NetworkConfig;
 import com.society.sunlitindustry.performance.ae2.planner.Ae2PlannerConfig;
 import com.society.sunlitindustry.performance.gt.GtAdvancedConfig;
 import com.society.sunlitindustry.performance.gt.GtAdvancedLifecycle;
 import com.society.sunlitindustry.performance.gt.GtMufflerRecoveryConfig;
 import com.society.sunlitindustry.performance.resources.ResourceCacheConfig;
 import com.society.sunlitindustry.performance.world.WorldPerformanceConfig;
+import com.society.sunlitindustry.performance.tiangong.TiangongClientConfig;
+import com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.fml.ModList;
@@ -21,12 +24,18 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 public final class PerformanceBootstrap {
     public static void register() {
         ServerPerformanceConfig.register();
+        LegacyPerformanceConfig.register();
         GtAdvancedConfig.register();
         GtMufflerRecoveryConfig.register();
         Ae2CraftingConfig.register();
         Ae2PlannerConfig.register();
+        AE2NetworkConfig.register();
         ResourceCacheConfig.register();
         WorldPerformanceConfig.register();
+        if (ModList.get().isLoaded("zmod")) {
+            if (FMLLoader.getDist().isDedicatedServer()) TianGongServerConfig.register();
+            else TiangongClientConfig.register();
+        }
         if (FMLLoader.getDist().isDedicatedServer() && ModList.get().isLoaded("ae2")) {
             PatternDecodeCache.registerEvents();
         }

@@ -23,6 +23,12 @@ final class PerformanceMixinRules {
                     && (FMLLoader.getDist().isDedicatedServer()
                     || (!loaded("modernfix") && !loaded("fusion")));
         }
+        if (mixin.contains(".mixin.performance.tiangong.client.")) {
+            return FMLLoader.getDist().isClient() && !disabled() && !conflict() && version("zmod", "1.40.03");
+        }
+        if (mixin.contains(".mixin.performance.tiangong.server.")) {
+            return runtime() && version("zmod", "1.40.03");
+        }
         if (mixin.contains(".mixin.performance.ae2.")) {
             return runtime() && version("ae2", "15.4.10");
         }
