@@ -1,0 +1,1291 @@
+{
+  "date": "2026-11-11",
+  "version": "0.7.0",
+  "environment": {
+    "minecraft": "1.20.1",
+    "forge": "47.4.23",
+    "java": "17.0.18",
+    "gtceu": "7.5.3",
+    "ae2": "15.4.10",
+    "modJarCount": 18,
+    "heap": "2G initial / 6G max",
+    "recipeCount": 42493,
+    "kubejsProbeCount": 1
+  },
+  "method": "Server-thread A/B in the same transformed JVM. Discard negative warmup rounds and round 0. Medians of four rounds (three for previews); raw checksums must agree. ThreadMXBean counts current-thread allocation, not retained memory or whole-process allocation.",
+  "evidencePhases": {
+    "mufflerSunlightResources": "gto-followup-final",
+    "finalPreview": "gto-followup-release"
+  },
+  "sourceManifest": [
+    {
+      "file": "rosetta_remote_debug_bridge-1.0.0.jar",
+      "sha256": "c63f7f3d15e8f83cc0dcc52ec1e16a469cea2cf1a1d4f79c5a78c0d002496814"
+    },
+    {
+      "file": "appliedenergistics2-forge-15.4.10.jar",
+      "sha256": "fbfee05c6674cb6b00fe425e945ca4818d41eb34069b60dcb4a36221a0390fcc"
+    },
+    {
+      "file": "architectury-9.2.14-forge.jar",
+      "sha256": "218b471d0b8a1f6cda14cfc1beb9eeb0df54304500acc6c5613d9b88ec65d9af"
+    },
+    {
+      "file": "curios-forge-5.14.1+1.20.1.jar",
+      "sha256": "1e817919a35b37cf30524aaec73f0ca5130452f23f168f844854df282eb8e51f"
+    },
+    {
+      "file": "forbidden-magic-forge-0.574-1.20.1-port.0.1.0-20759.jar",
+      "sha256": "742b5c6449e6e9db3fff254e2e376fe7f0b3bb69c9c5f7e858a0379c39ab8063"
+    },
+    {
+      "file": "gtceu-1.20.1-7.5.3.jar",
+      "sha256": "d6560d8b695828a763389d3f45e0210ef70c1892c7b1633ac458544905df1a0d"
+    },
+    {
+      "file": "guideme-20.1.14.jar",
+      "sha256": "a0ba5a0288dab6e413f1456de8dd162f9479146ee681569837f6d6b17930a0e2"
+    },
+    {
+      "file": "kubejs-forge-2001.6.5-build.16.jar",
+      "sha256": "3de6b7267d3aab981848ed54d3afe7edf20532fa4060631fd6fffcd99ac5f3d5"
+    },
+    {
+      "file": "ldlib-forge-1.20.1-1.0.52.a.jar",
+      "sha256": "a9b0827d264e0d15f90482de0d4783a28fc2dad9dfb477f344dc5e959168838d"
+    },
+    {
+      "file": "Mekanism-1.20.1-10.4.16.80.jar",
+      "sha256": "3b0d191fa4a45e662f9725991d76a30192f30186abb2ba694b873b5f7b9358d2"
+    },
+    {
+      "file": "MekanismGenerators-1.20.1-10.4.16.80.jar",
+      "sha256": "be2d5b8553f8638cfabf491002f95cef6acef210f627addb391f5af713502512"
+    },
+    {
+      "file": "rhino-forge-2001.2.3-build.10.jar",
+      "sha256": "fed2211429301bf043864183cab9ab8e92d4cc4dbb9e488ce6c75217c54584a6"
+    },
+    {
+      "file": "tainted-magic-forge-8.1.1-1.20.1-port.0.1.0-20759.jar",
+      "sha256": "e2e2f0fea477e51f4912e09c0d670022fd768906391d3e8bb9edf89b99857832"
+    },
+    {
+      "file": "TerraBlender-forge-1.20.1-3.0.1.10.jar",
+      "sha256": "c77a13e3879f9f991cf592abac60ad0c6d2ed17f5ff697ec2db3872b22902d4a"
+    },
+    {
+      "file": "thaumcraft-forge-4.2.3.5-1.20.1-port.0.1.0-20759.jar",
+      "sha256": "9ecced9a4681c76fcb9f023e4d205d8f545700a2b1d241fda95f2eab2979dc9f"
+    },
+    {
+      "file": "thaumic-tinkerer-forge-2.5-1.20.1-port.0.1.0-20759.jar",
+      "sha256": "d3ceb2ce7a129450f5cdb44e43a326648576841730053e3e80074b7fe501bcfc"
+    },
+    {
+      "file": "zmod-forge-1.20.1-1.40.03-all.jar",
+      "sha256": "d546173646653b47372494b7b14276663ddf390af4dd44f012eca46f7fafe5b4"
+    },
+    {
+      "file": "sunlit-industry-compat-1.20.1-0.7.0.jar",
+      "sha256": "47483c11ec5d4c0622d09e2a5cfb85715704c1efaf5f4858facf10e489a437fb"
+    }
+  ],
+  "mufflerCoverage": [
+    {
+      "machineId": "gtceu:ev_muffler_hatch",
+      "tier": 4,
+      "recoveryChance": 40,
+      "slots": 25
+    },
+    {
+      "machineId": "gtceu:hv_muffler_hatch",
+      "tier": 3,
+      "recoveryChance": 30,
+      "slots": 16
+    },
+    {
+      "machineId": "gtceu:iv_muffler_hatch",
+      "tier": 5,
+      "recoveryChance": 50,
+      "slots": 36
+    },
+    {
+      "machineId": "gtceu:luv_muffler_hatch",
+      "tier": 6,
+      "recoveryChance": 60,
+      "slots": 49
+    },
+    {
+      "machineId": "gtceu:lv_muffler_hatch",
+      "tier": 1,
+      "recoveryChance": 10,
+      "slots": 4
+    },
+    {
+      "machineId": "gtceu:mv_muffler_hatch",
+      "tier": 2,
+      "recoveryChance": 20,
+      "slots": 9
+    },
+    {
+      "machineId": "gtceu:uv_muffler_hatch",
+      "tier": 8,
+      "recoveryChance": 80,
+      "slots": 81
+    },
+    {
+      "machineId": "gtceu:zpm_muffler_hatch",
+      "tier": 7,
+      "recoveryChance": 70,
+      "slots": 64
+    }
+  ],
+  "javdLoaded": false,
+  "results": [
+    {
+      "group": "muffler",
+      "label": "LV, 0 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 45.370000000000005,
+        "medianBytesPerOp": 104.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 23.1025,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 49.07978840643597,
+      "allocationReductionPercent": 76.92307692307692
+    },
+    {
+      "group": "muffler",
+      "label": "LV, 1 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 226.642525,
+        "medianBytesPerOp": 224.5958,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 188.247475,
+        "medianBytesPerOp": 122.3682,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 16.940796966500436,
+      "allocationReductionPercent": 45.51625631467729
+    },
+    {
+      "group": "muffler",
+      "label": "LV, 4 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 726.27,
+        "medianBytesPerOp": 516.5632,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 713.6299750000001,
+        "medianBytesPerOp": 419.6928,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 1.740403018161274,
+      "allocationReductionPercent": 18.752865089886395
+    },
+    {
+      "group": "muffler",
+      "label": "MV, 0 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 57.144975,
+        "medianBytesPerOp": 104.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 21.34,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 62.65638404776623,
+      "allocationReductionPercent": 76.92307692307692
+    },
+    {
+      "group": "muffler",
+      "label": "MV, 1 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 405.022525,
+        "medianBytesPerOp": 308.08979999999997,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 376.485,
+        "medianBytesPerOp": 207.3942,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 7.045910594725557,
+      "allocationReductionPercent": 32.68384737177277
+    },
+    {
+      "group": "muffler",
+      "label": "MV, 4 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 1599.81245,
+        "medianBytesPerOp": 864.4694,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 1492.19,
+        "medianBytesPerOp": 773.9826,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 6.7271916779995,
+      "allocationReductionPercent": 10.467322498633258
+    },
+    {
+      "group": "muffler",
+      "label": "HV, 0 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 71.165025,
+        "medianBytesPerOp": 104.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 43.605000000000004,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 38.726923794377925,
+      "allocationReductionPercent": 76.92307692307692
+    },
+    {
+      "group": "muffler",
+      "label": "HV, 1 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 739.7349999999999,
+        "medianBytesPerOp": 396.467,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 680.8324749999999,
+        "medianBytesPerOp": 297.39300000000003,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 7.962652165978357,
+      "allocationReductionPercent": 24.98921726146185
+    },
+    {
+      "group": "muffler",
+      "label": "HV, 4 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 2718.8325,
+        "medianBytesPerOp": 1208.5606,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 2576.992475,
+        "medianBytesPerOp": 1124.3874,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 5.216946060487359,
+      "allocationReductionPercent": 6.964747982020924
+    },
+    {
+      "group": "muffler",
+      "label": "EV, 0 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 73.39002500000001,
+        "medianBytesPerOp": 104.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 43.845,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 40.25754862462577,
+      "allocationReductionPercent": 76.92307692307692
+    },
+    {
+      "group": "muffler",
+      "label": "EV, 1 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 1117.450025,
+        "medianBytesPerOp": 484.1466,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 1081.595025,
+        "medianBytesPerOp": 386.6814,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 3.2086446103037125,
+      "allocationReductionPercent": 20.131340383264074
+    },
+    {
+      "group": "muffler",
+      "label": "EV, 4 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 4239.4125,
+        "medianBytesPerOp": 1559.7586000000001,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 4084.5275,
+        "medianBytesPerOp": 1482.0294,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 3.6534543406663067,
+      "allocationReductionPercent": 4.98341217673044
+    },
+    {
+      "group": "muffler",
+      "label": "IV, 0 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 39.449975,
+        "medianBytesPerOp": 104.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 19.03,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 51.76169313161796,
+      "allocationReductionPercent": 76.92307692307692
+    },
+    {
+      "group": "muffler",
+      "label": "IV, 1 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 1642.475,
+        "medianBytesPerOp": 572.8072,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 1533.270025,
+        "medianBytesPerOp": 476.9688,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 6.648805917898281,
+      "allocationReductionPercent": 16.731353935495218
+    },
+    {
+      "group": "muffler",
+      "label": "IV, 4 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 6138.5175,
+        "medianBytesPerOp": 1910.5642,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 6441.407499999999,
+        "medianBytesPerOp": 1839.2718,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": -4.934253262290111,
+      "allocationReductionPercent": 3.7314841343724536
+    },
+    {
+      "group": "muffler",
+      "label": "LUV, 0 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 41.92,
+        "medianBytesPerOp": 104.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 20.12,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 52.00381679389313,
+      "allocationReductionPercent": 76.92307692307692
+    },
+    {
+      "group": "muffler",
+      "label": "LUV, 1 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 2256.66005,
+        "medianBytesPerOp": 661.882,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 2249.3100249999998,
+        "medianBytesPerOp": 567.678,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 0.3257036876245567,
+      "allocationReductionPercent": 14.232748435521735
+    },
+    {
+      "group": "muffler",
+      "label": "LUV, 4 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 8868.562475,
+        "medianBytesPerOp": 2254.7426,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 8758.775000000001,
+        "medianBytesPerOp": 2189.7654,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 1.237939917652764,
+      "allocationReductionPercent": 2.8818012308810648
+    },
+    {
+      "group": "muffler",
+      "label": "ZPM, 0 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 41.554975,
+        "medianBytesPerOp": 104.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 19.2175,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 53.75403306102338,
+      "allocationReductionPercent": 76.92307692307692
+    },
+    {
+      "group": "muffler",
+      "label": "ZPM, 1 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 3161.66,
+        "medianBytesPerOp": 748.755,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 3062.23495,
+        "medianBytesPerOp": 656.145,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 3.144710373664461,
+      "allocationReductionPercent": 12.368531762726132
+    },
+    {
+      "group": "muffler",
+      "label": "ZPM, 4 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 12366.1725,
+        "medianBytesPerOp": 2606.987,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 12372.675025,
+        "medianBytesPerOp": 2548.473,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": -0.052583165890651706,
+      "allocationReductionPercent": 2.2445067811999064
+    },
+    {
+      "group": "muffler",
+      "label": "UV, 0 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 55.730025,
+        "medianBytesPerOp": 104.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 22.1325,
+        "medianBytesPerOp": 24.0,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 60.28621914309207,
+      "allocationReductionPercent": 76.92307692307692
+    },
+    {
+      "group": "muffler",
+      "label": "UV, 1 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 4319.812524999999,
+        "medianBytesPerOp": 834.4726,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 4162.7175,
+        "medianBytesPerOp": 743.4354000000001,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 3.636616730259601,
+      "allocationReductionPercent": 10.909549336910517
+    },
+    {
+      "group": "muffler",
+      "label": "UV, 4 recovery entries",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 16930.389975,
+        "medianBytesPerOp": 2955.9832,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 16691.297475,
+        "medianBytesPerOp": 2903.8728,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          64,
+          64,
+          64,
+          64
+        ]
+      },
+      "latencyReductionPercent": 1.4122090533830067,
+      "allocationReductionPercent": 1.7628787606100094
+    },
+    {
+      "group": "sunlight",
+      "label": "clear day",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 806.1953125,
+        "medianBytesPerOp": 120.015,
+        "rounds": 4,
+        "iterationsPerRound": 32000,
+        "checksums": [
+          32000,
+          32000,
+          32000,
+          32000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 390.115625,
+        "medianBytesPerOp": 48.015,
+        "rounds": 4,
+        "iterationsPerRound": 32000,
+        "checksums": [
+          32000,
+          32000,
+          32000,
+          32000
+        ]
+      },
+      "latencyReductionPercent": 51.61028364327037,
+      "allocationReductionPercent": 59.99250093738282
+    },
+    {
+      "group": "sunlight",
+      "label": "clear night",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 627.728109375,
+        "medianBytesPerOp": 72.015,
+        "rounds": 4,
+        "iterationsPerRound": 32000,
+        "checksums": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 42.125015625,
+        "medianBytesPerOp": 24.015,
+        "rounds": 4,
+        "iterationsPerRound": 32000,
+        "checksums": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "latencyReductionPercent": 93.28928958320157,
+      "allocationReductionPercent": 66.6527806706936
+    },
+    {
+      "group": "sunlight",
+      "label": "rainy day",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 357.7671875,
+        "medianBytesPerOp": 72.015,
+        "rounds": 4,
+        "iterationsPerRound": 32000,
+        "checksums": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 376.749984375,
+        "medianBytesPerOp": 24.015,
+        "rounds": 4,
+        "iterationsPerRound": 32000,
+        "checksums": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "latencyReductionPercent": -5.305907735040694,
+      "allocationReductionPercent": 66.6527806706936
+    },
+    {
+      "group": "sunlight",
+      "label": "thunder day",
+      "beforeName": "native",
+      "afterName": "optimized",
+      "before": {
+        "medianNanosPerOp": 365.63123437499996,
+        "medianBytesPerOp": 72.015,
+        "rounds": 4,
+        "iterationsPerRound": 32000,
+        "checksums": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 43.146874999999994,
+        "medianBytesPerOp": 24.015,
+        "rounds": 4,
+        "iterationsPerRound": 32000,
+        "checksums": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "latencyReductionPercent": 88.19934651541625,
+      "allocationReductionPercent": 66.6527806706936
+    },
+    {
+      "group": "resources",
+      "label": "Source open vs native",
+      "beforeName": "native-source",
+      "afterName": "indexed-supplier",
+      "before": {
+        "medianNanosPerOp": 35563.7975,
+        "medianBytesPerOp": 22608.96,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          16068400,
+          16068400,
+          16068400,
+          16068400
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 592.5975,
+        "medianBytesPerOp": 854.56,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          16068400,
+          16068400,
+          16068400,
+          16068400
+        ]
+      },
+      "latencyReductionPercent": 98.33370578605954,
+      "allocationReductionPercent": 96.22025957850339
+    },
+    {
+      "group": "resources",
+      "label": "Source open vs previous cache",
+      "beforeName": "previous-supplier",
+      "afterName": "indexed-supplier",
+      "before": {
+        "medianNanosPerOp": 999.985,
+        "medianBytesPerOp": 878.56,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          16068400,
+          16068400,
+          16068400,
+          16068400
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 592.5975,
+        "medianBytesPerOp": 854.56,
+        "rounds": 4,
+        "iterationsPerRound": 20000,
+        "checksums": [
+          16068400,
+          16068400,
+          16068400,
+          16068400
+        ]
+      },
+      "latencyReductionPercent": 40.73936109041636,
+      "allocationReductionPercent": 2.7317428519395337
+    },
+    {
+      "group": "resources",
+      "label": "Recipe tree list vs native",
+      "beforeName": "native-list",
+      "afterName": "indexed-list",
+      "before": {
+        "medianNanosPerOp": 956756.0016666667,
+        "medianBytesPerOp": 570632.0,
+        "rounds": 4,
+        "iterationsPerRound": 300,
+        "checksums": [
+          1878000,
+          1878000,
+          1878000,
+          1878000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 75673.50166666666,
+        "medianBytesPerOp": 85752.0,
+        "rounds": 4,
+        "iterationsPerRound": 300,
+        "checksums": [
+          1878000,
+          1878000,
+          1878000,
+          1878000
+        ]
+      },
+      "latencyReductionPercent": 92.09061646492485,
+      "allocationReductionPercent": 84.97245159752696
+    },
+    {
+      "group": "resources",
+      "label": "Recipe tree list vs previous cache",
+      "beforeName": "previous-list-copy",
+      "afterName": "indexed-list",
+      "before": {
+        "medianNanosPerOp": 180280.16499999998,
+        "medianBytesPerOp": 90344.0,
+        "rounds": 4,
+        "iterationsPerRound": 300,
+        "checksums": [
+          1878000,
+          1878000,
+          1878000,
+          1878000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 75673.50166666666,
+        "medianBytesPerOp": 85752.0,
+        "rounds": 4,
+        "iterationsPerRound": 300,
+        "checksums": [
+          1878000,
+          1878000,
+          1878000,
+          1878000
+        ]
+      },
+      "latencyReductionPercent": 58.02449944137411,
+      "allocationReductionPercent": 5.082794651554057
+    },
+    {
+      "group": "preview",
+      "label": "assembly line",
+      "beforeName": "native",
+      "afterName": "snapshot palette",
+      "before": {
+        "medianNanosPerOp": 6367590.0,
+        "medianBytesPerOp": 5563552.0,
+        "rounds": 3,
+        "iterationsPerRound": 100,
+        "checksums": [
+          15600,
+          15600,
+          15600
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 44645.0,
+        "medianBytesPerOp": 87032.0,
+        "rounds": 3,
+        "iterationsPerRound": 100,
+        "checksums": [
+          15600,
+          15600,
+          15600
+        ]
+      },
+      "latencyReductionPercent": 99.29887131552125,
+      "allocationReductionPercent": 98.43567562593107
+    },
+    {
+      "group": "preview",
+      "label": "large chemical reactor",
+      "beforeName": "native",
+      "afterName": "snapshot palette",
+      "before": {
+        "medianNanosPerOp": 108212.01,
+        "medianBytesPerOp": 33024.0,
+        "rounds": 3,
+        "iterationsPerRound": 100,
+        "checksums": [
+          2000,
+          2000,
+          2000
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 2701.0,
+        "medianBytesPerOp": 2736.0,
+        "rounds": 3,
+        "iterationsPerRound": 100,
+        "checksums": [
+          2000,
+          2000,
+          2000
+        ]
+      },
+      "latencyReductionPercent": 97.50397391195303,
+      "allocationReductionPercent": 91.71511627906976
+    },
+    {
+      "group": "preview",
+      "label": "zpm fusion reactor",
+      "beforeName": "native",
+      "afterName": "snapshot palette",
+      "before": {
+        "medianNanosPerOp": 320147.0,
+        "medianBytesPerOp": 49456.0,
+        "rounds": 3,
+        "iterationsPerRound": 100,
+        "checksums": [
+          3200,
+          3200,
+          3200
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 12916.99,
+        "medianBytesPerOp": 9176.0,
+        "rounds": 3,
+        "iterationsPerRound": 100,
+        "checksums": [
+          3200,
+          3200,
+          3200
+        ]
+      },
+      "latencyReductionPercent": 95.9652940680375,
+      "allocationReductionPercent": 81.44613393723714
+    },
+    {
+      "group": "preview",
+      "label": "research station",
+      "beforeName": "native",
+      "afterName": "snapshot palette",
+      "before": {
+        "medianNanosPerOp": 65697.01,
+        "medianBytesPerOp": 20064.0,
+        "rounds": 3,
+        "iterationsPerRound": 100,
+        "checksums": [
+          400,
+          400,
+          400
+        ]
+      },
+      "after": {
+        "medianNanosPerOp": 2037.99,
+        "medianBytesPerOp": 1760.0,
+        "rounds": 3,
+        "iterationsPerRound": 100,
+        "checksums": [
+          400,
+          400,
+          400
+        ]
+      },
+      "latencyReductionPercent": 96.8978953532284,
+      "allocationReductionPercent": 91.22807017543859
+    }
+  ]
+}
