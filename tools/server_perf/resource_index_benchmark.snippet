@@ -31,7 +31,7 @@ for(String mode:new String[]{"native-source","previous-supplier","indexed-suppli
     supplier=resource;
    }
   }
-  try(var stream=supplier.get()){checksum+=stream.readAllBytes().length;}
+  try(var stream=supplier.m_247737_()){checksum+=stream.readAllBytes().length;}
  }
  long nanos=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-allocatedBefore;
  var row=new com.google.gson.JsonObject();row.addProperty("workload","source-open");row.addProperty("mode",mode);row.addProperty("round",round);row.addProperty("iterations",iterations);row.addProperty("nanosPerOp",nanos/(double)iterations);row.addProperty("bytesPerOp",allocated/(double)iterations);row.addProperty("checksum",checksum);samples.add(row);

@@ -33,7 +33,7 @@ for(String tree:new String[]{"data/zmod/recipes","data/zmod/tags/items","assets/
    if(indexed!=source||intercepted.get(entry.getKey())!=source)throw new IllegalStateException("Cached supplier was not reused");
   }else uncachedSources++;
   if(opened++>=100)continue;
-  try(var original=entry.getValue().get();var cached=indexed.get();var actual=intercepted.get(entry.getKey()).get()){
+  try(var original=entry.getValue().m_247737_();var cached=indexed.m_247737_();var actual=intercepted.get(entry.getKey()).m_247737_()){
    byte[] expected=original.readAllBytes();
    if(!java.util.Arrays.equals(expected,cached.readAllBytes())||!java.util.Arrays.equals(expected,actual.readAllBytes()))throw new IllegalStateException("Changed source bytes: "+entry.getKey());
   }
@@ -44,12 +44,12 @@ for(String tree:new String[]{"data/zmod/recipes","data/zmod/tags/items","assets/
 var files=snapshot.list("data/zmod/recipes/").stream().filter(snapshot::hasBytes).limit(10).toList();
 if(files.isEmpty())throw new IllegalStateException("No cached recipe sources");
 for(String path:files){
- var resource=snapshot.resource(path);
- try(var first=resource.get();var second=resource.get()){
+ net.minecraft.server.packs.resources.IoSupplier<java.io.InputStream> resource=snapshot.resource(path);
+ try(var first=resource.m_247737_();var second=resource.m_247737_()){
   byte[] expected=second.readAllBytes();int head=first.read();
   if(expected.length>0&&head!=Byte.toUnsignedInt(expected[0]))throw new IllegalStateException("Shared cursor");
   if(expected.length>0)expected[0]^=1;
-  try(var fresh=resource.get()){
+  try(var fresh=resource.m_247737_()){
    byte[] independent=fresh.readAllBytes();
    if(expected.length>0&&expected[0]==independent[0])throw new IllegalStateException("Source array exposed");
   }
