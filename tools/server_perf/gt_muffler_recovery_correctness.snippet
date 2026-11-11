@@ -1,0 +1,33 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var optionField=com.society.sunlitindustry.performance.gt.GtMufflerRecoveryConfig.class.getDeclaredField("RECOVERY");optionField.setAccessible(true);
+var option=(net.minecraftforge.common.ForgeConfigSpec.BooleanValue)optionField.get(null);boolean original=option.get();
+var level=server.m_129783_();var pos=new net.minecraft.core.BlockPos(112,100,80);var oldState=level.m_8055_(pos);
+if(level.m_7702_(pos)!=null)throw new IllegalStateException("Muffler probe fixture already contains a block entity");
+int comparisons=0;
+try{
+ for(String tier:new String[]{"lv","hv","uv","uhv","uev"}){
+  level.m_46597_(pos,com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation("gtceu:"+tier+"_muffler_hatch")).getBlock().m_49966_());
+  var machine=(com.gregtechceu.gtceu.common.machine.multiblock.part.MufflerPartMachine)com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(level,pos);
+  var inventory=machine.getInventory();
+  var stone=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:cobblestone"));
+  var dirt=net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("minecraft:dirt"));
+  for(int scenario=0;scenario<6;scenario++)for(int seed=0;seed<64;seed++){
+   int length=scenario==0?0:scenario==1?1:inventory.getSlots()+5;
+   var items=new net.minecraft.world.item.ItemStack[length];
+   for(int i=0;i<length;i++)items[i]=new net.minecraft.world.item.ItemStack(i%2==0?stone:dirt,scenario==5?0:i%3+1);
+   String expected=null;
+   for(boolean optimized:new boolean[]{false,true}){
+    option.set(optimized);inventory.clear();
+    if(scenario>=3)for(int i=0;i<inventory.getSlots();i++)inventory.setStackInSlot(i,new net.minecraft.world.item.ItemStack(i%2==0?stone:dirt,scenario==3?64:61));
+    com.gregtechceu.gtceu.api.GTValues.RNG.m_188584_(20261111L+seed);
+    for(int run=0;run<24;run++)machine.recoverItemsTable(items);
+    var trace=new StringBuilder(inventory.serializeNBT().toString()).append("|rng=").append(com.gregtechceu.gtceu.api.GTValues.RNG.m_188505_()).append("|templates=");
+    for(var stack:items)trace.append(stack.m_41613_()).append(',');
+    if(!optimized)expected=trace.toString();else if(!expected.equals(trace.toString()))throw new IllegalStateException("Muffler recovery mismatch tier="+tier+" scenario="+scenario+" seed="+seed);
+   }
+   comparisons++;
+  }
+ }
+ return "PASS muffler native/loop inventory, RNG tail, truncation, full/partial inventory and unchanged templates comparisons="+comparisons;
+}finally{option.set(original);level.m_46597_(pos,oldState);}
