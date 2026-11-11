@@ -1,5 +1,7 @@
 package com.society.sunlitindustry.performance.resources;
 
+import net.minecraft.server.packs.resources.IoSupplier;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -24,6 +26,7 @@ import java.util.NavigableMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.zip.ZipFile;
 
@@ -191,7 +194,7 @@ public final class ArchiveSnapshotStore {
                 output.writeInt(snapshot.entries.size());
                 for (var entry : snapshot.entries.entrySet()) {
                     output.writeUTF(entry.getKey());
-                    byte[] bytes = entry.getValue();
+                    byte[] bytes = entry.getValue().bytes;
                     output.writeInt(bytes == null ? -1 : bytes.length);
                     if (bytes != null) output.write(bytes);
                 }
@@ -256,24 +259,31 @@ public final class ArchiveSnapshotStore {
     }
 
     public static final class Snapshot {
-        private final NavigableMap<String, byte[]> entries;
+        private final NavigableMap<String, Resource> entries;
         private final long weight;
 
         private Snapshot(Map<String, byte[]> entries) {
-            this.entries = Collections.unmodifiableNavigableMap(new TreeMap<>(entries));
+            TreeMap<String, Resource> indexed = new TreeMap<>();
             long size = 0;
             for (var entry : entries.entrySet()) {
                 size += 96L + entry.getKey().length() * 2L;
-                if (entry.getValue() != null) size += entry.getValue().length;
+                byte[] bytes = entry.getValue();
+                indexed.put(entry.getKey(), bytes == null ? Resource.UNCACHED : new Resource(bytes));
+                if (bytes != null) size += 24L + bytes.length;
             }
+            this.entries = Collections.unmodifiableNavigableMap(indexed);
             weight = size;
         }
 
         public boolean contains(String path) { return entries.containsKey(path); }
-        public boolean hasBytes(String path) { return entries.get(path) != null; }
+        public boolean hasBytes(String path) {
+            Resource resource = entries.get(path);
+            return resource != null && resource.hasBytes();
+        }
+        public Resource resource(String path) { return entries.get(path); }
         public InputStream open(String path) {
-            byte[] data = entries.get(path);
-            return data == null ? null : new ByteArrayInputStream(data);
+            Resource resource = entries.get(path);
+            return resource == null || !resource.hasBytes() ? null : resource.open();
         }
         public List<String> list(String prefix) {
             return List.copyOf(entries.subMap(prefix, true, prefix + '\uffff', true).keySet());
@@ -281,6 +291,31 @@ public final class ArchiveSnapshotStore {
         public List<String> listTree(String path) {
             return contains(path) ? List.of(path) : list(path + "/");
         }
+        public void forEachTree(String path, BiConsumer<String, Resource> output) {
+            Resource resource = entries.get(path);
+            if (resource != null) {
+                output.accept(path, resource);
+                return;
+            }
+            String prefix = path + "/";
+            entries.subMap(prefix, true, prefix + '\uffff', true).forEach(output);
+        }
         public long weight() { return weight; }
+    }
+
+    /** Shared immutable source only. Every get returns an independent read cursor. */
+    public static final class Resource implements IoSupplier<InputStream> {
+        private static final Resource UNCACHED = new Resource(null);
+        private final byte[] bytes;
+
+        private Resource(byte[] bytes) { this.bytes = bytes; }
+        public boolean hasBytes() { return bytes != null; }
+        private InputStream open() { return new ByteArrayInputStream(bytes); }
+
+        @Override
+        public InputStream get() throws IOException {
+            if (bytes == null) throw new IOException("Resource source bytes are not cached");
+            return open();
+        }
     }
 }

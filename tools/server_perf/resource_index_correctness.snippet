@@ -1,0 +1,62 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var info=net.minecraftforge.fml.loading.FMLLoader.getLoadingModList().getModFiles().stream().filter(f->f.getMods().stream().anyMatch(m->m.getModId().equals("zmod"))).findFirst().orElseThrow();
+var file=info.getFile();
+var binding=com.society.sunlitindustry.performance.resources.ArchiveResourceCache.bind(file.getFilePath());
+var snapshot=com.society.sunlitindustry.performance.resources.ArchiveResourceCache.snapshot(binding);
+if(snapshot==null)throw new IllegalStateException("zmod snapshot was not admitted");
+var pack=net.minecraftforge.resource.ResourcePackLoader.getPackFor("zmod").orElseThrow();
+int comparedTrees=0,comparedFiles=0,cachedSources=0,uncachedSources=0;
+for(String tree:new String[]{"data/zmod/recipes","data/zmod/tags/items","assets/zmod/models","assets/zmod/textures"}){
+ String[] split=tree.split("/",3);String typeName=split[0],namespace=split[1],directory=split[2];
+ var type=typeName.equals("data")?net.minecraft.server.packs.PackType.SERVER_DATA:net.minecraft.server.packs.PackType.CLIENT_RESOURCES;
+ String base=typeName+"/"+namespace+"/";
+ var nativeSources=new java.util.TreeMap<String,net.minecraft.server.packs.resources.IoSupplier<java.io.InputStream>>();
+ net.minecraft.server.packs.PathPackResources.m_246914_(namespace,file.findResource(typeName,namespace).toAbsolutePath(),java.util.List.of(directory.split("/")),(id,supplier)->nativeSources.put(id.toString(),supplier));
+ var indexedSources=new java.util.TreeMap<String,net.minecraft.server.packs.resources.IoSupplier<java.io.InputStream>>();
+ snapshot.forEachTree(tree,(name,resource)->{
+  var id=net.minecraft.resources.ResourceLocation.tryParse(namespace+":"+name.substring(base.length()));
+  if(id!=null)indexedSources.put(id.toString(),resource.hasBytes()?resource:nativeSources.get(id.toString()));
+ });
+ var intercepted=new java.util.TreeMap<String,net.minecraft.server.packs.resources.IoSupplier<java.io.InputStream>>();
+ pack.m_8031_(type,namespace,directory,(id,supplier)->intercepted.put(id.toString(),supplier));
+ if(!nativeSources.keySet().equals(indexedSources.keySet())||!nativeSources.keySet().equals(intercepted.keySet()))throw new IllegalStateException("Listing changed: "+tree);
+ int opened=0;
+ for(var entry:nativeSources.entrySet()){
+  var indexed=indexedSources.get(entry.getKey());
+  if(indexed==null)throw new IllegalStateException("Missing fallback supplier: "+entry.getKey());
+  var id=new net.minecraft.resources.ResourceLocation(entry.getKey());
+  String path=base+id.m_135815_();
+  var source=snapshot.resource(path);
+  if(source.hasBytes()){
+   cachedSources++;
+   if(indexed!=source||intercepted.get(entry.getKey())!=source)throw new IllegalStateException("Cached supplier was not reused");
+  }else uncachedSources++;
+  if(opened++>=100)continue;
+  try(var original=entry.getValue().get();var cached=indexed.get();var actual=intercepted.get(entry.getKey()).get()){
+   byte[] expected=original.readAllBytes();
+   if(!java.util.Arrays.equals(expected,cached.readAllBytes())||!java.util.Arrays.equals(expected,actual.readAllBytes()))throw new IllegalStateException("Changed source bytes: "+entry.getKey());
+  }
+  comparedFiles++;
+ }
+ comparedTrees++;
+}
+var files=snapshot.list("data/zmod/recipes/").stream().filter(snapshot::hasBytes).limit(10).toList();
+if(files.isEmpty())throw new IllegalStateException("No cached recipe sources");
+for(String path:files){
+ var resource=snapshot.resource(path);
+ try(var first=resource.get();var second=resource.get()){
+  byte[] expected=second.readAllBytes();int head=first.read();
+  if(expected.length>0&&head!=Byte.toUnsignedInt(expected[0]))throw new IllegalStateException("Shared cursor");
+  if(expected.length>0)expected[0]^=1;
+  try(var fresh=resource.get()){
+   byte[] independent=fresh.readAllBytes();
+   if(expected.length>0&&expected[0]==independent[0])throw new IllegalStateException("Source array exposed");
+  }
+ }
+ var exact=new java.util.ArrayList<String>();snapshot.forEachTree(path,(name,source)->exact.add(name));
+ if(!exact.equals(java.util.List.of(path)))throw new IllegalStateException("Exact file listing changed");
+}
+var absent=new java.util.ArrayList<String>();snapshot.forEachTree("data/zmod/sunlit_missing_resource_test",(name,source)->absent.add(name));
+if(!absent.isEmpty()||snapshot.resource("data/zmod/sunlit_missing_resource_test.json")!=null)throw new IllegalStateException("Missing resources reappeared");
+return "PASS trees="+comparedTrees+" sourceComparisons="+comparedFiles+" cachedSuppliers="+cachedSources+" nativeFallbackSuppliers="+uncachedSources+" independentCursors="+files.size();

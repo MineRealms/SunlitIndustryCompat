@@ -1,0 +1,62 @@
+var server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+if(server==null||!server.m_18695_())throw new IllegalStateException("Server thread required");
+var info=net.minecraftforge.fml.loading.FMLLoader.getLoadingModList().getModFiles().stream().filter(f->f.getMods().stream().anyMatch(m->m.getModId().equals("zmod"))).findFirst().orElseThrow();
+var file=info.getFile();
+var binding=com.society.sunlitindustry.performance.resources.ArchiveResourceCache.bind(file.getFilePath());
+var snapshot=com.society.sunlitindustry.performance.resources.ArchiveResourceCache.snapshot(binding);
+if(snapshot==null)throw new IllegalStateException("zmod snapshot was not admitted");
+var paths=snapshot.list("data/zmod/recipes/").stream().filter(snapshot::hasBytes).limit(100).toList();
+if(paths.size()<10)throw new IllegalStateException("Insufficient recipe samples");
+var bean=(com.sun.management.ThreadMXBean)java.lang.management.ManagementFactory.getThreadMXBean();bean.setThreadAllocatedMemoryEnabled(true);long tid=Thread.currentThread().getId();
+var result=new com.google.gson.JsonObject();var samples=new com.google.gson.JsonArray();
+result.addProperty("sourceCount",paths.size());result.addProperty("treeCount",snapshot.listTree("data/zmod/recipes").size());
+for(String mode:new String[]{"native-source","previous-supplier","indexed-supplier"})for(int round=-4;round<5;round++){
+ long allocatedBefore=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;int iterations=20000;
+ for(int i=0;i<iterations;i++){
+  String path=paths.get(i%paths.size());
+  net.minecraft.server.packs.resources.IoSupplier<java.io.InputStream> supplier;
+  if(mode.equals("native-source"))supplier=net.minecraft.server.packs.resources.IoSupplier.m_246697_(file.findResource(path.split("/")));
+  else{
+   var current=com.society.sunlitindustry.performance.resources.ArchiveResourceCache.snapshot(binding);
+   if(mode.equals("previous-supplier")){
+    if(!current.contains(path)||!current.hasBytes(path))throw new IllegalStateException("Missing source");
+    supplier=()->{
+     var repeated=com.society.sunlitindustry.performance.resources.ArchiveResourceCache.snapshot(binding);
+     var stream=repeated==null?null:repeated.open(path);
+     return stream==null?java.nio.file.Files.newInputStream(file.findResource(path.split("/"))):stream;
+    };
+   }else{
+    var resource=current.resource(path);
+    if(resource==null||!resource.hasBytes())throw new IllegalStateException("Missing cached resource");
+    supplier=resource;
+   }
+  }
+  try(var stream=supplier.get()){checksum+=stream.readAllBytes().length;}
+ }
+ long nanos=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-allocatedBefore;
+ var row=new com.google.gson.JsonObject();row.addProperty("workload","source-open");row.addProperty("mode",mode);row.addProperty("round",round);row.addProperty("iterations",iterations);row.addProperty("nanosPerOp",nanos/(double)iterations);row.addProperty("bytesPerOp",allocated/(double)iterations);row.addProperty("checksum",checksum);samples.add(row);
+}
+for(String mode:new String[]{"native-list","previous-list-copy","indexed-list"})for(int round=-4;round<5;round++){
+ long allocatedBefore=bean.getThreadAllocatedBytes(tid),start=System.nanoTime(),checksum=0;int iterations=300;
+ for(int i=0;i<iterations;i++){
+  var output=new java.util.HashMap<String,net.minecraft.server.packs.resources.IoSupplier<java.io.InputStream>>();
+  if(mode.equals("native-list"))net.minecraft.server.packs.PathPackResources.m_246914_("zmod",file.findResource("data","zmod").toAbsolutePath(),java.util.List.of("recipes"),(id,supplier)->output.put(id.toString(),supplier));
+  else if(mode.equals("previous-list-copy"))for(String name:snapshot.listTree("data/zmod/recipes")){
+   var id=net.minecraft.resources.ResourceLocation.tryParse("zmod:"+name.substring("data/zmod/".length()));
+   if(id==null)continue;
+   output.put(id.toString(),()->{
+    var current=com.society.sunlitindustry.performance.resources.ArchiveResourceCache.snapshot(binding);
+    var stream=current==null?null:current.open(name);
+    return stream==null?java.nio.file.Files.newInputStream(file.findResource(name.split("/"))):stream;
+   });
+  }else snapshot.forEachTree("data/zmod/recipes",(name,resource)->{
+   var id=net.minecraft.resources.ResourceLocation.tryParse("zmod:"+name.substring("data/zmod/".length()));
+   if(id==null)return;
+   output.put(id.toString(),resource.hasBytes()?resource:()->java.nio.file.Files.newInputStream(file.findResource(name.split("/"))));
+  });
+  checksum+=output.size();for(var entry:output.entrySet())checksum+=entry.getKey().length();
+ }
+ long nanos=System.nanoTime()-start,allocated=bean.getThreadAllocatedBytes(tid)-allocatedBefore;
+ var row=new com.google.gson.JsonObject();row.addProperty("workload","tree-list");row.addProperty("mode",mode);row.addProperty("round",round);row.addProperty("iterations",iterations);row.addProperty("nanosPerOp",nanos/(double)iterations);row.addProperty("bytesPerOp",allocated/(double)iterations);row.addProperty("checksum",checksum);samples.add(row);
+}
+result.add("samples",samples);return "PASS "+result;

@@ -80,6 +80,44 @@ class ArchiveSnapshotStoreTest {
     }
 
     @Test
+    void sharedSuppliersKeepIndependentCursorsAndPrivateSourceBytes() throws IOException {
+        Path archive = archive(Map.of("data/test/recipes/a.json", "{\"x\":1}"));
+        var store = store();
+        var snapshot = store.get(archive, store.identify(archive));
+        var resource = snapshot.resource("data/test/recipes/a.json");
+        assertSame(resource, snapshot.resource("data/test/recipes/a.json"));
+        try (var first = resource.get(); var second = resource.get()) {
+            assertEquals('{', first.read());
+            assertEquals('{', second.read());
+            first.readAllBytes()[0] = 0;
+            assertEquals('"', second.read());
+        }
+        try (var fresh = resource.get()) { assertEquals('{', fresh.read()); }
+        assertNull(snapshot.resource("data/test/recipes/missing.json"));
+    }
+
+    @Test
+    void indexedTraversalMatchesFileAndDirectoryBoundaries() throws IOException {
+        Path archive = archive(Map.of("data/test/recipes/a.json", "{}",
+                "data/test/recipes/nested/b.json", "{}", "data/test/recipes_extra/c.json", "{}",
+                "assets/test/textures/a.png", "image"));
+        var store = store();
+        var snapshot = store.get(archive, store.identify(archive));
+        var listed = new java.util.ArrayList<String>();
+        snapshot.forEachTree("data/test/recipes", (name, resource) -> listed.add(name));
+        assertEquals(snapshot.listTree("data/test/recipes"), listed);
+        assertEquals(2, listed.size());
+        listed.clear();
+        snapshot.forEachTree("data/test/recipes/a.json", (name, resource) -> listed.add(name));
+        assertEquals(java.util.List.of("data/test/recipes/a.json"), listed);
+        var image = snapshot.resource("assets/test/textures/a.png");
+        assertNotNull(image);
+        assertFalse(image.hasBytes());
+        assertThrows(IOException.class, image::get);
+        assertNull(snapshot.open("assets/test/textures/a.png"));
+    }
+
+    @Test
     void admissionLimitDoesNotRepeatedlyReadAnUncacheableArchive() throws IOException {
         Path archive = archive(Map.of("data/test/recipes/a.json", "{}"));
         var store = new ArchiveSnapshotStore(temporary.resolve("small-cache"), 1);

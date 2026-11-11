@@ -8,7 +8,6 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraftforge.resource.PathPackResources;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,7 +18,6 @@ import java.io.InputStream;
 
 @Mixin(PathPackResources.class)
 public abstract class ImmutableArchiveResourcesMixin {
-    @Shadow(remap = false) protected abstract java.nio.file.Path resolve(String... paths);
     @Unique private volatile ArchiveResourceCache.Binding sunlitindustry$archive;
     @Unique private volatile boolean sunlitindustry$identified;
 
@@ -44,15 +42,11 @@ public abstract class ImmutableArchiveResourcesMixin {
         var snapshot = ArchiveResourceCache.snapshot(binding);
         if (snapshot == null) return;
         String path = binding.prefix() + String.join("/", paths);
-        if (!snapshot.contains(path)) {
+        var resource = snapshot.resource(path);
+        if (resource == null) {
             cir.setReturnValue(null);
-        } else if (snapshot.hasBytes(path)) {
-            cir.setReturnValue(() -> {
-                var current = ArchiveResourceCache.snapshot(binding);
-                InputStream bytes = current == null ? null : current.open(path);
-                if (bytes != null) return bytes;
-                return java.nio.file.Files.newInputStream(resolve(paths));
-            });
+        } else if (resource.hasBytes()) {
+            cir.setReturnValue(resource);
         }
     }
 
@@ -65,18 +59,19 @@ public abstract class ImmutableArchiveResourcesMixin {
         if (snapshot == null) return;
         String base = binding.prefix() + type.getDirectory() + "/" + namespace + "/";
         PathPackResources pack = (PathPackResources) (Object) this;
-        for (String name : snapshot.listTree(base + path)) {
+        snapshot.forEachTree(base + path, (name, resource) -> {
             ResourceLocation id = ResourceLocation.tryParse(namespace + ":" + name.substring(base.length()));
-            if (id == null) continue;
+            if (id == null) return;
+            if (resource.hasBytes()) {
+                output.accept(id, resource);
+                return;
+            }
             output.accept(id, () -> {
-                var current = ArchiveResourceCache.snapshot(binding);
-                InputStream cached = current == null ? null : current.open(name);
-                if (cached != null) return cached;
                 var original = pack.getResource(type, id);
                 if (original == null) throw new java.io.FileNotFoundException(id.toString());
                 return original.get();
             });
-        }
+        });
         ci.cancel();
     }
 }
