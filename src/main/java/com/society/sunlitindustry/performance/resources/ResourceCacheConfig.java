@@ -8,8 +8,9 @@ import net.minecraftforge.fml.config.ModConfig;
 public final class ResourceCacheConfig {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     private static final ForgeConfigSpec.BooleanValue ENABLED = BUILDER
-            .comment("Content-addressed snapshots of immutable mod archives. Dynamic packs and directories stay native.")
-            .define("immutableArchiveCache", true);
+            .comment("Opt-in content-addressed snapshots of immutable mod archives. Dynamic packs and directories stay native.",
+                    "Evicted archives use native resource access until the next server resource reload.")
+            .define("immutableArchiveCache", false);
     private static final ForgeConfigSpec.BooleanValue CLIENT = BUILDER
             .comment("Cache model JSON/metadata source bytes, never baked models. Disabled with ModernFix or Fusion.")
             .define("clientModelSourceCache", false);
@@ -19,8 +20,8 @@ public final class ResourceCacheConfig {
     private static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean enabled() {
-        return ServerPerformanceConfig.enabled()
-                && (!SPEC.isLoaded() || ENABLED.get());
+        return !Boolean.getBoolean("sunlitindustry.disableArchiveCache") && ServerPerformanceConfig.enabled()
+                && (SPEC.isLoaded() ? ENABLED.get() : ENABLED.getDefault());
     }
 
     public static boolean clientModels() { return SPEC.isLoaded() && CLIENT.get(); }

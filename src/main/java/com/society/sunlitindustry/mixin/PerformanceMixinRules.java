@@ -19,7 +19,7 @@ final class PerformanceMixinRules {
             return version("ae2", "15.4.10") && !conflict();
         }
         if (mixin.contains(".mixin.performance.resources.")) {
-            return !disabled() && !conflict()
+            return !disabled() && !Boolean.getBoolean("sunlitindustry.disableArchiveCache") && !conflict()
                     && (FMLLoader.getDist().isDedicatedServer()
                     || (!loaded("modernfix") && !loaded("fusion")));
         }

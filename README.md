@@ -90,7 +90,9 @@ archive 身份使用完整文件 SHA-256，在不可变 archive 的进程生命�
 
 ![Snapshot weight W = sum over paths of (96 + 2 * path length) + sum over cached bytes of (24 + byte length)](docs/formulas/snapshot-weight.png)
 
-这是缓存记账公式，不是 JVM 对象布局的精确测量。默认 32 MiB 总预算；每 archive 最多 500,000 项、每文件 1 MiB、选定字节最多 16 MiB，磁盘快照约束为 512 MiB。达到总预算时 LRU 淘汰，单份超大快照旁路；配置额度变化会重建 store。磁盘校验失败从 archive 重建，其他不可恢复情况回退原生资源路径。
+这是缓存记账公式，不是 JVM 对象布局的精确测量。资源快照缓存默认关闭，主动开启后默认 32 MiB 总预算；每 archive 最多 500,000 项、每文件 1 MiB、选定字节最多 16 MiB，磁盘快照约束为 512 MiB。达到总预算时 LRU 淘汰，淘汰后的归档在本轮资源加载中回退原生读取，避免循环工作集反复整包反序列化；每轮最多尝试装载 2048 个不同归档，下一轮服务端资源重载允许重试。配置额度变化会重建 store。磁盘校验失败从 archive 重建，其他不可恢复情况回退原生资源路径。启动参数 `-Dsunlitindustry.disableArchiveCache=true` 可直接禁用该资源 Mixin。
+
+0.8.1 修复了超容量工作集的缓存抖动，复现数据和验证边界见 [资源缓存启动问题分析](docs/RESOURCE_CACHE_STARTUP_20261112.md)。已有配置需要显式设置 `immutableArchiveCache = false` 才会关闭；新默认值不覆盖已有的 `true`。
 
 缓存已经发出的 supplier 可被消费者继续持有，因此预算限制的是 store 的估算驻留量，不是整个进程内存硬上限。
 

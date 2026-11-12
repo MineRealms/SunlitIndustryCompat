@@ -18,11 +18,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.concurrent.atomic.LongAdder;
@@ -36,17 +38,20 @@ public final class ArchiveSnapshotStore {
     private static final int MAX_FILE = 1 << 20;
     private static final int MAX_DATA = 16 << 20;
     private static final long MAX_DISK = 512L << 20;
+    private static final int MAX_LOADS_PER_RELOAD = 2048;
     private final Path directory;
     private final long memoryLimit;
     private final boolean clientSources;
     private final LinkedHashMap<Path, String> digests = new LinkedHashMap<>(16, .75f, true);
     private final LinkedHashMap<String, Snapshot> snapshots = new LinkedHashMap<>(16, .75f, true);
     private final LinkedHashMap<String, Boolean> oversized = new LinkedHashMap<>(16, .75f, true);
+    private final Set<String> loadedThisReload = new HashSet<>();
     private long retained;
     private final LongAdder hits = new LongAdder();
     private final LongAdder diskHits = new LongAdder();
     private final LongAdder builds = new LongAdder();
     private final LongAdder failures = new LongAdder();
+    private final LongAdder nativeFallbacks = new LongAdder();
 
     public ArchiveSnapshotStore(Path directory, long memoryLimit) {
         this(directory, memoryLimit, true);
@@ -78,6 +83,13 @@ public final class ArchiveSnapshotStore {
             hits.increment();
             return existing;
         }
+        // Rehydrating evicted packs on every resource query causes cyclic working sets
+        // to serialize on disk I/O and allocate a whole snapshot per missing resource.
+        if (loadedThisReload.contains(digest) || loadedThisReload.size() >= MAX_LOADS_PER_RELOAD) {
+            nativeFallbacks.increment();
+            return null;
+        }
+        loadedThisReload.add(digest);
         Path cache = directory.resolve(digest + ".bin");
         Snapshot snapshot;
         try {
@@ -94,7 +106,7 @@ public final class ArchiveSnapshotStore {
         }
         long weight = snapshot.weight();
         if (weight > memoryLimit) {
-            // Only intrinsically oversized snapshots stay native; a full cache must not blacklist a pack.
+            // Intrinsically oversized snapshots cannot be admitted at this capacity.
             if (oversized.size() >= 2048) oversized.remove(oversized.keySet().iterator().next());
             oversized.put(digest, Boolean.TRUE);
             return null;
@@ -111,16 +123,21 @@ public final class ArchiveSnapshotStore {
 
     long memoryLimit() { return memoryLimit; }
 
+    public synchronized void beginReload() {
+        loadedThisReload.clear();
+    }
+
     public synchronized void clearMemory() {
         snapshots.clear();
         oversized.clear();
+        loadedThisReload.clear();
         retained = 0;
     }
 
     public synchronized Map<String, Long> statistics() {
         return Map.of("memoryHits", hits.sum(), "diskHits", diskHits.sum(), "builds", builds.sum(),
                 "writeFailures", failures.sum(), "retainedBytes", retained, "snapshots", (long) snapshots.size(),
-                "bypassed", (long) oversized.size());
+                "bypassed", (long) oversized.size(), "nativeFallbacks", nativeFallbacks.sum());
     }
 
     private Snapshot build(Path archive) throws IOException {

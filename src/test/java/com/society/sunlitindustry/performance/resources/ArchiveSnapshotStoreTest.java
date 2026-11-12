@@ -130,7 +130,7 @@ class ArchiveSnapshotStoreTest {
     }
 
     @Test
-    void fullCacheEvictsLeastRecentSnapshotAndAllowsItToReturn() throws IOException {
+    void evictionUsesNativeFallbackUntilTheNextReload() throws IOException {
         Path first = archive("first.jar", Map.of("data/test/recipes/a.json", "{\"x\":1}"));
         Path second = archive("second.jar", Map.of("data/test/recipes/a.json", "{\"x\":2}"));
         Path third = archive("third.jar", Map.of("data/test/recipes/a.json", "{\"x\":3}"));
@@ -145,6 +145,10 @@ class ArchiveSnapshotStoreTest {
         assertSame(firstSnapshot, store.get(first, firstDigest));
         assertNotNull(store.get(third, thirdDigest));
         assertSame(firstSnapshot, store.get(first, firstDigest));
+        assertNull(store.get(second, secondDigest));
+        assertEquals(0L, store.statistics().get("diskHits"));
+        assertEquals(1L, store.statistics().get("nativeFallbacks"));
+        store.beginReload();
         assertNotSame(secondSnapshot, store.get(second, secondDigest));
         assertEquals(1L, store.statistics().get("diskHits"));
         assertEquals(2L, store.statistics().get("snapshots"));
@@ -153,6 +157,36 @@ class ArchiveSnapshotStoreTest {
         store.clearMemory();
         assertEquals(0L, store.statistics().get("retainedBytes"));
         assertNotNull(store.get(first, firstDigest));
+    }
+
+    @Test
+    void cyclicWorkingSetLargerThanCacheDoesNotRehydrateOnEveryLookup() throws IOException {
+        Path[] archives = {
+                archive("a.jar", Map.of("data/test/recipes/a.json", "{\"x\":1}")),
+                archive("b.jar", Map.of("data/test/recipes/a.json", "{\"x\":2}")),
+                archive("c.jar", Map.of("data/test/recipes/a.json", "{\"x\":3}"))
+        };
+        var sizing = store();
+        long weight = sizing.get(archives[0], sizing.identify(archives[0])).weight();
+        var store = new ArchiveSnapshotStore(temporary.resolve("cyclic-cache"), weight * 2);
+        String[] digests = new String[archives.length];
+        for (int i = 0; i < archives.length; i++) {
+            digests[i] = store.identify(archives[i]);
+            assertNotNull(store.get(archives[i], digests[i]));
+        }
+        for (int i = 0; i < 60; i++) {
+            int pack = i % archives.length;
+            var snapshot = store.get(archives[pack], digests[pack]);
+            if (pack == 0) assertNull(snapshot);
+            else assertFalse(snapshot.contains("data/test/recipes/missing.json"));
+        }
+        assertEquals(0L, store.statistics().get("diskHits"));
+        assertEquals(3L, store.statistics().get("builds"));
+        assertEquals(20L, store.statistics().get("nativeFallbacks"));
+        assertEquals(weight * 2, store.statistics().get("retainedBytes"));
+        store.beginReload();
+        assertNotNull(store.get(archives[0], digests[0]));
+        assertEquals(1L, store.statistics().get("diskHits"));
     }
 
     @Test

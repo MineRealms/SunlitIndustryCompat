@@ -9,11 +9,14 @@ import com.society.sunlitindustry.performance.gt.GtAdvancedConfig;
 import com.society.sunlitindustry.performance.gt.GtAdvancedLifecycle;
 import com.society.sunlitindustry.performance.gt.GtMufflerRecoveryConfig;
 import com.society.sunlitindustry.performance.resources.ResourceCacheConfig;
+import com.society.sunlitindustry.performance.resources.ArchiveResourceCache;
 import com.society.sunlitindustry.performance.world.WorldPerformanceConfig;
 import com.society.sunlitindustry.performance.tiangong.TiangongClientConfig;
 import com.society.sunlitindustry.performance.tiangong.server.TianGongServerConfig;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TagsUpdatedEvent;
+import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -31,6 +34,8 @@ public final class PerformanceBootstrap {
         Ae2PlannerConfig.register();
         AE2NetworkConfig.register();
         ResourceCacheConfig.register();
+        MinecraftForge.EVENT_BUS.addListener(PerformanceBootstrap::resourcesReloading);
+        MinecraftForge.EVENT_BUS.addListener(PerformanceBootstrap::serverStopped);
         WorldPerformanceConfig.register();
         if (ModList.get().isLoaded("zmod")) {
             if (FMLLoader.getDist().isDedicatedServer()) TianGongServerConfig.register();
@@ -50,6 +55,10 @@ public final class PerformanceBootstrap {
     }
 
     private static void tagsUpdated(TagsUpdatedEvent event) { invalidateGtOnServerThread(); }
+
+    private static void resourcesReloading(AddReloadListenerEvent event) { ArchiveResourceCache.beginReload(); }
+
+    private static void serverStopped(ServerStoppedEvent event) { ArchiveResourceCache.clearMemory(); }
 
     private static void configReloaded(ModConfigEvent.Reloading event) {
         if (event.getConfig().getModId().equals("sunlitindustry")) invalidateGtOnServerThread();

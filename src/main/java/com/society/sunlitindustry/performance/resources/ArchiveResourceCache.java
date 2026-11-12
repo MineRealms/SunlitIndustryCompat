@@ -60,6 +60,16 @@ public final class ArchiveResourceCache {
 
     public static Map<String, Long> statistics() { return getStore().statistics(); }
 
+    public static void beginReload() {
+        var current = store;
+        if (current != null) current.beginReload();
+    }
+
+    public static void clearMemory() {
+        var current = store;
+        if (current != null) current.clearMemory();
+    }
+
     private static ArchiveSnapshotStore getStore() {
         long limit = (long) ResourceCacheConfig.memoryMiB() << 20;
         var current = store;
