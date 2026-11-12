@@ -30,3 +30,9 @@ The recorded result is `validation-20261112.json`.
 The quest description patch is separately stored in
 `pack/quest_patches/gt_addon_descriptions.patch`. Its four target chapters are
 already edited in the local pack. Do not apply it there a second time.
+
+The independent GTNN/GTCA progression chapters, layout results and space-module
+recipe validation are documented in docs/GT_ADDON_CHAPTERS_20261112.md.
+verify_quests.py exports the live chapter item IDs and can compare them
+against the server probe. verify_space_snapshot.cjs checks the module,
+drone, motor, structure, orbital batch and mining recipe contracts.

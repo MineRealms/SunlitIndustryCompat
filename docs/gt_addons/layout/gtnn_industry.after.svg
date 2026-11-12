@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="730" height="766.0" viewBox="0 0 730 766.0">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<style>text{font-family:Microsoft YaHei,Segoe UI,sans-serif}</style>
+<text x="20" y="28" font-size="16">gtnn_industry: after</text>
+<line x1="113" y1="341.0" x2="185" y2="113.0" stroke="#74849b" stroke-width="1"/>
+<line x1="185" y1="113.0" x2="257" y2="113.0" stroke="#74849b" stroke-width="1"/>
+<line x1="257" y1="113.0" x2="329" y2="113.0" stroke="#74849b" stroke-width="1"/>
+<line x1="329" y1="113.0" x2="401" y2="113.0" stroke="#74849b" stroke-width="1"/>
+<line x1="113" y1="341.0" x2="185" y2="233.0" stroke="#74849b" stroke-width="1"/>
+<line x1="185" y1="233.0" x2="257" y2="245.0" stroke="#74849b" stroke-width="1"/>
+<line x1="257" y1="245.0" x2="329" y2="197.0" stroke="#74849b" stroke-width="1"/>
+<line x1="257" y1="245.0" x2="329" y2="293.0" stroke="#74849b" stroke-width="1"/>
+<line x1="257" y1="245.0" x2="401" y2="269.0" stroke="#74849b" stroke-width="1"/>
+<line x1="401" y1="269.0" x2="473" y2="281.0" stroke="#74849b" stroke-width="1"/>
+<line x1="257" y1="245.0" x2="473" y2="221.0" stroke="#74849b" stroke-width="1"/>
+<line x1="113" y1="341.0" x2="185" y2="329.0" stroke="#74849b" stroke-width="1"/>
+<line x1="185" y1="329.0" x2="257" y2="353.0" stroke="#74849b" stroke-width="1"/>
+<line x1="257" y1="353.0" x2="329" y2="353.0" stroke="#74849b" stroke-width="1"/>
+<line x1="329" y1="353.0" x2="401" y2="341.0" stroke="#74849b" stroke-width="1"/>
+<line x1="401" y1="341.0" x2="473" y2="341.0" stroke="#74849b" stroke-width="1"/>
+<line x1="473" y1="341.0" x2="545" y2="341.0" stroke="#74849b" stroke-width="1"/>
+<line x1="545" y1="341.0" x2="617" y2="329.0" stroke="#74849b" stroke-width="1"/>
+<line x1="545" y1="341.0" x2="617" y2="389.0" stroke="#74849b" stroke-width="1"/>
+<line x1="113" y1="341.0" x2="185" y2="401.0" stroke="#74849b" stroke-width="1"/>
+<line x1="185" y1="401.0" x2="257" y2="449.0" stroke="#74849b" stroke-width="1"/>
+<line x1="257" y1="449.0" x2="329" y2="449.0" stroke="#74849b" stroke-width="1"/>
+<line x1="113" y1="341.0" x2="185" y2="497.0" stroke="#74849b" stroke-width="1"/>
+<line x1="185" y1="497.0" x2="257" y2="557.0" stroke="#74849b" stroke-width="1"/>
+<line x1="257" y1="557.0" x2="329" y2="533.0" stroke="#74849b" stroke-width="1"/>
+<line x1="329" y1="533.0" x2="401" y2="521.0" stroke="#74849b" stroke-width="1"/>
+<line x1="113" y1="341.0" x2="185" y2="653.0" stroke="#74849b" stroke-width="1"/>
+<line x1="185" y1="653.0" x2="257" y2="617.0" stroke="#74849b" stroke-width="1"/>
+<line x1="257" y1="617.0" x2="329" y2="629.0" stroke="#74849b" stroke-width="1"/>
+<line x1="329" y1="629.0" x2="401" y2="617.0" stroke="#74849b" stroke-width="1"/>
+<line x1="401" y1="617.0" x2="473" y2="629.0" stroke="#74849b" stroke-width="1"/>
+<line x1="473" y1="629.0" x2="545" y2="629.0" stroke="#74849b" stroke-width="1"/>
+<g><title>GTNN：工艺与量产 (587511AB67A1F3B1)</title><circle cx="113" cy="341.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="113" y="361.0" text-anchor="middle" font-size="9">A1F3B1</text></g>
+<g><title>MV：化工厂控制器 (57F6FA69E9052B7F)</title><circle cx="185" cy="113.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="185" y="133.0" text-anchor="middle" font-size="9">052B7F</text></g>
+<g><title>脱水与溶液分离 (0BDA726F597F5D6E)</title><circle cx="257" cy="113.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="257" y="133.0" text-anchor="middle" font-size="9">7F5D6E</text></g>
+<g><title>外壳、管道与电压 (7A8942E06F1BAE3B)</title><circle cx="329" cy="113.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="329" y="133.0" text-anchor="middle" font-size="9">1BAE3B</text></g>
+<g><title>专用催化剂仓 (53B36EDFBA5746FA)</title><circle cx="401" cy="113.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="401" y="133.0" text-anchor="middle" font-size="9">5746FA</text></g>
+<g><title>铂族原料分流 (397BDFF5C4A84990)</title><circle cx="185" cy="233.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="185" y="253.0" text-anchor="middle" font-size="9">A84990</text></g>
+<g><title>铂族泥渣先离心 (65CDA7EBF6D53C43)</title><circle cx="257" cy="245.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="257" y="265.0" text-anchor="middle" font-size="9">D53C43</text></g>
+<g><title>纯铂：沉淀与还原 (75414438BAA1E8C5)</title><circle cx="329" cy="197.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="329" y="217.0" text-anchor="middle" font-size="9">A1E8C5</text></g>
+<g><title>纯钯：富钯氨溶液 (63018AAE88EBE5BC)</title><circle cx="329" cy="293.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="329" y="313.0" text-anchor="middle" font-size="9">EBE5BC</text></g>
+<g><title>焦硫酸钾焙烧铂渣 (0A6BF4DC45CAB5B5)</title><circle cx="401" cy="269.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="401" y="289.0" text-anchor="middle" font-size="9">CAB5B5</text></g>
+<g><title>钌与铑的独立精炼 (7C4A177304C7D670)</title><circle cx="473" cy="281.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="473" y="301.0" text-anchor="middle" font-size="9">C7D670</text></g>
+<g><title>稀有金属中的铱与锇 (66835A336750C1CF)</title><circle cx="473" cy="221.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="473" y="241.0" text-anchor="middle" font-size="9">50C1CF</text></g>
+<g><title>困难硅岩：氧化物原料 (0DE2B97481E836E7)</title><circle cx="185" cy="329.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="185" y="349.0" text-anchor="middle" font-size="9">E836E7</text></g>
+<g><title>LuV：精密组装与夸克核心 (0CF21ABAAC439F52)</title><circle cx="257" cy="353.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="257" y="373.0" text-anchor="middle" font-size="9">439F52</text></g>
+<g><title>中子活化器整机 (70F9D550FB647FEB)</title><circle cx="329" cy="353.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="329" y="373.0" text-anchor="middle" font-size="9">647FEB</text></g>
+<g><title>能量窗口与红石控制 (463FEA668E988DE0)</title><circle cx="401" cy="341.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="401" y="361.0" text-anchor="middle" font-size="9">988DE0</text></g>
+<g><title>基础硅岩活化还原 (7D98236CA5FF4016)</title><circle cx="473" cy="341.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="473" y="361.0" text-anchor="middle" font-size="9">FF4016</text></g>
+<g><title>富集硅岩：钨钢化工厂 (18BA55210DAE38E1)</title><circle cx="545" cy="341.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="545" y="361.0" text-anchor="middle" font-size="9">AE38E1</text></g>
+<g><title>超能硅岩：高能活化与高炉 (11179D211497FA8C)</title><circle cx="617" cy="329.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="617" y="349.0" text-anchor="middle" font-size="9">97FA8C</text></g>
+<g><title>固体硅岩燃料与回收 (170E46663837DFD5)</title><circle cx="617" cy="389.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="617" y="409.0" text-anchor="middle" font-size="9">37DFD5</text></g>
+<g><title>HV：T1 重型合金 (4C57727549D1B7EA)</title><circle cx="185" cy="401.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="185" y="421.0" text-anchor="middle" font-size="9">D1B7EA</text></g>
+<g><title>EV / IV：逐级升级重型锭 (412407AB249CA377)</title><circle cx="257" cy="449.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="257" y="469.0" text-anchor="middle" font-size="9">9CA377</text></g>
+<g><title>LuV：T4 与太空重工业 (7E4BD7CCEE69EC73)</title><circle cx="329" cy="449.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="329" y="469.0" text-anchor="middle" font-size="9">69EC73</text></g>
+<g><title>煤油与 RP-1 燃料 (60BA88DEBBE9893F)</title><circle cx="185" cy="497.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="185" y="517.0" text-anchor="middle" font-size="9">E9893F</text></g>
+<g><title>过氧化氢与肼 (5B11513885D377D1)</title><circle cx="257" cy="557.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="257" y="577.0" text-anchor="middle" font-size="9">D377D1</text></g>
+<g><title>高级推进剂与 GCYR 接口 (72456655ADACB7FA)</title><circle cx="329" cy="533.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="329" y="553.0" text-anchor="middle" font-size="9">ACB7FA</text></g>
+<g><title>火箭燃料也可发电 (0F508DD024207D0C)</title><circle cx="401" cy="521.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="401" y="541.0" text-anchor="middle" font-size="9">207D0C</text></g>
+<g><title>LuV：专用电路装配线 (1241C68AD21D6AC9)</title><circle cx="185" cy="653.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="185" y="673.0" text-anchor="middle" font-size="9">1D6AC9</text></g>
+<g><title>蚀刻处理器样品 (00977F2AC475A25B)</title><circle cx="257" cy="617.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="257" y="637.0" text-anchor="middle" font-size="9">75A25B</text></g>
+<g><title>电路板与蚀刻基板 (479D69469AD22814)</title><circle cx="329" cy="629.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="329" y="649.0" text-anchor="middle" font-size="9">D22814</text></g>
+<g><title>IV 扫描：量产数据棒 (533CC3F9B3D6C6B6)</title><circle cx="401" cy="617.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="401" y="637.0" text-anchor="middle" font-size="9">D6C6B6</text></g>
+<g><title>封装元件与有序输入 (2AC421127CFC7982)</title><circle cx="473" cy="629.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="473" y="649.0" text-anchor="middle" font-size="9">FC7982</text></g>
+<g><title>十六倍产出与运行边界 (0D15A6C72F646A5D)</title><circle cx="545" cy="629.0" r="12.0" fill="#d7e7ee" stroke="#30495b"/><text x="545" y="649.0" text-anchor="middle" font-size="9">646A5D</text></g>
+</svg>

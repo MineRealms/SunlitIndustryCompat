@@ -1,0 +1,940 @@
+{
+	default_hide_dependency_lines: false,
+	default_quest_shape: "square",
+	filename: "gtnn_industry",
+	group: "4A46A5E1358A80A6",
+	icon: "gtnn:exxonmobil_chemical_plant",
+	id: "684F88BC6F73C2BD",
+	order_index: 24,
+	quest_links: [ ],
+	quests: [
+		{
+			description: [
+				"本包启用 GTNN 困难铂线与困难硅岩线。铂族金属先经历分离、沉淀和还原；富集硅岩与超能硅岩还需要中子活化及多段溶液处理。",
+				"化工设备从 MV 起步，火箭材料从 HV 开始，精密组装与电路装配线进入 LuV。各支线按实际制造条件推进，配方电压与整条产线最早可建成的阶段分别说明。",
+				"先规划酸碱、气体与副产物回流，再扩充并行。详细电压与物料用量以当前 JEI 配方为准；本章中的取得任务不消耗物品。"
+			],
+			dependencies: [
+				"1BE0349B8F3890D3"
+			],
+			icon: "gtnn:exxonmobil_chemical_plant",
+			id: "587511AB67A1F3B1",
+			tasks: [
+				{
+					id: "264E096CD3A170B3",
+					title: "规划化工、铂族、硅岩、火箭与电路产线",
+					type: "checkmark"
+				}
+			],
+			title: "GTNN：工艺与量产",
+			x: 0.0d,
+			y: 0.0d
+		},
+		{
+			description: [
+				"化工厂控制器在 MV 组装机制造，基础配方 120 EU/t、120 秒，集成电路设为 19。准备 MV 机器外壳、退火铜板、聚乙烯大管道、铝齿轮、黑物质框架与熔融黑钢。",
+				"按 JEI 的 7×7×7 预览建造厂体。工厂外壳、机器方块、管道方块和线圈分别承担结构等级、输入电压上限、并行与速度的作用，不能只升级能源仓。"
+			],
+			dependencies: [
+				"587511AB67A1F3B1"
+			],
+			icon: "gtnn:exxonmobil_chemical_plant",
+			id: "57F6FA69E9052B7F",
+			tasks: [
+				{
+					id: "379AB1A453280E73",
+					type: "item",
+					item: "gtnn:exxonmobil_chemical_plant",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "MV：化工厂控制器",
+			x: 3.0d,
+			y: -9.5d
+		},
+		{
+			description: [
+				"单方块脱水机提供 MV 至 ZPM 机型。第一台 MV 脱水机使用中压外壳、中压电路、铜线缆、钢齿轮和机械臂，适合从小规模溶液处理开始。",
+				"后续困难硅岩线要分别处理残渣溶液和超能硅岩废液，所需配方可到 EV；升级机型前先核对目标配方的电压与输出槽。大型脱水机则是 LuV 组装的另一条扩产路线。"
+			],
+			dependencies: [
+				"57F6FA69E9052B7F"
+			],
+			icon: "gtnn:mv_dehydrator",
+			id: "0BDA726F597F5D6E",
+			tasks: [
+				{
+					id: "27D9C1C6B8CD86C4",
+					type: "item",
+					item: "gtnn:mv_dehydrator",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "脱水与溶液分离",
+			x: 6.0d,
+			y: -9.5d
+		},
+		{
+			description: [
+				"化工厂外壳要求从青铜、钢、铝、不锈钢、钛到钨钢逐级提升。高等级外壳满足较低等级要求，但结构有效不代表电压条件已经满足。",
+				"RP-1 混合需要不锈钢外壳与 HV；高密度肼混合燃料需要钛外壳与 HV；富集硅岩溶液合成需要钨钢外壳与 LuV。机器方块限制可运行的配方等级。",
+				"管道等级提高并行，线圈等级缩短耗时。扩产前同时核算能源仓、液体输入速度和副产物出口，避免高并行只把堵塞提前。"
+			],
+			dependencies: [
+				"0BDA726F597F5D6E"
+			],
+			icon: "gtnn:exxonmobil_chemical_plant",
+			id: "7A8942E06F1BAE3B",
+			tasks: [
+				{
+					id: "442BF9C319EB1A42",
+					title: "核对目标配方的外壳、机器方块与供能等级",
+					type: "checkmark"
+				}
+			],
+			title: "外壳、管道与电压",
+			x: 9.0d,
+			y: -9.5d
+		},
+		{
+			description: [
+				"催化剂仓用 MV 组装机制造，但方块自身的注册等级是 IV。这两个等级分别描述制造配方和机器部件，不能据此把整个化工厂判成 IV。",
+				"催化剂放入专用催化剂仓，常规物品输入仓不能代替它。化工厂结构最多接受两个催化剂仓；按配方要求准备数量并留意催化剂的耗损。",
+				"钒与钯制成的橙色金属催化剂参与蒽醌制过氧化氢；钯碳催化剂用于富集硅岩溶液合成。把催化剂供应纳入工厂物流。"
+			],
+			dependencies: [
+				"7A8942E06F1BAE3B"
+			],
+			icon: "gtnn:catalyst_hatch",
+			id: "53B36EDFBA5746FA",
+			tasks: [
+				{
+					id: "67A12E2CCAD842B0",
+					type: "item",
+					item: "gtnn:catalyst_hatch",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "专用催化剂仓",
+			x: 12.0d,
+			y: -9.5d
+		},
+		{
+			description: [
+				"困难铂线将部分矿物副产物改为铂金属粉和钯金属粉。它们仍是待精炼的中间产物，不能直接代替配方中的纯铂粉、纯钯粉。",
+				"先对照镍矿、黄铜矿、镍黄铁矿的当前处理页，保留有价值的含铂副产物。为金属粉、铂族泥渣及稀有金属混合物设置独立出口。"
+			],
+			dependencies: [
+				"587511AB67A1F3B1"
+			],
+			icon: "gtceu:platinum_metal_dust",
+			id: "397BDFF5C4A84990",
+			tasks: [
+				{
+					id: "13DAE65DC28E0AC1",
+					type: "item",
+					item: "gtceu:platinum_metal_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "24AAA115809070FE",
+					type: "item",
+					item: "gtceu:palladium_metal_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "铂族原料分流",
+			x: 3.0d,
+			y: -4.5d
+		},
+		{
+			description: [
+				"从洁净的镍黄铁矿或黄铜矿与硫酸制取铂族泥渣；不同处理路线的收率和配方电压不同，可按现有设备选择。",
+				"GTNN 的泥渣先在离心机分离，得到二氧化硅、金、铂金属、钯金属、铱残渣和稀有金属混合物等出口。先把各个固体出口接齐，再启动连续生产。",
+				"随后铂、钯分别进入自己的溶液精炼线；稀有金属混合物与铂渣用于继续回收其它铂族金属。"
+			],
+			dependencies: [
+				"397BDFF5C4A84990"
+			],
+			icon: "gtceu:mv_centrifuge",
+			id: "65CDA7EBF6D53C43",
+			tasks: [
+				{
+					id: "1EE7204FD02299AA",
+					title: "完成一批铂族泥渣离心并分离中间产物",
+					type: "checkmark"
+				}
+			],
+			title: "铂族泥渣先离心",
+			x: 6.0d,
+			y: -4.0d
+		},
+		{
+			description: [
+				"铂金属粉经硝化混酸生成浓缩铂溶液与铂渣，再用氯化铵进行沉淀分离。保留富钯氨溶液、氮氧化物与稀硫酸出口。",
+				"筛分、焙烧得到的铂金属仍需要继续精炼。真正产出纯铂的一条末端配方是 4 份粗铂粉与 1 份钙粉，得到 2 份纯铂粉及氯化钙。",
+				"粗铂的电解路线回到铂金属中间产物，并不直接得到纯铂；连接回流时要区分这两种出口。"
+			],
+			dependencies: [
+				"65CDA7EBF6D53C43"
+			],
+			icon: "gtceu:platinum_dust",
+			id: "75414438BAA1E8C5",
+			tasks: [
+				{
+					id: "29BACE2F973F0161",
+					type: "item",
+					item: "gtceu:platinum_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "纯铂：沉淀与还原",
+			x: 9.0d,
+			y: -6.0d
+		},
+		{
+			description: [
+				"钯金属与氨形成富钯氨溶液；铂线也会提供这股溶液。继续沉淀、筛分与还原，分开处理钯盐和粗钯中间产物。",
+				"粗钯粉的纯化使用甲酸：4 份粗钯粉与 4000 mB 甲酸，得到 2 份纯钯粉和 4000 mB 氨。回收氨并补充甲酸，才能维持稳定循环。",
+				"纯钯还要分配给化工催化剂与后续电子材料，避免所有产出都被合金线抽走。"
+			],
+			dependencies: [
+				"65CDA7EBF6D53C43"
+			],
+			icon: "gtceu:palladium_dust",
+			id: "63018AAE88EBE5BC",
+			tasks: [
+				{
+					id: "025F607613034DA4",
+					type: "item",
+					item: "gtceu:palladium_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "纯钯：富钯氨溶液",
+			x: 9.0d,
+			y: -2.0d
+		},
+		{
+			description: [
+				"钾、硫和氧在 MV 化学工艺中合成焦硫酸钾，熔化后用于铂渣焙烧。这里的焦硫酸盐是其它铂族分支的关键试剂。",
+				"铂渣与熔融焦硫酸钾在 775 K 电力高炉中反应，生成惰性金属混合物和硫酸铑气体。液体输出与固体输出都必须预留。",
+				"惰性金属混合物进入钌线，硫酸铑气体进入铑线；这两股支流可与铂、钯主线并行运行。"
+			],
+			dependencies: [
+				"65CDA7EBF6D53C43"
+			],
+			icon: "gtceu:potassium_pyrosulfate_dust",
+			id: "0A6BF4DC45CAB5B5",
+			tasks: [
+				{
+					id: "39E29495B71DEE18",
+					type: "item",
+					item: "gtceu:potassium_pyrosulfate_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "焦硫酸钾焙烧铂渣",
+			x: 12.0d,
+			y: -3.0d
+		},
+		{
+			description: [
+				"钌线从惰性金属混合物继续分离；铑线从硫酸铑气体转为盐类，经锌还原、再溶解与沉淀等步骤得到纯铑。两种金属不再由简单泥渣离心直接获得。",
+				"按 JEI 分别设置硫酸盐、粗金属和滤饼回路。铑会用于后续高阶电路与电路装配线控制器，建议尽早保留独立缓冲。"
+			],
+			dependencies: [
+				"0A6BF4DC45CAB5B5"
+			],
+			icon: "gtceu:rhodium_dust",
+			id: "7C4A177304C7D670",
+			tasks: [
+				{
+					id: "332139BD5BAA0D0C",
+					type: "item",
+					item: "gtceu:ruthenium_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "5CE33DA617E48C57",
+					type: "item",
+					item: "gtceu:rhodium_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "钌与铑的独立精炼",
+			x: 15.0d,
+			y: -2.5d
+		},
+		{
+			description: [
+				"铂族泥渣离心产生的稀有金属混合物继续分离铱、锇等金属；铱残渣也有自己的处理步骤。保留这些中间物，而不是只收走纯铂。",
+				"铂渣回收与稀有金属精炼共同补齐铂族供应。酸与卤素试剂并非每一步都完全回收，连续运行时要监测补料和废液出口。"
+			],
+			dependencies: [
+				"65CDA7EBF6D53C43"
+			],
+			icon: "gtceu:iridium_dust",
+			id: "66835A336750C1CF",
+			tasks: [
+				{
+					id: "2ECED33BE10BE184",
+					type: "item",
+					item: "gtceu:iridium_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "3C08C116FF5D63FD",
+					type: "item",
+					item: "gtceu:osmium_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "稀有金属中的铱与锇",
+			x: 15.0d,
+			y: -5.0d
+		},
+		{
+			description: [
+				"困难硅岩线把矿物产出与精炼中间产物改为硅岩、富集硅岩和超能硅岩氧化物混合粉，并移除部分旧离心捷径。三种氧化物要分别储存。",
+				"基础硅岩经中子活化还原；富集与超能硅岩需经过氟化、溶液合成和后续活化。先规划氟锑酸、氢、氙、氟化物及废液的供给与回收。"
+			],
+			dependencies: [
+				"587511AB67A1F3B1"
+			],
+			icon: "gtceu:naquadah_oxide_mixture_dust",
+			id: "0DE2B97481E836E7",
+			tasks: [
+				{
+					id: "632ABDDFA7F74B68",
+					type: "item",
+					item: "gtceu:naquadah_oxide_mixture_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "困难硅岩：氧化物原料",
+			x: 3.0d,
+			y: -0.5d
+		},
+		{
+			description: [
+				"GTNN 精密组装配方由 GCYM 大型组装机运行。先建造大型组装机并准备 LuV 供电；它没有可直接替代的单方块精密组装机。",
+				"夸克核心配方需要 30720 EU/t，即 LuV，使用 IV 电路、钻石透镜、NAND 芯片、铝转子和聚乙烯、钠钾合金、润滑油、丁苯橡胶等液体。",
+				"这里的 IV 电路只是配方原料等级，不能把机器电压降到 IV。精密组装配方也不能直接靠普通并行仓获得任意并行。"
+			],
+			dependencies: [
+				"0DE2B97481E836E7",
+				"7033A24F37F9B9B9"
+			],
+			icon: "gtnn:quark_core",
+			id: "0CF21ABAAC439F52",
+			tasks: [
+				{
+					id: "5ACCC0F30B083C97",
+					type: "item",
+					item: "gtceu:large_assembler",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "4E822806ADDD6927",
+					type: "item",
+					item: "gtnn:quark_core",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "LuV：精密组装与夸克核心",
+			x: 6.0d,
+			y: 0.5d
+		},
+		{
+			description: [
+				"控制器在大型组装机的精密组装模式制造，配方标称 IV、7680 EU/t，并使用两个夸克核心。因此整机实际要到 LuV 核心可生产后才可建成。",
+				"按 JEI 预览搭建可增高的中子活化器，装入中子源，并配置中子加速器与中子传感器。控制器本身的低电压加工不代表中子能量自动满足。",
+				"中子源提供起始条件，加速器提高能量；反应目标看配方自己的中子能量区间。"
+			],
+			dependencies: [
+				"0CF21ABAAC439F52"
+			],
+			icon: "gtnn:neutron_activator",
+			id: "70F9D550FB647FEB",
+			tasks: [
+				{
+					id: "2A567874FD1B2994",
+					type: "item",
+					item: "gtnn:neutron_activator",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "6349BFEC74072140",
+					type: "item",
+					item: "gtnn:neutron_source",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "中子活化器整机",
+			x: 9.0d,
+			y: 0.5d
+		},
+		{
+			description: [
+				"用中子传感器读取能量并控制加速器，利用石墨粉或铍粉降低能量。加速器的档位只影响加速能力，不能代替配方要求的能量窗口。",
+				"基础硅岩活化要求 220–230 MeV，富集硅岩阶段为 460–480 MeV，超能硅岩阶段为 1050–1100 MeV。先稳定在目标窗口内再连续供料。",
+				"能量不在配方窗口内会得到放射性废物，超过 1200 MeV 会触发整机爆炸。给加速器设置自动停机阈值，并为废物预留出口。"
+			],
+			dependencies: [
+				"70F9D550FB647FEB"
+			],
+			icon: "gtnn:neutron_sensor",
+			id: "463FEA668E988DE0",
+			tasks: [
+				{
+					id: "08D0BBA86C290F9D",
+					type: "item",
+					item: "gtnn:neutron_sensor",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "4390A22CB1F8ABDF",
+					type: "item",
+					item: "gtnn:ulv_neutron_accelerator",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "能量窗口与红石控制",
+			x: 12.0d,
+			y: 0.0d
+		},
+		{
+			description: [
+				"4 份硅岩氧化物混合粉与 6000 mB 氟锑酸进入中子活化器，在 220–230 MeV 得到 2 份硅岩粉、氟化钛以及概率产出的镓。",
+				"产物含粉末和氟化物副产物，不能只连接硅岩出口。先验证一次完整还原，再把氟锑酸补料和能量闭环自动化。"
+			],
+			dependencies: [
+				"463FEA668E988DE0"
+			],
+			icon: "gtceu:naquadah_dust",
+			id: "7D98236CA5FF4016",
+			tasks: [
+				{
+					id: "2CBAA48E53E18FD5",
+					type: "item",
+					item: "gtceu:naquadah_dust",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "基础硅岩活化还原",
+			x: 15.0d,
+			y: 0.0d
+		},
+		{
+			description: [
+				"富集氧化物经 EV、IV 氟化与溶液工艺处理后，与氙配合物、氟锑酸、氢和三氟化金在 LuV 化工厂合成。该步骤要求钨钢外壳与钯碳催化剂。",
+				"残渣溶液经 EV 脱水机处理，后续电解可回收部分氙、金和含氟试剂。洁净室条件与不同溶液的浓度也要分别满足。",
+				"酸性富集硅岩溶液在 460–480 MeV 活化为富集硅岩硫酸盐，并副产不纯超能硅岩溶液。硫酸盐仍需高炉还原与真空冷却，才得到富集硅岩锭。"
+			],
+			dependencies: [
+				"7D98236CA5FF4016"
+			],
+			icon: "gtceu:enriched_naquadah_ingot",
+			id: "18BA55210DAE38E1",
+			tasks: [
+				{
+					id: "5E9A1CFAB5F82E4B",
+					type: "item",
+					item: "gtceu:enriched_naquadah_ingot",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "富集硅岩：钨钢化工厂",
+			x: 18.0d,
+			y: 0.0d
+		},
+		{
+			description: [
+				"继续处理不纯超能硅岩溶液，建立氟化、氡与氙及铯盐循环。部分步骤要求洁净室，废液脱水也要分开接线。",
+				"酸性超能硅岩氟化铯溶液在 1050–1100 MeV 活化，得到超能硅岩硫酸盐、铯和氟。这个窗口离 1200 MeV 上限较近，必须让加速器自动停机。",
+				"硫酸盐进入 9000 K、ZPM 配方的电力高炉还原为热超能硅岩，再经真空冷却得到锭。完成活化并不等于已经获得可用的超能硅岩金属。"
+			],
+			dependencies: [
+				"18BA55210DAE38E1",
+				"370FC1CDF5F9A9CC"
+			],
+			icon: "gtceu:naquadria_ingot",
+			id: "11179D211497FA8C",
+			tasks: [
+				{
+					id: "7638D1AE9EF254E5",
+					type: "item",
+					item: "gtceu:naquadria_ingot",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "超能硅岩：高能活化与高炉",
+			x: 21.0d,
+			y: -0.5d
+		},
+		{
+			description: [
+				"GTNN 固体燃料硅岩反应堆提供 EV、IV、LuV、ZPM 与 UV 机型。较低三档使用不同形态的富集硅岩，较高两档使用超能硅岩。",
+				"燃料分别加工为螺栓、棒或长棒，并回收对应形态的普通硅岩产物。为燃料输入和回收品分别安排库存，核对实际发电配方后再决定升级机型。",
+				"大型硅岩反应堆还有独立的液体燃料工艺。固体燃料机型与液体燃料线的物料、设备不能混为一套配方。"
+			],
+			dependencies: [
+				"18BA55210DAE38E1"
+			],
+			icon: "gtnn:ev_naquadah_reactor",
+			id: "170E46663837DFD5",
+			tasks: [
+				{
+					id: "2E5E159E7AD04A05",
+					type: "item",
+					item: "gtnn:ev_naquadah_reactor",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "固体硅岩燃料与回收",
+			x: 21.0d,
+			y: 2.0d
+		},
+		{
+			description: [
+				"本包使用 GCYR 与 GTNN 联动材料链。T1 重型合金锭在 HV 组装机制造：黄铜、铝和钢的致密板各一份，加入 72 mB 不锈钢，电路 1、耗时 15 秒。",
+				"若某种致密板标签为空，配方用九倍普通板替代，保持金属总量。重型合金锭随后在内爆压缩机压成重型板，准备炸药并给暗灰副产物留出槽位。",
+				"GCYR 基础火箭发动机和基础燃料罐各需要两块 T1 重型板，属于 HV 部件。"
+			],
+			dependencies: [
+				"587511AB67A1F3B1",
+				"2D01E80DE837F6A6"
+			],
+			icon: "gtnn:heavy_plate_t1",
+			id: "4C57727549D1B7EA",
+			tasks: [
+				{
+					id: "438D9EB77A7A7808",
+					type: "item",
+					item: "gtnn:heavy_ingot_t1",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "141F82C6B50B138F",
+					type: "item",
+					item: "gtnn:heavy_plate_t1",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "HV：T1 重型合金",
+			x: 3.0d,
+			y: 2.5d
+		},
+		{
+			description: [
+				"T2 在 EV 组装：T1 重型锭加两份钛致密板、72 mB 钨钢。T3 在 IV 组装：T2 加四份钨钢致密板、72 mB 铂。两步均用电路 1、耗时 15 秒。",
+				"继续使用内爆压缩机把对应级别的锭压成板。本包用钛与钨钢替代未安装的 Ad Astra 金属，直接查看当前 JEI，不要寻找 Desh 或 Ostrum。",
+				"GCYR 先进发动机与燃料罐在 IV 使用 T2 板；精英部件在 ZPM 使用 T3 板。重型板生产电压与火箭部件组装电压不是同一个等级。"
+			],
+			dependencies: [
+				"4C57727549D1B7EA"
+			],
+			icon: "gtnn:heavy_plate_t3",
+			id: "412407AB249CA377",
+			tasks: [
+				{
+					id: "35A83049E48112BC",
+					type: "item",
+					item: "gtnn:heavy_plate_t2",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "7FCC0BE50694A6A8",
+					type: "item",
+					item: "gtnn:heavy_plate_t3",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "EV / IV：逐级升级重型锭",
+			x: 6.0d,
+			y: 4.5d
+		},
+		{
+			description: [
+				"T4 在 LuV 组装：T3 重型锭、四份硅岩合金致密板与 72 mB GCYR 三硅岩合金，电路 1、15 秒。硅岩合金加工与三硅岩合金供应都要接入。",
+				"T4 同样通过内爆压缩机制成重型板，用于高阶太空设施与后续跨模组制造。扩建前先确认硅岩、铂和炸药的稳定吞吐。"
+			],
+			dependencies: [
+				"412407AB249CA377"
+			],
+			icon: "gtnn:heavy_plate_t4",
+			id: "7E4BD7CCEE69EC73",
+			tasks: [
+				{
+					id: "094F4D8DFBE4BA7F",
+					type: "item",
+					item: "gtnn:heavy_plate_t4",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "LuV：T4 与太空重工业",
+			x: 9.0d,
+			y: 4.5d
+		},
+		{
+			description: [
+				"用 MV 蒸馏室把柴油加工成煤油，再精馏 RP-1 火箭煤油，两步集成电路均设为 23。不要把中间的煤油直接当作最终混合燃料。",
+				"最终 RP-1 燃料在 HV 化工厂混合氧与 RP-1 火箭煤油，要求不锈钢外壳、电路 1。先稳定氧气与柴油供应，再接入火箭燃料仓。"
+			],
+			dependencies: [
+				"587511AB67A1F3B1"
+			],
+			icon: "gtceu:mv_distillery",
+			id: "60BA88DEBBE9893F",
+			tasks: [
+				{
+					id: "110476D29861B39E",
+					title: "完成柴油、煤油、RP-1 与氧混合的燃料链",
+					type: "checkmark"
+				}
+			],
+			title: "煤油与 RP-1 燃料",
+			x: 3.0d,
+			y: 6.5d
+		},
+		{
+			description: [
+				"过氧化氢使用蒽醌循环，并需要橙色金属催化剂。其上游邻苯二甲酸酐等步骤到 EV，因此最终混合配方为 HV 并不代表整条原料链在 HV 就齐全。",
+				"氨与过氧化氢在钢外壳化工厂制肼，HV、电路 2；甲醇与肼进一步混合为高密度肼燃料，则需要钛外壳，仍为 HV、电路 2。",
+				"分别储存肼、甲醇、过氧化氢与混合燃料。催化剂与循环载体补料不足时，先解决上游再增加工厂并行。"
+			],
+			dependencies: [
+				"60BA88DEBBE9893F"
+			],
+			icon: "gtnn:exxonmobil_chemical_plant",
+			id: "5B11513885D377D1",
+			tasks: [
+				{
+					id: "3D089A84B880D56D",
+					title: "建立过氧化氢循环并生产高密度肼混合燃料",
+					type: "checkmark"
+				}
+			],
+			title: "过氧化氢与肼",
+			x: 6.0d,
+			y: 9.0d
+		},
+		{
+			description: [
+				"甲基肼在铝外壳化工厂合成；甲基肼与硝酸混合成硝酸甲基肼燃料则需要不锈钢外壳。继续按 JEI 处理偏二甲肼等高级推进剂。",
+				"本包把 RP-1、高密度肼、偏二甲肼和硝酸甲基肼燃料加入 GCYR 火箭燃料规则，分别覆盖一至三档推进需求。按火箭实际要求选择已解锁的推进剂。",
+				"配方 duration 属于 GCYR 燃料消耗计算参数，不能直接解释成现实秒数的续航。火箭部件材料线与燃料线可并行建设。"
+			],
+			dependencies: [
+				"5B11513885D377D1"
+			],
+			icon: "gtnn:exxonmobil_chemical_plant",
+			id: "72456655ADACB7FA",
+			tasks: [
+				{
+					id: "7D60A983DB1B0C4B",
+					title: "核对火箭燃料等级并接通一种高阶推进剂",
+					type: "checkmark"
+				}
+			],
+			title: "高级推进剂与 GCYR 接口",
+			x: 9.0d,
+			y: 8.0d
+		},
+		{
+			description: [
+				"GTNN 火箭发动机提供 EV、IV 与 LuV 机型，是消耗推进剂的发电设备，与 GCYR 火箭的发动机物品用途不同。",
+				"本包联动额外接受 GT 火箭燃料、汽油、柴油以及可用的氢气来源。按 JEI 查看单次用量、耗时与输出，不能直接把火箭航行续航套用为发电收益。",
+				"推进剂产线需要电解、化工与蒸馏的上游能耗。先测量实际供给能否覆盖发电消耗，再决定是否扩展为基地常用电源。"
+			],
+			dependencies: [
+				"72456655ADACB7FA"
+			],
+			icon: "gtnn:ev_rocket_engine",
+			id: "0F508DD024207D0C",
+			tasks: [
+				{
+					id: "214BB0D7AA2D08B8",
+					type: "item",
+					item: "gtnn:ev_rocket_engine",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "火箭燃料也可发电",
+			x: 12.0d,
+			y: 7.5d
+		},
+		{
+			description: [
+				"GTNN 电路装配线控制器使用 GT 装配线制造，配方电压 LuV、30720 EU/t，基础耗时 20 分钟。准备 LuV 电路组装机、LuV 部件、铑板与 Cerrobase-140 合金。",
+				"控制器制造配方的前置研究是扫描 LuV 电路组装机，使用数据棒。这一步与后面为量产电路制作蚀刻模板是两套研究，不能共用任意一根数据棒。",
+				"专用装配线支持自己的批量电路配方，也能处理符合等级限制的常规电路组装机配方。先按预览完成结构，再安排沿线输入仓。"
+			],
+			dependencies: [
+				"587511AB67A1F3B1",
+				"7033A24F37F9B9B9"
+			],
+			icon: "gtnn:circuit_assembly_line",
+			id: "1241C68AD21D6AC9",
+			tasks: [
+				{
+					id: "14E5F4FB076053BF",
+					type: "item",
+					item: "gtnn:circuit_assembly_line",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "LuV：专用电路装配线",
+			x: 3.0d,
+			y: 13.0d
+		},
+		{
+			description: [
+				"使用激光蚀刻机把处理器电路制成蚀刻样品。微处理器使用黄色透镜、MV 配方；纳米、量子、晶体与湿件依次采用对应等级的透镜与电压。",
+				"蚀刻过程消耗处理器样品。选择希望长期量产的电路，再为它准备研究模板，避免只拿到普通电路就期待装配线自动识别。"
+			],
+			dependencies: [
+				"1241C68AD21D6AC9"
+			],
+			icon: "gtnn:etched_micro_processor",
+			id: "00977F2AC475A25B",
+			tasks: [
+				{
+					id: "16A34B2811ABE7EC",
+					type: "item",
+					item: "gtnn:etched_micro_processor",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "蚀刻处理器样品",
+			x: 6.0d,
+			y: 11.5d
+		},
+		{
+			description: [
+				"蚀刻样品先与塑料电路板和胶水在 LV 组装机制成对应蚀刻电路板，再用成型机与四片锻铁箔压成蚀刻基板。",
+				"普通处理器、蚀刻样品、蚀刻电路板和蚀刻基板是不同物品。后续扫描器需要基板，按工序逐步制造并保留额外样品。"
+			],
+			dependencies: [
+				"00977F2AC475A25B"
+			],
+			icon: "gtnn:etched_micro_processor_base",
+			id: "479D69469AD22814",
+			tasks: [
+				{
+					id: "4C7910BE201F839A",
+					type: "item",
+					item: "gtnn:etched_micro_processor_board",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "23A70C68F6E31B38",
+					type: "item",
+					item: "gtnn:etched_micro_processor_base",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "电路板与蚀刻基板",
+			x: 9.0d,
+			y: 12.0d
+		},
+		{
+			description: [
+				"把目标蚀刻基板交给扫描器，配方需要 IV、7680 EU/t，基础耗时 30 秒，得到绑定该电路工艺的数据棒。研究用数据棒必须携带正确 NBT。",
+				"将研究成果放入电路装配线控制器的配置槽，而不是普通物品输入仓。配方需要匹配的数据类型与研究内容；空白数据棒没有作用。",
+				"控制器会保存专用工艺的模板锁定状态。部署前选定这条装配线负责的电路系列，并使用实际研究数据验证首次运行。取得任务只检查数据棒物品，下面的勾选需在机器验证后完成。"
+			],
+			dependencies: [
+				"479D69469AD22814"
+			],
+			icon: "gtceu:data_stick",
+			id: "533CC3F9B3D6C6B6",
+			tasks: [
+				{
+					id: "236C3A5D3F1F39AB",
+					type: "item",
+					item: "gtceu:data_stick",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "05EF5DFA2383102E",
+					title: "将正确研究数据棒装入控制器并验证工艺识别",
+					type: "checkmark"
+				}
+			],
+			title: "IV 扫描：量产数据棒",
+			x: 12.0d,
+			y: 11.5d
+		},
+		{
+			description: [
+				"批量配方会使用封装后的 SMD 元件。常见封装在 LV 组装机中由 16 个元件与 72 mB 聚乙烯加工，电路设为 16；按目标配方分别准备电阻、电容、晶体管等。",
+				"部分导线还会改用多股规格，数量与形态以批量配方页为准。不能只把普通电路组装机的原料整体乘十六后塞进同一个仓。",
+				"本包启用装配线有序物品输入。按机器相对右侧排列输入仓，并严格对应 JEI 物品顺序；数据棒留在控制器，流体按各自输入仓供应。"
+			],
+			dependencies: [
+				"533CC3F9B3D6C6B6"
+			],
+			icon: "gtnn:wrap_smd_transistor",
+			id: "2AC421127CFC7982",
+			tasks: [
+				{
+					id: "224B969E76527B9D",
+					type: "item",
+					item: "gtnn:wrap_smd_transistor",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "6D23A36BD0A3021F",
+					type: "item",
+					item: "gtnn:wrap_smd_capacitor",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				},
+				{
+					id: "2239AB1D3F650A6E",
+					type: "item",
+					item: "gtnn:wrap_smd_resistor",
+					count: 1,
+					consume_items: false,
+					match_nbt: false,
+					only_from_crafting: false
+				}
+			],
+			title: "封装元件与有序输入",
+			x: 15.0d,
+			y: 12.0d
+		},
+		{
+			description: [
+				"GTNN 为选中的电路工艺生成批量配方：基础产出为原配方的十六倍，耗时三倍，超频前 EU/t 保持原值。只有符合转换规则的配方具备这个倍率，不能推广到所有电路。",
+				"常规电路组装机配方在此还要求配方电压等级严格低于机器输入电压等级；同档供电可能无法运行。专用批量配方另有研究数据与模板条件。",
+				"验证一批完整生产：确认研究数据、输入顺序、元件封装、流体供给与输出容量，记录基础耗时和实际产出，再逐步提高供电与吞吐。"
+			],
+			dependencies: [
+				"2AC421127CFC7982"
+			],
+			icon: "gtnn:circuit_assembly_line",
+			id: "0D15A6C72F646A5D",
+			tasks: [
+				{
+					id: "32CDD8046F1B63CD",
+					title: "完成一批电路生产并确认倍率、顺序与研究条件",
+					type: "checkmark"
+				}
+			],
+			title: "十六倍产出与运行边界",
+			x: 18.0d,
+			y: 12.0d
+		}
+	],
+	title: "GTNN：工艺与量产"
+}

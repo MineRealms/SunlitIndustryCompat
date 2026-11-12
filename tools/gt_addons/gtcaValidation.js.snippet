@@ -25,16 +25,22 @@ function validateGtcaRecipes(server) {
   var ids = [];
   var details = {};
   var invalidItems = [];
+  var manifest = JsonIO.read('gtca-quest-targets.json');
+  var requested = manifest ? manifest.items : [];
+  var invalidQuestItems = [];
+  requested.forEach(function (item) {
+    if (Item.of(String(item)).isEmpty()) invalidQuestItems.push(String(item));
+  });
   recipes.forEach(function (recipe) {
     var id = String(recipe.getId());
-    if (/piko_wafer|nanotube_spool|space_elevator_controller|society_gtca|space_station_package|space_fabric|heavy_ingot_t|platinum_group_sludge|pyrosulfate|leach_residue|rhodium_sulfate|rarest_metal_residue|acidic_enriched|acidic_naquadria/.test(id)) {
+    if (/piko_wafer|nanotube_spool|space_|gtca_space|society_gtca|heavy_ingot_t|platinum_group_sludge|pyrosulfate|leach_residue|rhodium_sulfate|rarest_metal_residue|acidic_enriched|acidic_naquadria|carbon_nanites|comet_cyclotron|nanoforge_controller|pcb_tier|isamill_controller|flcr_controller/.test(id)) {
       ids.push(id);
       if (String(recipe.getSerializer().getClass().getName()) !== 'com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer') return;
       var encoded = Serializer.CODEC.encodeStart(ops, recipe).result();
       if (encoded.isPresent()) {
         var json = JSON.parse(String(encoded.get()));
         details[id] = json;
-        if (/assembly_line\/(piko_wafer_ic|nanotube_spool)|society:assembly_line\/gtca|kubejs:assembler\/heavy_ingot_t/.test(id)) {
+        if (/assembly_line\/(piko_wafer_ic|nanotube_spool|space_)|society:.*\/gtca|kubejs:assembler\/heavy_ingot_t|space_assembler\/|assembler\/space_elevator|assembler\/space_mining_drone/.test(id)) {
           (json.inputs.item || []).forEach(function (input) {
             var ingredient = input.content.ingredient || input.content;
             if (Ingredient.of(ingredient).itemIds.size() === 0) invalidItems.push(id + ': ' + JSON.stringify(ingredient));
@@ -44,9 +50,13 @@ function validateGtcaRecipes(server) {
       else console.error('[GTCA-VALIDATE] failed to encode ' + id);
     }
   });
-  details._validation = { totalRecipes: recipes.size(), invalidItems: invalidItems };
+  details._validation = {
+    totalRecipes: recipes.size(), invalidItems: invalidItems.sort(),
+    requestedQuestItems: requested.length,
+    invalidQuestItems: invalidQuestItems.sort()
+  };
   JsonIO.write('gtca-recipe-validation.json', details);
-  console.info('[GTCA-VALIDATE] runtime-ids ' + ids.sort().join(', '));
+  console.info('[GTCA-VALIDATE] captured ' + ids.length + ' selected runtime IDs; checked ' + requested.length + ' quest item IDs');
 }
 
 ServerEvents.loaded(function (event) {
