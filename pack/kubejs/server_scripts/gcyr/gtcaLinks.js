@@ -11,8 +11,20 @@ ServerEvents.recipes((e) => {
   if (!Platform.isLoaded("gtca") || !Platform.isLoaded("gtceu")) return;
   if (!Platform.isLoaded("gcyr") || !Platform.isLoaded("gtnn")) return;
 
-  // Remove GTCA's original UHV recipe and its generated duplicate research
-  // entry before adding the cross-mod version.
+  // Resolve all required resources before replacing the native recipe. GTCA
+  // normalizes the material name incoloy_ma323 to incoloy_ma_323.
+  const incoloy = Fluid.of("gtca:incoloy_ma_323", 5760);
+  const requiredItems = [
+    "gtca:space_elevator", "gtca:piko_wafer_ic", "gtca:nanotube_spool",
+    "gcyr:space_fabric", "gtnn:heavy_plate_t4", "gcyr:space_station_packager"
+  ];
+  if (incoloy.isEmpty() || requiredItems.some((id) => Item.of(id).isEmpty())) {
+    console.error("[GTCA-LINKS] Missing required resources; retaining the native elevator recipe");
+    return;
+  }
+
+  // Replace the native controller and its research together. The unique ID
+  // keeps this research independent of other recipes using the same sample.
   e.remove({ id: "gtceu:assembly_line/space_elevator_controller" });
   e.remove({ id: "gtceu:research_station/1x_gtca_nanotube_spool" });
 
@@ -26,22 +38,22 @@ ServerEvents.recipes((e) => {
       "16x gtceu:uv_electric_motor",
       "4x gcyr:space_fabric",
       "4x gtnn:heavy_plate_t4",
-      "gcyr:space_station_package"
+      "gcyr:space_station_packager"
     )
     .inputFluids(
-      Fluid.of("gtceu:soldering_alloy", 5760),
+      incoloy,
       Fluid.of("gtceu:uu_matter", 16000),
       Fluid.of("gtceu:lubricant", 32000),
-      Fluid.of("gtceu:polybenzimidazole", 1440)
+      Fluid.of("gtceu:neutronium", 1440)
     )
     .itemOutputs("gtca:space_elevator")
     .duration(7200)
-    .EUt(7864320)
+    .EUt(1966080)
     .stationResearch((builder) => builder
-      .researchStack(Item.of("gcyr:space_station_package"))
+      .researchStack(Item.of("gtca:nanotube_spool"))
       .researchId("society_gtca_space_elevator_controller_v2")
       .EUt(1966080)
-      .CWUt(128, 256000));
+      .CWUt(128, 512000));
 
-  console.info("[GTCA-LINKS] Registered UHV GTCA elevator bridge with GCYR station and GTNN heavy alloy inputs");
+  console.info("[GTCA-LINKS] Registered UHV GTCA elevator bridge with GCYR orbital hardware and GTNN heavy alloy inputs");
 });

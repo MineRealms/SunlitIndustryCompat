@@ -1,0 +1,22 @@
+{
+  "result": "PASS",
+  "date": "2026-11-12",
+  "fixture": "G:/emoney-gtca-link-test-20261112",
+  "gtcaSourceCommit": "469b17f",
+  "gtcaJarSha256": "2453f8cde5ef86c3ab5305415c6c26d6d1e2cf825df51059dbdad911a42cf6ff",
+  "runtimeRecipeCount": 55100,
+  "snapshotRecipeCount": 40,
+  "snapshotCanonicalSha256": "1d010e115f5952c1848a2fae24a9b159b94350f4e34e224de18193573a17f280",
+  "assemblyRecipesChecked": 3,
+  "researchContractsChecked": 3,
+  "heavyAlloyTiersChecked": 4,
+  "emptyTargetItemIngredients": 0,
+  "kubejsRecipeEvent": { "added": 30, "removed": 34, "failed": 0 },
+  "phase4RepairScriptIncluded": true,
+  "canonicalSnapshotStableAcrossReload": true,
+  "buildLocalAndFixtureJarHashesMatch": true,
+  "questDescriptionsChanged": 8,
+  "questChaptersChanged": 4,
+  "physicalMachineProcessingTested": false,
+  "productionServerChanged": false
+}

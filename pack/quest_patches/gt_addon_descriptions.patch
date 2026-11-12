@@ -1,0 +1,108 @@
+--- a/config/ftbquests/quests/chapters/ev__extreme_voltage.snbt
++++ b/config/ftbquests/quests/chapters/ev__extreme_voltage.snbt
+@@ -276,9 +276,9 @@
+ 			description: [
+ 				"如何获取铂金？"
+ 				""
+-				"&9-&r 作为&a&a镍矿石&f&r加工的副产品,可通过&3&a化学浸洗机&f&r或&3HV级研磨机&r获得"
++				"&9-&r 加工&a镍矿石&r时,GTNN会把副产铂粉替换为&dPlatinumMetal&r,需继续走浸出、分盐与还原工艺"
+ 				"&9-&r 开采&a末地&f中的&a谢尔顿矿脉&r"
+-				"&9-&r 从&a&a铂族矿泥&f&r中提取(复杂工艺链可获取所有铂族金属,&cIV阶段前极不推荐&r,但后期必需)"
++				"&9-&r 从&a&a铂族矿泥渣&f&r中提取(按GTNN铂族处理线进行混酸浸出、焙烧和后续分离,&cIV阶段前极不推荐&r)"
+ 				""
+ 				"铂金主要用于制造&d&a贴片二极管&f&r,并从&5EV&r阶段起参与大量合成配方."
+ 				"{@pagebreak}"
+@@ -1863,17 +1863,17 @@
+ 				"{@pagebreak}"
+ 				"首先用&d&a硫酸&f&r处理含铂族元素的&a&a纯化&f&a粉碎矿石&f&r,生成&a&a铂系矿泥渣&f&r."
+ 				""
+-				"再用&d&a王水&f&r进行离心处理,产出各类铂系金属盐."
+-				""
+-				"可从&e原始&a铂粉&f&r中完美回收&d氯气&r."
+-				""
+-				"通过&d氨水&r处理&7&a粗钯金&f粉末&r可&o部分&r回收&d&a硫酸&f&r,但建议将多余氨水留作他用(如&a火箭燃料&f和PBI)."
++				"矿泥先离心分出&dPlatinumMetal/PalladiumMetal&r和稀有金属残渣,再分别走GTNN的铂、钯精炼与其他铂族金属分离支线."
++				""
++				"&e粗铂粉&r可用&a钙粉&r化学还原,得到铂粉与氯化钙;电解支线只会返回PlatinumMetal和部分氯气,仍需继续精炼."
++				""
++				"&7粗钯粉&r改用&d甲酸&r还原为钯粉,并返回氨气;返回的氨气可接入&a火箭燃料&r或PBI支线."
+ 				""
+ 				"其他铂系金属盐各有专属微型生产链——后续任务将详细说明."
+ 				"{@pagebreak}"
+ 				"&9注:&r&e铂金&r和&7钯金&r也可通过&a末地&f采矿或常规矿石处理获取."
+ 				""
+-				"&l&3背景故事：&r&o是否听过Gregicality或&d格雷科技&f：&a新视野&f中恶名昭彰的\"铂金生产线\"？这条极其复杂的生产链通过Bartworks引入GT:NH。概念虽精彩，但我们大幅简化了流程，使GTCEu晚期游戏体验更顺畅。"
++				"&l&3背景故事：&r&o是否听过Gregicality或&d格雷科技&f：&a新视野&f中恶名昭彰的\"铂金生产线\"？这条极其复杂的生产链通过Bartworks引入GT:NH。本包启用GTNN困难铂线,实际工艺以本章和JEI中的配方为准。"
+ 			]
+ 			icon: "gtceu:platinum_group_sludge_dust"
+ 			id: "57D4E09A9CAB150C"
+@@ -1902,9 +1902,9 @@
+ 				"5DBBD9B1F5B01F4E"
+ 			]
+ 			description: [
+-				"该生产链的起始原料为&a惰性金属混合物&r."
+-				""
+-				"&d&a硫酸&f&r将被完全回收利用,同时还会生成可储存的过量&d氧气&r和&d氢气&r."
++				"GTNN的铑支线在&a铂渣&r焙烧时分出,钌支线则继续处理&a惰性金属混合物&r."
++				""
++				"先准备&d焦硫酸钾&r与&e775K电力高炉&r.各支路的酸和氯气回收量不同,请按JEI给回流液预留缓冲."
+ 				""
+ 				"&a钌&r和&a铑&r分别是通往&9IV级&r与&dLuV级&r的关键材料.若现在实现自动化生产,后续阶段就无需重复建设!"
+ 			]
+--- a/config/ftbquests/quests/chapters/zpm__zero_point_module.snbt
++++ b/config/ftbquests/quests/chapters/zpm__zero_point_module.snbt
+@@ -134,9 +134,11 @@
+ 		{
+ 			dependencies: ["378F0AFCF95354B2"]
+ 			description: [
+-				"&a&a富集硅岩&f&r是Nq-528同位素形态的Naquadah矿,具有放射性,拟用于(尚未实装的)核反应堆"
+-				""
+-				"目前仅需用它制作&9三相合金线圈&r."
++				"&a&a富集硅岩&f&r是Nq-528同位素形态的Naquadah矿,由GTNN硅岩线经酸浸与中子活化器制得硫酸盐后再还原获得."
++				""
++				"中子活化器产出硫酸盐后,仍需&3电力高炉&r还原并冷却热锭;不要再找旧版离心硫酸盐配方."
++				""
++				"它除了用于&9三相合金线圈&r,还可加工为GTNN硅岩反应堆燃料,并参与后续高阶材料链."
+ 			]
+ 			icon: "gtceu:enriched_naquadah_ingot"
+ 			id: "74B037D7031F4A78"
+@@ -284,7 +286,7 @@
+ 				"378F0AFCF95354B2"
+ 				"4C7C0F6A6598BC24"
+ 			]
+-			description: ["&a超密中子素&r是Nq-522同位素,为超密合金的不稳定变体.虽然极不稳定,但仍将用于&3紫外级&r组件、&9聚变MK2&r以及中子素合成."]
++			description: ["&a超密中子素&r是Nq-522同位素,由GTNN硅岩线经酸浸与中子活化器制得硫酸盐后,在&e9000K电力高炉&r中还原并冷却为锭.它是超密合金的不稳定变体,用于&3紫外级&r组件、&9聚变MK2&r以及中子素合成."]
+ 			icon: "gtceu:naquadria_ingot"
+ 			id: "6D1F10543A391940"
+ 			shape: "rsquare"
+--- a/config/ftbquests/quests/chapters/ore_generation.snbt
++++ b/config/ftbquests/quests/chapters/ore_generation.snbt
+@@ -1201,7 +1201,7 @@
+ 			description: [
+ 				"资深科幻迷可能从&d《星际之门》&r系列认得&2Naquadah&r!你会发现这是&d卢瓦级&r之后的核心材料."
+ 				""
+-				"Naquadah可在&d卢瓦级&r处理获得钛、Trinium、钡、镓、铟、磷、&a富集硅岩&f及Naquadria,用途广泛!"
++				"本包启用GTNN困难硅岩线:矿石加工先得到氧化物混合物,再经氟锑酸浸出、中子活化器及后续分离获取Naquadah、&a富集硅岩&r和Naquadria.副产与回流请查JEI."
+ 				""
+ 				"另一种矿石&c钚&r用于启动氡循环,&9中压&r阶段必需."
+ 			]
+@@ -1229,7 +1229,7 @@
+ 			description: [
+ 				"铂在&5高压&r阶段开始使用."
+ 				""
+-				"&a铂系矿泥渣&r处理链是&1中压&r阶段必备,而谢尔顿矿是启动处理的最佳矿石."
++				"谢尔顿矿脉仍可采到&a原铂矿与原钯矿&r;加工时GTNN把对应金属粉产物改为&dPlatinumMetal/PalladiumMetal&r,需继续精炼.&a铂系矿泥渣&r也可启动后续铂族处理线."
+ 				"{@pagebreak}符"
+ 				"&l&3考据:&r&o 现实中谢尔顿矿真名为Cooperite.GregoriusT觉得引用谢尔顿·库珀“哈哈,有趣“很逗趣,尽管&l并非&r&o实际命名由来!我们延续了这个“哈哈,有趣“的玩笑."
+ 			]
+--- a/config/ftbquests/quests/chapters/space.snbt
++++ b/config/ftbquests/quests/chapters/space.snbt
+@@ -806,6 +806,8 @@
+ 				"ZPM+ 巨型多方块：制造戴森球机械方块、太阳能电池与维护端口。"
+ 				""
+ 				"支撑柱用波束接收器与钨钢框架——准备大量材料。"
++				""
++				"这里是GCYR太空电梯,用于戴森工业;GTCA的同名UHV太空电梯负责挂接太空采矿、抽取与装配模块,采用独立的研究链."
+ 			]
+ 			icon: "gcyr:space_elevator"
+ 			id: "4E06937111357BD0"

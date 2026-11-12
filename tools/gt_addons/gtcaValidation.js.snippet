@@ -1,0 +1,63 @@
+// priority: 10000
+// Isolated-server probe only. Never ship this file with the pack.
+ServerEvents.recipes(function (event) {
+  event.forEachRecipe({ output: 'gtca:space_elevator' }, function (recipe) {
+    console.info('[GTCA-VALIDATE] elevator ' + recipe.id + ' ' + recipe.json);
+  });
+  event.forEachRecipe({ output: 'gtca:nanotube_spool' }, function (recipe) {
+    console.info('[GTCA-VALIDATE] spool ' + recipe.id + ' ' + recipe.json);
+  });
+  event.forEachRecipe({ output: 'gtca:piko_wafer_ic' }, function (recipe) {
+    console.info('[GTCA-VALIDATE] wafer ' + recipe.id + ' ' + recipe.json);
+  });
+  event.forEachRecipe({ id: 'gtceu:research_station/1x_gtca_nanotube_spool' }, function (recipe) {
+    console.info('[GTCA-VALIDATE] old-research ' + recipe.id + ' ' + recipe.json);
+  });
+});
+
+function validateGtcaRecipes(server) {
+  var Serializer = Java.loadClass('com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer');
+  var JsonOps = Java.loadClass('com.mojang.serialization.JsonOps');
+  var RegistryOps = Java.loadClass('net.minecraft.resources.RegistryOps');
+  var Registries = Java.loadClass('com.gregtechceu.gtceu.api.registry.GTRegistries');
+  var ops = RegistryOps.create(JsonOps.INSTANCE, Registries.builtinRegistry());
+  var recipes = server.getRecipeManager().getRecipes();
+  var ids = [];
+  var details = {};
+  var invalidItems = [];
+  recipes.forEach(function (recipe) {
+    var id = String(recipe.getId());
+    if (/piko_wafer|nanotube_spool|space_elevator_controller|society_gtca|space_station_package|space_fabric|heavy_ingot_t|platinum_group_sludge|pyrosulfate|leach_residue|rhodium_sulfate|rarest_metal_residue|acidic_enriched|acidic_naquadria/.test(id)) {
+      ids.push(id);
+      if (String(recipe.getSerializer().getClass().getName()) !== 'com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer') return;
+      var encoded = Serializer.CODEC.encodeStart(ops, recipe).result();
+      if (encoded.isPresent()) {
+        var json = JSON.parse(String(encoded.get()));
+        details[id] = json;
+        if (/assembly_line\/(piko_wafer_ic|nanotube_spool)|society:assembly_line\/gtca|kubejs:assembler\/heavy_ingot_t/.test(id)) {
+          (json.inputs.item || []).forEach(function (input) {
+            var ingredient = input.content.ingredient || input.content;
+            if (Ingredient.of(ingredient).itemIds.size() === 0) invalidItems.push(id + ': ' + JSON.stringify(ingredient));
+          });
+        }
+      }
+      else console.error('[GTCA-VALIDATE] failed to encode ' + id);
+    }
+  });
+  details._validation = { totalRecipes: recipes.size(), invalidItems: invalidItems };
+  JsonIO.write('gtca-recipe-validation.json', details);
+  console.info('[GTCA-VALIDATE] runtime-ids ' + ids.sort().join(', '));
+}
+
+ServerEvents.loaded(function (event) {
+  validateGtcaRecipes(event.server);
+});
+
+ServerEvents.commandRegistry(function (event) {
+  event.register(event.commands.literal('gtca_validate')
+    .requires(function (source) { return source.hasPermission(2); })
+    .executes(function (context) {
+      validateGtcaRecipes(context.source.server);
+      return 1;
+    }));
+});
